@@ -314,6 +314,14 @@ function InscriptionsContent() {
                     <td style={{ padding: '12px', textAlign: 'right', color: '#C9A84C', fontWeight: '500' }}>{ins.montant_total_ht ? `${Number(ins.montant_total_ht).toLocaleString('fr-FR')} €` : '—'}</td>
                     <td style={{ padding: '12px', fontSize: '12px', color: '#6b7280' }}>{fmtDate(ins.date_inscription)}</td>
                     <td style={{ padding: '12px', textAlign: 'center' }}>
+                      <button
+                        onClick={() => {
+                          const url = `/api/generate-dossier?inscriptionId=${ins.id}`
+                          window.location.href = url
+                        }}
+                        title="Télécharger le dossier Qualiopi/AFDAS complet (10 documents)"
+                        style={{ background: '#C9A84C', color: '#fff', border: 'none', padding: '4px 10px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer', marginRight: '4px', fontWeight: 500 }}
+                      >📥 Dossier</button>
                       <button onClick={() => openEdit(ins)} style={{ background: '#fff', color: '#1A2C6B', border: '1px solid #1A2C6B', padding: '4px 10px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer', marginRight: '4px' }}>Modifier</button>
                       <button onClick={() => del(ins)} style={{ background: '#fff', color: '#ef4444', border: 'none', padding: '4px 10px', fontSize: '12px', cursor: 'pointer' }}>Supprimer</button>
                     </td>
