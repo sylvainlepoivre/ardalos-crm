@@ -1,9 +1,8 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { createClient } from '@supabase/supabase-js'
 import { useAuth } from '@/lib/useAuth'
+import { supabase } from '@/lib/supabase'
 
-const supabase = createClient('https://cvxzdiutxonnsnwoicqt.supabase.co','sb_publishable_J8ta-7L05zgK9rBy2OS9Bg_CjXHwZVK')
 
 const MODALITES = ['Présentiel', 'Distanciel', 'Hybride', 'E-learning']
 const FINANCEMENTS = ['AFDAS', 'OPCO Atlas', 'OPCO EP', 'CPF', 'Plan de formation', 'Financement personnel']

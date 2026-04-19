@@ -1,8 +1,7 @@
 'use client'
 import { useAuth } from '@/lib/useAuth'
 import { useState, useEffect } from 'react'
-import { createClient } from '@supabase/supabase-js'
-const supabase = createClient('https://cvxzdiutxonnsnwoicqt.supabase.co','sb_publishable_J8ta-7L05zgK9rBy2OS9Bg_CjXHwZVK')
+import { supabase } from '@/lib/supabase'
 function Contacts() {
   const [contacts, setContacts] = useState<any[]>([])
   const [prenom, setPrenom] = useState('')

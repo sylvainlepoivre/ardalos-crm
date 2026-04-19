@@ -1,8 +1,7 @@
 'use client'
 import { useAuth } from '@/lib/useAuth'
 import { useState, useEffect } from 'react'
-import { createClient } from '@supabase/supabase-js'
-const supabase = createClient('https://cvxzdiutxonnsnwoicqt.supabase.co','sb_publishable_J8ta-7L05zgK9rBy2OS9Bg_CjXHwZVK')
+import { supabase } from '@/lib/supabase'
 const ETAPES = ['Nouveau lead','Qualification','Dossier en cours','Validation','Closing']
 const COLORS = ['#9ca3af','#1A2C6B','#C9A84C','#0891B2','#059669']
 function Deals() {
