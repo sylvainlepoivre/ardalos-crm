@@ -5,7 +5,7 @@ const supabase = createClient('https://cvxzdiutxonnsnwoicqt.supabase.co','sb_pub
 const ETAPES = ['Nouveau lead','Qualification','Dossier en cours','Validation','Closing']
 const COLORS = ['#9ca3af','#1A2C6B','#C9A84C','#0891B2','#059669']
 export default function Deals() {
-  const [deals, setDeals] = useState([])
+  const [deals, setDeals] = useState<any[]>([])
   const [nom, setNom] = useState('')
   const [valeur, setValeur] = useState('')
   const [contact, setContact] = useState('')
@@ -20,7 +20,7 @@ export default function Deals() {
     await supabase.from('deals').insert({ nom, valeur: parseInt(valeur)||0, contact, etape })
     setNom(''); setValeur(''); setContact(''); setEtape(0); load()
   }
-  async function del(id) {
+  async function del(id: string) {
     await supabase.from('deals').delete().eq('id', id); load()
   }
   return (

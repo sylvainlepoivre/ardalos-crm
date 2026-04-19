@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
 const supabase = createClient('https://cvxzdiutxonnsnwoicqt.supabase.co','sb_publishable_J8ta-7L05zgK9rBy2OS9Bg_CjXHwZVK')
 export default function Contacts() {
-  const [contacts, setContacts] = useState([])
+  const [contacts, setContacts] = useState<any[]>([])
   const [prenom, setPrenom] = useState('')
   const [nom, setNom] = useState('')
   const [email, setEmail] = useState('')
@@ -17,7 +17,7 @@ export default function Contacts() {
     await supabase.from('contacts').insert({ prenom, nom, email })
     setPrenom(''); setNom(''); setEmail(''); load()
   }
-  async function del(id) {
+  async function del(id: string) {
     await supabase.from('contacts').delete().eq('id', id); load()
   }
   return (

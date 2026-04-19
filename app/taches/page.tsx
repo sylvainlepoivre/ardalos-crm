@@ -3,9 +3,9 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
 const supabase = createClient('https://cvxzdiutxonnsnwoicqt.supabase.co','sb_publishable_J8ta-7L05zgK9rBy2OS9Bg_CjXHwZVK')
 const PRIOS = ['Urgent','Haute','Normale','Basse']
-const COLORS = {'Urgent':'#ef4444','Haute':'#f97316','Normale':'#eab308','Basse':'#22c55e'}
+const COLORS: Record<string,string> = {'Urgent':'#ef4444','Haute':'#f97316','Normale':'#eab308','Basse':'#22c55e'}
 export default function Taches() {
-  const [taches, setTaches] = useState([])
+  const [taches, setTaches] = useState<any[]>([])
   const [titre, setTitre] = useState('')
   const [prio, setPrio] = useState('Normale')
   const [date, setDate] = useState('')
@@ -20,10 +20,10 @@ export default function Taches() {
     await supabase.from('taches').insert({ titre, priorite: prio, date_echeance: date||null, contact })
     setTitre(''); setPrio('Normale'); setDate(''); setContact(''); load()
   }
-  async function toggle(id, done) {
+  async function toggle(id: string, done: boolean) {
     await supabase.from('taches').update({ done: !done }).eq('id', id); load()
   }
-  async function del(id) {
+  async function del(id: string) {
     await supabase.from('taches').delete().eq('id', id); load()
   }
   const pending = taches.filter((t:any) => !t.done)
