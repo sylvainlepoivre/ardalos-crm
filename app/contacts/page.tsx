@@ -1,8 +1,9 @@
 'use client'
+import { useAuth } from '@/lib/useAuth'
 import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
 const supabase = createClient('https://cvxzdiutxonnsnwoicqt.supabase.co','sb_publishable_J8ta-7L05zgK9rBy2OS9Bg_CjXHwZVK')
-export default function Contacts() {
+function Contacts() {
   const [contacts, setContacts] = useState<any[]>([])
   const [prenom, setPrenom] = useState('')
   const [nom, setNom] = useState('')
@@ -42,4 +43,11 @@ export default function Contacts() {
       </div>
     </div>
   )
+}
+
+
+export default function ContactsPage() {
+  const { loading } = useAuth()
+  if (loading) return <div style={{fontFamily:"sans-serif",padding:"40px",color:"#9ca3af"}}>Chargement...</div>
+  return <Contacts />
 }

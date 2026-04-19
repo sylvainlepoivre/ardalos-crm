@@ -1,4 +1,6 @@
-export default function Home() {
+'use client'
+import { useAuth } from '@/lib/useAuth'
+function HomeContent() {
   return (
     <div style={{fontFamily:'sans-serif',minHeight:'100vh',background:'#F3F4F8',display:'flex',alignItems:'center',justifyContent:'center'}}>
       <div style={{textAlign:'center',maxWidth:'600px',padding:'40px'}}>
@@ -30,4 +32,11 @@ export default function Home() {
       </div>
     </div>
   )
+}
+
+
+export default function Home() {
+  const { loading } = useAuth()
+  if (loading) return <div style={{fontFamily:'sans-serif',padding:'40px',color:'#9ca3af'}}>Chargement...</div>
+  return <HomeContent />
 }

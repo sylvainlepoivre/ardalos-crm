@@ -1,10 +1,11 @@
 'use client'
+import { useAuth } from '@/lib/useAuth'
 import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
 const supabase = createClient('https://cvxzdiutxonnsnwoicqt.supabase.co','sb_publishable_J8ta-7L05zgK9rBy2OS9Bg_CjXHwZVK')
 const ETAPES = ['Nouveau lead','Qualification','Dossier en cours','Validation','Closing']
 const COLORS = ['#9ca3af','#1A2C6B','#C9A84C','#0891B2','#059669']
-export default function Deals() {
+function Deals() {
   const [deals, setDeals] = useState<any[]>([])
   const [nom, setNom] = useState('')
   const [valeur, setValeur] = useState('')
@@ -62,4 +63,11 @@ export default function Deals() {
       </div>
     </div>
   )
+}
+
+
+export default function DealsPage() {
+  const { loading } = useAuth()
+  if (loading) return <div style={{fontFamily:"sans-serif",padding:"40px",color:"#9ca3af"}}>Chargement...</div>
+  return <Deals />
 }

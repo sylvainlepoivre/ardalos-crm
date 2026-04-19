@@ -1,10 +1,11 @@
 'use client'
+import { useAuth } from '@/lib/useAuth'
 import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
 const supabase = createClient('https://cvxzdiutxonnsnwoicqt.supabase.co','sb_publishable_J8ta-7L05zgK9rBy2OS9Bg_CjXHwZVK')
 const PRIOS = ['Urgent','Haute','Normale','Basse']
 const COLORS: Record<string,string> = {'Urgent':'#ef4444','Haute':'#f97316','Normale':'#eab308','Basse':'#22c55e'}
-export default function Taches() {
+function Taches() {
   const [taches, setTaches] = useState<any[]>([])
   const [titre, setTitre] = useState('')
   const [prio, setPrio] = useState('Normale')
@@ -62,4 +63,11 @@ export default function Taches() {
       </div>
     </div>
   )
+}
+
+
+export default function TachesPage() {
+  const { loading } = useAuth()
+  if (loading) return <div style={{fontFamily:"sans-serif",padding:"40px",color:"#9ca3af"}}>Chargement...</div>
+  return <Taches />
 }
