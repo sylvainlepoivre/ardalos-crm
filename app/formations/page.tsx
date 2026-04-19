@@ -185,6 +185,9 @@ function FormationsContent() {
                 </div>}
                 {f.public_vise&&<div style={{fontSize:'11px',color:'#9ca3af'}}>Public : {f.public_vise}</div>}
               </div>
+              <div style={{padding:'8px 20px',borderTop:'1px solid #f3f4f6'}}>
+                <a href={`/sessions`} style={{fontSize:'12px',color:'#1A2C6B',textDecoration:'none',fontWeight:'500'}}>📅 Voir les sessions planifiees →</a>
+              </div>
               <div style={{display:'flex',gap:'8px',padding:'12px 20px',borderTop:'1px solid #f3f4f6',background:'#f9fafb'}}>
                 <button onClick={()=>edit(f)} style={{flex:1,background:'#fff',border:'1px solid #e5e7eb',borderRadius:'6px',padding:'6px',fontSize:'12px',cursor:'pointer',color:'#374151'}}>Modifier</button>
                 <button onClick={()=>del(f.id)} style={{background:'none',border:'none',color:'#ef4444',cursor:'pointer',fontSize:'12px',padding:'6px 10px'}}>Supprimer</button>
