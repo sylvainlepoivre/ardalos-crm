@@ -39,6 +39,16 @@ function HomeContent() {
             <div style={{fontSize:'15px',fontWeight:'600',color:'#1A2C6B'}}>Formations</div>
             <div style={{fontSize:'12px',color:'#9ca3af',marginTop:'4px'}}>Catalogue des formations</div>
           </a>
+          <a href="/formateurs" style={{background:'#fff',border:'1px solid #e5e7eb',borderRadius:'12px',padding:'24px',textDecoration:'none',display:'block'}}>
+            <div style={{fontSize:'28px',marginBottom:'8px'}}>👥</div>
+            <div style={{fontSize:'15px',fontWeight:'600',color:'#1A2C6B'}}>Formateurs</div>
+            <div style={{fontSize:'12px',color:'#9ca3af',marginTop:'4px'}}>Equipe pedagogique</div>
+          </a>
+          <a href="/inscriptions" style={{background:'#fff',border:'1px solid #e5e7eb',borderRadius:'12px',padding:'24px',textDecoration:'none',display:'block'}}>
+            <div style={{fontSize:'28px',marginBottom:'8px'}}>📝</div>
+            <div style={{fontSize:'15px',fontWeight:'600',color:'#1A2C6B'}}>Inscriptions</div>
+            <div style={{fontSize:'12px',color:'#9ca3af',marginTop:'4px'}}>Stagiaires & financements</div>
+          </a>
         </div>
         <a href="/crm.html" style={{background:'#1A2C6B',border:'1px solid #1A2C6B',borderRadius:'12px',padding:'20px',textDecoration:'none',display:'block'}}>
           <div style={{fontSize:'24px',marginBottom:'6px'}}>🚀</div>
