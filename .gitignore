@@ -44,3 +44,6 @@ next-env.d.ts
 # Fichiers de backup
 *.bak
 *.bak.*
+
+# Variables d'environnement locales (ne jamais committer)
+.env.local

@@ -98,11 +98,19 @@ function InscriptionsContent() {
   const [representantClient, setRepresentantClient] = useState('')
   const [fonctionRepresentantClient, setFonctionRepresentantClient] = useState('')
 
+  // Dossier modal
   const [dossierIns, setDossierIns] = useState<Inscription | null>(null)
   const [selectedTpls, setSelectedTpls] = useState<Set<string>>(new Set(ALL_TEMPLATE_FILENAMES))
   const [generatingDossier, setGeneratingDossier] = useState(false)
 
-  // ==== NEW : Modale création contact ====
+  // ==== NEW P4 : envoi email ====
+  const [emailMode, setEmailMode] = useState(false) // false = download, true = envoyer par email
+  const [emailTo, setEmailTo] = useState('')
+  const [emailSubject, setEmailSubject] = useState('')
+  const [emailMessage, setEmailMessage] = useState('')
+  const [sendingEmail, setSendingEmail] = useState(false)
+
+  // Modale creation contact
   const [showNewContactModal, setShowNewContactModal] = useState(false)
   const [newContactPrenom, setNewContactPrenom] = useState('')
   const [newContactNom, setNewContactNom] = useState('')
@@ -235,7 +243,7 @@ function InscriptionsContent() {
     await loadAll()
   }
 
-  // ==== NEW : Création rapide de contact ====
+  // Creation rapide contact
   function openNewContactModal() {
     setNewContactPrenom(''); setNewContactNom('')
     setNewContactEmail(''); setNewContactTelephone('')
@@ -267,10 +275,31 @@ function InscriptionsContent() {
 
   const currentContact = contacts.find(c => c.id === contactId)
 
+  // Dossier modal — ouverture
   function openDossierModal(ins: Inscription) {
-    setDossierIns(ins); setSelectedTpls(new Set(ALL_TEMPLATE_FILENAMES))
+    setDossierIns(ins)
+    setSelectedTpls(new Set(ALL_TEMPLATE_FILENAMES))
+    setEmailMode(false)
+    // Pre-remplissage email
+    const emailDest = ins.contacts?.email || ''
+    const nomStagiaire = `${ins.contacts?.prenom || ''} ${ins.contacts?.nom || ''}`.trim() || 'Stagiaire'
+    const titreFormation = ins.formation_sessions?.formations?.titre || 'Formation'
+    setEmailTo(emailDest)
+    setEmailSubject(`[Ardalos Formation] Votre dossier - ${titreFormation}`)
+    setEmailMessage(
+      `Bonjour ${nomStagiaire},\n\n` +
+      `Veuillez trouver ci-joint votre dossier complet concernant la formation "${titreFormation}".\n\n` +
+      `Ce dossier contient les documents Qualiopi / AFDAS necessaires à votre inscription.\n` +
+      `Merci de prendre connaissance de l'ensemble des pieces et de nous retourner les documents signes dans les meilleurs delais.\n\n` +
+      `Pour toute question, n'hesitez pas a nous contacter.\n\n` +
+      `Cordialement,\n` +
+      `L'equipe Ardalos Formation`
+    )
   }
-  function closeDossierModal() { if (!generatingDossier) setDossierIns(null) }
+  function closeDossierModal() {
+    if (generatingDossier || sendingEmail) return
+    setDossierIns(null); setEmailMode(false)
+  }
   function toggleTpl(fn: string) {
     const next = new Set(selectedTpls)
     if (next.has(fn)) next.delete(fn); else next.add(fn)
@@ -279,7 +308,7 @@ function InscriptionsContent() {
   function selectAllTpls() { setSelectedTpls(new Set(ALL_TEMPLATE_FILENAMES)) }
   function deselectAllTpls() { setSelectedTpls(new Set()) }
 
-  async function runDossierGeneration() {
+  async function runDossierDownload() {
     if (!dossierIns || selectedTpls.size === 0) return
     setGeneratingDossier(true)
     try {
@@ -302,10 +331,47 @@ function InscriptionsContent() {
       a.download = m ? m[1] : 'dossier.zip'
       document.body.appendChild(a); a.click(); a.remove()
       URL.revokeObjectURL(url)
-      setGeneratingDossier(false); setDossierIns(null)
+      setGeneratingDossier(false); setDossierIns(null); setEmailMode(false)
     } catch (e: any) {
       alert('Erreur : ' + (e?.message || 'inconnue'))
       setGeneratingDossier(false)
+    }
+  }
+
+  async function runDossierEmail() {
+    if (!dossierIns || selectedTpls.size === 0) return
+    if (!emailTo || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTo)) {
+      alert('Email destinataire invalide'); return
+    }
+    if (!emailSubject.trim()) { alert('Objet requis'); return }
+    if (!emailMessage.trim()) { alert('Message requis'); return }
+
+    setSendingEmail(true)
+    try {
+      const res = await fetch('/api/send-dossier-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          inscriptionId: dossierIns.id,
+          templates: Array.from(selectedTpls),
+          to: emailTo,
+          subject: emailSubject,
+          message: emailMessage,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.success) {
+        alert('Erreur envoi email : ' + (data.error || 'inconnue'))
+        setSendingEmail(false); return
+      }
+      alert(`✅ Email envoyé !\n\nDestinataire : ${data.to}\nEn CC : ${(data.cc || []).join(', ')}\nFichier : ${data.filename}`)
+      setSendingEmail(false)
+      setDossierIns(null)
+      setEmailMode(false)
+    } catch (e: any) {
+      alert('Erreur : ' + (e?.message || 'inconnue'))
+      setSendingEmail(false)
     }
   }
 
@@ -313,6 +379,7 @@ function InscriptionsContent() {
   const totalFinancement = financements.reduce((sum, f) => sum + (Number(f.montant_ht) || 0), 0)
   const montantNum = parseFloat(montantTotal) || 0
   const resteACharge = montantNum - totalFinancement
+  const isBusy = generatingDossier || sendingEmail
 
   return (
     <div style={{ fontFamily: 'sans-serif', padding: '40px', maxWidth: '1400px', margin: '0 auto' }}>
@@ -349,11 +416,7 @@ function InscriptionsContent() {
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                 <label style={{ ...labelStyle, marginBottom: 0 }}>Stagiaire *</label>
-                <button
-                  type="button"
-                  onClick={openNewContactModal}
-                  style={{ background: 'transparent', color: '#C9A84C', border: 'none', fontSize: '11px', fontWeight: 500, cursor: 'pointer', padding: 0 }}
-                >
+                <button type="button" onClick={openNewContactModal} style={{ background: 'transparent', color: '#C9A84C', border: 'none', fontSize: '11px', fontWeight: 500, cursor: 'pointer', padding: 0 }}>
                   + Nouveau contact
                 </button>
               </div>
@@ -397,39 +460,22 @@ function InscriptionsContent() {
               <strong style={{ color: '#1A2C6B', fontSize: '14px' }}>
                 {showStagiaireDetails ? '▼' : '▶'} 📋 Infos stagiaire (pour les documents)
               </strong>
-              <span style={{ fontSize: '11px', color: '#9ca3af' }}>
-                {showStagiaireDetails ? 'Replier' : 'Déplier'}
-              </span>
+              <span style={{ fontSize: '11px', color: '#9ca3af' }}>{showStagiaireDetails ? 'Replier' : 'Déplier'}</span>
             </div>
             {showStagiaireDetails && (
               <div style={{ marginTop: '12px' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-                  <div>
-                    <label style={labelStyle}>Date de naissance</label>
-                    <input type="date" value={dateNaissance} onChange={e => setDateNaissance(e.target.value)} style={inputStyle} />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Lieu de naissance</label>
-                    <input type="text" value={lieuNaissance} onChange={e => setLieuNaissance(e.target.value)} placeholder="ex: Marseille (13)" style={inputStyle} />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Nationalité</label>
-                    <input type="text" value={nationalite} onChange={e => setNationalite(e.target.value)} style={inputStyle} />
-                  </div>
+                  <div><label style={labelStyle}>Date de naissance</label><input type="date" value={dateNaissance} onChange={e => setDateNaissance(e.target.value)} style={inputStyle} /></div>
+                  <div><label style={labelStyle}>Lieu de naissance</label><input type="text" value={lieuNaissance} onChange={e => setLieuNaissance(e.target.value)} placeholder="ex: Marseille (13)" style={inputStyle} /></div>
+                  <div><label style={labelStyle}>Nationalité</label><input type="text" value={nationalite} onChange={e => setNationalite(e.target.value)} style={inputStyle} /></div>
                 </div>
                 <div style={{ marginBottom: '12px' }}>
                   <label style={labelStyle}>Adresse (rue et n°)</label>
                   <input type="text" value={adresseRue} onChange={e => setAdresseRue(e.target.value)} placeholder="ex: 12 rue des Lilas" style={inputStyle} />
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '12px' }}>
-                  <div>
-                    <label style={labelStyle}>Code postal</label>
-                    <input type="text" value={adresseCp} onChange={e => setAdresseCp(e.target.value)} placeholder="ex: 13500" style={inputStyle} />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Ville</label>
-                    <input type="text" value={adresseVille} onChange={e => setAdresseVille(e.target.value)} placeholder="ex: Martigues" style={inputStyle} />
-                  </div>
+                  <div><label style={labelStyle}>Code postal</label><input type="text" value={adresseCp} onChange={e => setAdresseCp(e.target.value)} placeholder="ex: 13500" style={inputStyle} /></div>
+                  <div><label style={labelStyle}>Ville</label><input type="text" value={adresseVille} onChange={e => setAdresseVille(e.target.value)} placeholder="ex: Martigues" style={inputStyle} /></div>
                 </div>
               </div>
             )}
@@ -443,34 +489,16 @@ function InscriptionsContent() {
             {hasClient && (
               <div style={{ marginTop: '14px' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '12px', marginBottom: '12px' }}>
-                  <div>
-                    <label style={labelStyle}>Raison sociale</label>
-                    <input type="text" value={raisonSocialeClient} onChange={e => setRaisonSocialeClient(e.target.value)} placeholder="ex: ACME SARL" style={inputStyle} />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Forme juridique</label>
-                    <input type="text" value={formeJuridiqueClient} onChange={e => setFormeJuridiqueClient(e.target.value)} placeholder="ex: SARL, SAS…" style={inputStyle} />
-                  </div>
+                  <div><label style={labelStyle}>Raison sociale</label><input type="text" value={raisonSocialeClient} onChange={e => setRaisonSocialeClient(e.target.value)} placeholder="ex: ACME SARL" style={inputStyle} /></div>
+                  <div><label style={labelStyle}>Forme juridique</label><input type="text" value={formeJuridiqueClient} onChange={e => setFormeJuridiqueClient(e.target.value)} placeholder="ex: SARL, SAS…" style={inputStyle} /></div>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '12px', marginBottom: '12px' }}>
-                  <div>
-                    <label style={labelStyle}>Adresse complète</label>
-                    <input type="text" value={adresseClient} onChange={e => setAdresseClient(e.target.value)} placeholder="ex: 5 av. de la République, 13000 Marseille" style={inputStyle} />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>SIRET</label>
-                    <input type="text" value={siretClient} onChange={e => setSiretClient(e.target.value)} placeholder="14 chiffres" style={inputStyle} />
-                  </div>
+                  <div><label style={labelStyle}>Adresse complète</label><input type="text" value={adresseClient} onChange={e => setAdresseClient(e.target.value)} placeholder="ex: 5 av. de la République, 13000 Marseille" style={inputStyle} /></div>
+                  <div><label style={labelStyle}>SIRET</label><input type="text" value={siretClient} onChange={e => setSiretClient(e.target.value)} placeholder="14 chiffres" style={inputStyle} /></div>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                  <div>
-                    <label style={labelStyle}>Nom du représentant</label>
-                    <input type="text" value={representantClient} onChange={e => setRepresentantClient(e.target.value)} placeholder="ex: Mme Jeanne Dupont" style={inputStyle} />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Fonction du représentant</label>
-                    <input type="text" value={fonctionRepresentantClient} onChange={e => setFonctionRepresentantClient(e.target.value)} placeholder="ex: Directrice RH" style={inputStyle} />
-                  </div>
+                  <div><label style={labelStyle}>Nom du représentant</label><input type="text" value={representantClient} onChange={e => setRepresentantClient(e.target.value)} placeholder="ex: Mme Jeanne Dupont" style={inputStyle} /></div>
+                  <div><label style={labelStyle}>Fonction du représentant</label><input type="text" value={fonctionRepresentantClient} onChange={e => setFonctionRepresentantClient(e.target.value)} placeholder="ex: Directrice RH" style={inputStyle} /></div>
                 </div>
               </div>
             )}
@@ -561,55 +589,108 @@ function InscriptionsContent() {
         </div>
       )}
 
+      {/* DOSSIER MODAL (avec deux modes : Télécharger OU Envoyer par email) */}
       {dossierIns && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={closeDossierModal}>
-          <div style={{ background: '#fff', borderRadius: '12px', padding: '24px', maxWidth: '560px', width: '92%', maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 10px 40px rgba(0,0,0,0.2)' }} onClick={e => e.stopPropagation()}>
-            <h2 style={{ color: '#1A2C6B', fontSize: '1.2rem', margin: 0, marginBottom: '4px' }}>📥 Générer le dossier</h2>
+          <div style={{ background: '#fff', borderRadius: '12px', padding: '24px', maxWidth: '620px', width: '92%', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 10px 40px rgba(0,0,0,0.2)' }} onClick={e => e.stopPropagation()}>
+            <h2 style={{ color: '#1A2C6B', fontSize: '1.2rem', margin: 0, marginBottom: '4px' }}>📥 Dossier Qualiopi / AFDAS</h2>
             <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '16px', marginTop: 0 }}>
               {dossierIns.contacts?.prenom} {dossierIns.contacts?.nom}
               {dossierIns.formation_sessions?.formations?.titre ? ` · ${dossierIns.formation_sessions.formations.titre}` : ''}
             </p>
+
+            {/* Onglets : Télécharger / Envoyer par email */}
+            <div style={{ display: 'flex', gap: '4px', marginBottom: '16px', borderBottom: '1px solid #e5e7eb' }}>
+              <button
+                onClick={() => setEmailMode(false)}
+                disabled={isBusy}
+                style={{
+                  background: 'transparent', border: 'none',
+                  padding: '8px 16px', fontSize: '13px', cursor: isBusy ? 'not-allowed' : 'pointer',
+                  borderBottom: !emailMode ? '2px solid #1A2C6B' : '2px solid transparent',
+                  color: !emailMode ? '#1A2C6B' : '#9ca3af',
+                  fontWeight: !emailMode ? 600 : 400,
+                }}
+              >📥 Télécharger</button>
+              <button
+                onClick={() => setEmailMode(true)}
+                disabled={isBusy}
+                style={{
+                  background: 'transparent', border: 'none',
+                  padding: '8px 16px', fontSize: '13px', cursor: isBusy ? 'not-allowed' : 'pointer',
+                  borderBottom: emailMode ? '2px solid #1A2C6B' : '2px solid transparent',
+                  color: emailMode ? '#1A2C6B' : '#9ca3af',
+                  fontWeight: emailMode ? 600 : 400,
+                }}
+              >✉️ Envoyer par email</button>
+            </div>
+
+            {/* Cases à cocher (communes aux 2 modes) */}
             <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', alignItems: 'center' }}>
               <button onClick={selectAllTpls} style={{ background: '#fff', color: '#1A2C6B', border: '1px solid #1A2C6B', borderRadius: '6px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>Tout cocher</button>
               <button onClick={deselectAllTpls} style={{ background: '#fff', color: '#6b7280', border: '1px solid #d1d5db', borderRadius: '6px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>Tout décocher</button>
               <span style={{ marginLeft: 'auto', fontSize: '12px', color: '#6b7280' }}>{selectedTpls.size} / {ALL_TEMPLATE_FILENAMES.length} sélectionnés</span>
             </div>
-            <div style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '6px', marginBottom: '16px' }}>
+            <div style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '6px', marginBottom: '16px', maxHeight: '220px', overflowY: 'auto' }}>
               {TEMPLATE_LIST.map(tpl => {
                 const checked = selectedTpls.has(tpl.filename)
                 return (
-                  <label key={tpl.filename} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px', borderRadius: '6px', cursor: 'pointer', background: checked ? '#f9fafb' : 'transparent' }}>
+                  <label key={tpl.filename} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', background: checked ? '#f9fafb' : 'transparent' }}>
                     <input type="checkbox" checked={checked} onChange={() => toggleTpl(tpl.filename)} style={{ cursor: 'pointer', accentColor: '#1A2C6B', width: '16px', height: '16px' }} />
                     <span style={{ fontSize: '13px', color: '#1A2C6B' }}>{tpl.label}</span>
                   </label>
                 )
               })}
             </div>
+
+            {/* Mode EMAIL : champs supplémentaires */}
+            {emailMode && (
+              <div style={{ background: '#f9fafb', padding: '14px', borderRadius: '8px', marginBottom: '16px', border: '1px solid #e5e7eb' }}>
+                <div style={{ marginBottom: '10px' }}>
+                  <label style={labelStyle}>Destinataire (stagiaire) *</label>
+                  <input type="email" value={emailTo} onChange={e => setEmailTo(e.target.value)} placeholder="stagiaire@exemple.fr" style={inputStyle} />
+                </div>
+                <div style={{ fontSize: '11px', color: '#6b7280', marginBottom: '10px' }}>
+                  📧 Expéditeur : <strong>ardalosformation@gmail.com</strong><br />
+                  📋 CC automatique : David, Julien, Sylvain
+                </div>
+                <div style={{ marginBottom: '10px' }}>
+                  <label style={labelStyle}>Objet *</label>
+                  <input type="text" value={emailSubject} onChange={e => setEmailSubject(e.target.value)} style={inputStyle} />
+                </div>
+                <div>
+                  <label style={labelStyle}>Message *</label>
+                  <textarea value={emailMessage} onChange={e => setEmailMessage(e.target.value)} rows={8} style={{ ...inputStyle, fontFamily: 'inherit' }} />
+                </div>
+              </div>
+            )}
+
+            {/* Boutons d'action */}
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-              <button onClick={closeDossierModal} disabled={generatingDossier} style={{ background: '#fff', color: '#6b7280', border: '1px solid #d1d5db', borderRadius: '8px', padding: '10px 20px', cursor: generatingDossier ? 'not-allowed' : 'pointer', opacity: generatingDossier ? 0.5 : 1 }}>Annuler</button>
-              <button onClick={runDossierGeneration} disabled={generatingDossier || selectedTpls.size === 0} style={{ background: (generatingDossier || selectedTpls.size === 0) ? '#9ca3af' : '#C9A84C', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 20px', fontWeight: 500, cursor: (generatingDossier || selectedTpls.size === 0) ? 'not-allowed' : 'pointer' }}>
-                {generatingDossier ? 'Génération…' : `📥 Générer (${selectedTpls.size})`}
-              </button>
+              <button onClick={closeDossierModal} disabled={isBusy} style={{ background: '#fff', color: '#6b7280', border: '1px solid #d1d5db', borderRadius: '8px', padding: '10px 20px', cursor: isBusy ? 'not-allowed' : 'pointer', opacity: isBusy ? 0.5 : 1 }}>Annuler</button>
+              {!emailMode ? (
+                <button onClick={runDossierDownload} disabled={isBusy || selectedTpls.size === 0} style={{ background: (isBusy || selectedTpls.size === 0) ? '#9ca3af' : '#C9A84C', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 20px', fontWeight: 500, cursor: (isBusy || selectedTpls.size === 0) ? 'not-allowed' : 'pointer' }}>
+                  {generatingDossier ? 'Génération…' : `📥 Télécharger (${selectedTpls.size})`}
+                </button>
+              ) : (
+                <button onClick={runDossierEmail} disabled={isBusy || selectedTpls.size === 0} style={{ background: (isBusy || selectedTpls.size === 0) ? '#9ca3af' : '#1A2C6B', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 20px', fontWeight: 500, cursor: (isBusy || selectedTpls.size === 0) ? 'not-allowed' : 'pointer' }}>
+                  {sendingEmail ? 'Envoi en cours…' : `✉️ Envoyer (${selectedTpls.size})`}
+                </button>
+              )}
             </div>
           </div>
         </div>
       )}
 
+      {/* NEW CONTACT MODAL */}
       {showNewContactModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100 }} onClick={closeNewContactModal}>
           <div style={{ background: '#fff', borderRadius: '12px', padding: '24px', maxWidth: '460px', width: '92%', boxShadow: '0 10px 40px rgba(0,0,0,0.2)' }} onClick={e => e.stopPropagation()}>
             <h2 style={{ color: '#1A2C6B', fontSize: '1.2rem', margin: 0, marginBottom: '4px' }}>+ Nouveau contact</h2>
             <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '16px', marginTop: 0 }}>Crée une nouvelle fiche contact. Elle sera automatiquement sélectionnée dans le formulaire.</p>
-
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-              <div>
-                <label style={labelStyle}>Prénom *</label>
-                <input type="text" value={newContactPrenom} onChange={e => setNewContactPrenom(e.target.value)} style={inputStyle} autoFocus />
-              </div>
-              <div>
-                <label style={labelStyle}>Nom *</label>
-                <input type="text" value={newContactNom} onChange={e => setNewContactNom(e.target.value)} style={inputStyle} />
-              </div>
+              <div><label style={labelStyle}>Prénom *</label><input type="text" value={newContactPrenom} onChange={e => setNewContactPrenom(e.target.value)} style={inputStyle} autoFocus /></div>
+              <div><label style={labelStyle}>Nom *</label><input type="text" value={newContactNom} onChange={e => setNewContactNom(e.target.value)} style={inputStyle} /></div>
             </div>
             <div style={{ marginBottom: '12px' }}>
               <label style={labelStyle}>Email</label>
@@ -619,7 +700,6 @@ function InscriptionsContent() {
               <label style={labelStyle}>Téléphone</label>
               <input type="tel" value={newContactTelephone} onChange={e => setNewContactTelephone(e.target.value)} placeholder="ex: 06 12 34 56 78" style={inputStyle} />
             </div>
-
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
               <button onClick={closeNewContactModal} disabled={creatingContact} style={{ background: '#fff', color: '#6b7280', border: '1px solid #d1d5db', borderRadius: '8px', padding: '10px 20px', cursor: creatingContact ? 'not-allowed' : 'pointer', opacity: creatingContact ? 0.5 : 1 }}>Annuler</button>
               <button onClick={createNewContact} disabled={creatingContact || !newContactPrenom.trim() || !newContactNom.trim()} style={{ background: (creatingContact || !newContactPrenom.trim() || !newContactNom.trim()) ? '#9ca3af' : '#1A2C6B', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 20px', fontWeight: 500, cursor: (creatingContact || !newContactPrenom.trim() || !newContactNom.trim()) ? 'not-allowed' : 'pointer' }}>
