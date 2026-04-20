@@ -13,7 +13,7 @@ import PizZip from 'pizzip'
 import JSZip from 'jszip'
 import { createClient } from '@supabase/supabase-js'
 import { ALL_TEMPLATE_FILENAMES } from './templatesList'
-import { convertDocxsToSinglePdf } from './generatePdf'
+import { convertDocxsToSinglePdf } from './generatePdfCloudmersive'
 
 const supabaseUrl = 'https://cvxzdiutxonnsnwoicqt.supabase.co'
 const supabaseKey = 'sb_publishable_J8ta-7L05zgK9rBy2OS9Bg_CjXHwZVK'
