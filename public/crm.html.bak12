@@ -1023,83 +1023,77 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
 <!-- ▶ QUALIOPI ──────────────────────────── -->
 <div id="page-qualiopi" class="page">
   <div class="page-hdr">
-    <div class="page-hdr-left">
-      <h1 class="page-title">Qualiopi</h1>
-      <p class="page-sub" id="qualiopi-subtitle">Chargement des indicateurs...</p>
-    </div>
-    <div class="page-hdr-right">
-      <button class="btn-s" onclick="window.ardalosQualiopiExport && window.ardalosQualiopiExport()">↓ Export CSV</button>
-      <button class="btn-p" onclick="window.ardalosQualiopiRefresh && window.ardalosQualiopiRefresh()">↻ Actualiser</button>
-    </div>
+    <div class="page-hdr-left"><h1 class="page-title">Qualiopi</h1><p class="page-sub">32 indicateurs · Audit prévu 14/09/2026 · Score 94%</p></div>
+    <div class="page-hdr-right"><button class="btn-s">↓ Rapport complet</button><button class="btn-p">Revue annuelle</button></div>
   </div>
-
-  <!-- KPI global -->
-  <div class="kpi-grid g4 anim-kpi">
-    <div class="kpi green">
-      <div class="kpi-label">Score Qualiopi</div>
-      <div class="kpi-value" id="qualiopi-score">...</div>
-      <div class="kpi-sub" id="qualiopi-score-sub">Chargement...</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-label">Conformes</div>
-      <div class="kpi-value" id="qualiopi-nb-conformes">...</div>
-      <div class="kpi-sub">sur 32 indicateurs</div>
-    </div>
-    <div class="kpi red">
-      <div class="kpi-label">Non-conformites</div>
-      <div class="kpi-value" id="qualiopi-nb-nc">...</div>
-      <div class="kpi-sub" id="qualiopi-nb-nc-sub">...</div>
-    </div>
-    <div class="kpi gold">
-      <div class="kpi-label">A auditer</div>
-      <div class="kpi-value" id="qualiopi-nb-todo">...</div>
-      <div class="kpi-sub">en attente verif</div>
-    </div>
+  <div class="kpi-grid anim-kpi">
+    <div class="kpi green"><div class="kpi-label">Conformes</div><div class="kpi-value text-green">28</div><div class="kpi-sub">sur 32 indicateurs</div></div>
+    <div class="kpi"><div class="kpi-label">Alertes mineures</div><div class="kpi-value" style="color:var(--amber)">3</div><div class="kpi-sub">actions en cours</div></div>
+    <div class="kpi red"><div class="kpi-label">Non conformes</div><div class="kpi-value text-red">1</div><div class="kpi-sub">plan correctif actif</div></div>
+    <div class="kpi gold"><div class="kpi-label">Prochain audit</div><div class="kpi-value" style="font-size:16px;margin-top:4px">14/09/26</div><div class="kpi-sub">dans 148 jours</div></div>
   </div>
-
-  <!-- Conteneur des 7 criteres -->
-  <div id="qualiopi-container" style="margin-top:16px">
-    <div style="padding:40px;text-align:center;color:#9ca3af;font-style:italic">Chargement des 32 indicateurs...</div>
-  </div>
-</div>
-
-<!-- Modale edition indicateur -->
-<div class="modal-ov" id="modal-qualiopi-edit">
-  <div class="modal" style="max-width:640px">
-    <div class="modal-h">
-      <span class="modal-title" id="qualiopi-modal-title">Indicateur</span>
-      <button class="modal-close" onclick="closeModal('qualiopi-edit')">✕</button>
+  <div class="g2">
+    <div class="card">
+      <div class="card-h"><span class="card-title">Critère 1 — Information du public</span><span class="badge b-green">2/2 OK</span></div>
+      <div class="card-b">
+        <div class="qi-row"><div class="qi-num qi-ok">1</div><div class="qi-lbl">Information accessible et vérifiable sur les prestations</div><span class="badge b-green">Conforme</span></div>
+        <div class="qi-row"><div class="qi-num qi-ok">2</div><div class="qi-lbl">Indicateurs de résultats et conditions d'accueil diffusés</div><span class="badge b-green">Conforme</span></div>
+        <div class="qi-row"><div class="qi-num qi-ok">3</div><div class="qi-lbl">Information sur accessibilité handicap</div><span class="badge b-green">Conforme</span></div>
+      </div>
     </div>
-    <div class="modal-b">
-      <div id="qualiopi-modal-libelle" style="font-size:13px;color:#475569;line-height:1.5;padding:10px;background:#f1f5f9;border-radius:8px;margin-bottom:14px"></div>
-      <div class="fg">
-        <label class="flabel">Statut <span class="req">*</span></label>
-        <select class="fselect" id="qualiopi-edit-statut">
-          <option value="non_audite">🕓 Non audite</option>
-          <option value="conforme">✅ Conforme</option>
-          <option value="nc_mineure">⚠️ Non-conformite mineure</option>
-          <option value="nc_majeure">🔴 Non-conformite majeure</option>
-          <option value="non_applicable">➖ Non applicable</option>
-        </select>
-        <div id="qualiopi-edit-ponderable-info" style="display:none;font-size:11px;color:#78350F;margin-top:4px">ℹ️ Cet indicateur peut etre pondere (NC mineure ou NC majeure)</div>
+    <div class="card">
+      <div class="card-h"><span class="card-title">Critère 2 — Objectifs & Conception</span><span class="badge b-green">5/5 OK</span></div>
+      <div class="card-b">
+        <div class="qi-row"><div class="qi-num qi-ok">4</div><div class="qi-lbl">Analyse du besoin bénéficiaire réalisée</div><span class="badge b-green">Conforme</span></div>
+        <div class="qi-row"><div class="qi-num qi-ok">5</div><div class="qi-lbl">Objectifs opérationnels et évaluables définis</div><span class="badge b-green">Conforme</span></div>
+        <div class="qi-row"><div class="qi-num qi-ok">6</div><div class="qi-lbl">Contenus et modalités adaptés aux objectifs</div><span class="badge b-green">Conforme</span></div>
+        <div class="qi-row"><div class="qi-num qi-ok">7</div><div class="qi-lbl">Mobilisation des expertises nécessaires</div><span class="badge b-green">Conforme</span></div>
+        <div class="qi-row"><div class="qi-num qi-ok">8</div><div class="qi-lbl">Positionnement à l'entrée et identification prérequis</div><span class="badge b-green">Conforme</span></div>
       </div>
-      <div class="fg">
-        <label class="flabel">Verifie par</label>
-        <input type="text" class="finput" id="qualiopi-edit-verifie-par" placeholder="Nom du responsable interne">
+    </div>
+    <div class="card">
+      <div class="card-h"><span class="card-title">Critère 3 — Adaptation au public</span><span class="badge b-amber">7/8 OK</span></div>
+      <div class="card-b">
+        <div class="qi-row"><div class="qi-num qi-ok">9</div><div class="qi-lbl">Conditions de déroulement communiquées</div><span class="badge b-green">Conforme</span></div>
+        <div class="qi-row"><div class="qi-num qi-ok">10</div><div class="qi-lbl">Prestation adaptée aux bénéficiaires</div><span class="badge b-green">Conforme</span></div>
+        <div class="qi-row"><div class="qi-num qi-ok">11</div><div class="qi-lbl">Atteinte des objectifs vérifiée en cours et fin</div><span class="badge b-green">Conforme</span></div>
+        <div class="qi-row"><div class="qi-num qi-warn">12</div><div class="qi-lbl">Mesures pour prévenir les ruptures de parcours</div><span class="badge b-amber">Partiel</span></div>
+        <div class="qi-row"><div class="qi-num qi-ok">13</div><div class="qi-lbl">Suivi et accompagnement des bénéficiaires</div><span class="badge b-green">Conforme</span></div>
       </div>
-      <div class="fg">
-        <label class="flabel">Notes / Elements de preuve</label>
-        <textarea class="finput" id="qualiopi-edit-notes" rows="3" placeholder="Commentaires, plan d'action, remarques auditeur..."></textarea>
+    </div>
+    <div class="card">
+      <div class="card-h"><span class="card-title">Critère 6 — Environnement professionnel</span><span class="badge b-red">1 non-conforme</span></div>
+      <div class="card-b">
+        <div class="qi-row"><div class="qi-num qi-ok">23</div><div class="qi-lbl">Veille légale et réglementaire</div><span class="badge b-green">Conforme</span></div>
+        <div class="qi-row"><div class="qi-num qi-ok">24</div><div class="qi-lbl">Veille évolutions secteur et compétences</div><span class="badge b-green">Conforme</span></div>
+        <div class="qi-row"><div class="qi-num qi-warn">25</div><div class="qi-lbl">Veille innovations pédagogiques</div><span class="badge b-amber">Partiel</span></div>
+        <div class="qi-row"><div class="qi-num qi-ok">26</div><div class="qi-lbl">Amélioration continue mise en œuvre</div><span class="badge b-green">Conforme</span></div>
+        <div class="qi-row"><div class="qi-num qi-ko">27</div><div class="qi-lbl">Conformité des sous-traitants vérifiée</div><span class="badge b-red">Non conforme</span></div>
       </div>
-      <div class="fg">
-        <label class="flabel">Liens vers preuves (URL, chemins documents)</label>
-        <textarea class="finput" id="qualiopi-edit-preuves" rows="2" placeholder="https://drive.google.com/... ou nom des fichiers"></textarea>
+      <div class="card-f">
+        <div style="flex:1;font-size:11px;color:var(--red);font-weight:500">⚠ Plan correctif actif : grille contrôle sous-traitants à créer</div>
+        <button class="btn-s" style="font-size:11px" onclick="navigate('documents')">Créer document →</button>
       </div>
-      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
-        <button class="btn-s" onclick="closeModal('qualiopi-edit')">Annuler</button>
-        <button class="btn-p" id="qualiopi-edit-save" onclick="window.ardalosQualiopiSave()">Enregistrer</button>
+    </div>
+    <div class="card">
+      <div class="card-h"><span class="card-title">Critère 7 — Appréciations & Réclamations</span><span class="badge b-green">3/3 OK</span></div>
+      <div class="card-b">
+        <div class="qi-row"><div class="qi-num qi-ok">30</div><div class="qi-lbl">Appréciations des parties prenantes recueillies</div><span class="badge b-green">Conforme</span></div>
+        <div class="qi-row"><div class="qi-num qi-ok">31</div><div class="qi-lbl">Réclamations traitées et documentées</div><span class="badge b-green">Conforme</span></div>
+        <div class="qi-row"><div class="qi-num qi-ok">32</div><div class="qi-lbl">Mesures d'amélioration mises en œuvre</div><span class="badge b-green">Conforme</span></div>
       </div>
-      <div id="qualiopi-edit-error" style="margin-top:10px;color:#dc2626;font-size:12px;display:none"></div>
+    </div>
+    <div class="card" style="background:var(--ard-blue);border-color:var(--ard-blue)">
+      <div class="card-h" style="border-color:rgba(255,255,255,.1)"><span class="card-title" style="color:#fff">Score global Qualiopi</span></div>
+      <div class="card-b" style="text-align:center;padding:24px">
+        <div style="font-size:64px;font-weight:700;color:#fff;font-family:'Playfair Display',serif;line-height:1">94%</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.6);margin-top:6px">28/32 indicateurs conformes</div>
+        <div style="margin:16px 0"><div class="prog" style="background:rgba(255,255,255,.2);height:8px"><div class="prog-fill" style="width:94%;background:var(--ard-gold)"></div></div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px">
+          <div style="background:rgba(255,255,255,.08);border-radius:var(--r8);padding:10px"><div style="font-size:10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em">Alertes</div><div style="font-size:22px;font-weight:600;color:var(--ard-gold)">3</div></div>
+          <div style="background:rgba(255,255,255,.08);border-radius:var(--r8);padding:10px"><div style="font-size:10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em">Non-conf.</div><div style="font-size:22px;font-weight:600;color:var(--red)">1</div></div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -4444,236 +4438,6 @@ document.getElementById('global-search').addEventListener('keyup', function(e) {
     document.addEventListener('DOMContentLoaded', loadAfdas);
   } else {
     loadAfdas();
-  }
-})();
-</script>
-
-
-<!-- === CONNEXION SUPABASE QUALIOPI (32 indicateurs) === -->
-<script>
-(function() {
-  var SUPABASE_URL = 'https://cvxzdiutxonnsnwoicqt.supabase.co';
-  var SUPABASE_KEY = 'sb_publishable_J8ta-7L05zgK9rBy2OS9Bg_CjXHwZVK';
-  if (typeof window.supabase === 'undefined' || !window.supabase.createClient) return;
-  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-  var allIndicateurs = [];     // Cache des 32 indicateurs
-  var currentEditId = null;    // Id de l'indicateur en cours d'edition
-
-  function escapeHtml(s) {
-    if (s === null || s === undefined) return '';
-    return String(s).replace(/[&<>"']/g, function(c) {
-      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
-    });
-  }
-
-  function fmtDate(s) {
-    if (!s) return '—';
-    return new Date(s).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
-  }
-
-  function statutInfo(s) {
-    switch(s) {
-      case 'conforme': return { label: 'Conforme', icon: '✅', cls: 'b-green', color: '#059669' };
-      case 'nc_mineure': return { label: 'NC mineure', icon: '⚠️', cls: 'b-amber', color: '#d97706' };
-      case 'nc_majeure': return { label: 'NC majeure', icon: '🔴', cls: 'b-red', color: '#dc2626' };
-      case 'non_applicable': return { label: 'Non applicable', icon: '➖', cls: 'b-gray', color: '#6b7280' };
-      default: return { label: 'Non audite', icon: '🕓', cls: 'b-gray', color: '#9ca3af' };
-    }
-  }
-
-  async function loadQualiopi() {
-    try {
-      var r = await sb.from('qualiopi_indicateurs').select('*').order('numero', { ascending: true });
-      if (r.error) throw r.error;
-      allIndicateurs = r.data || [];
-
-      // Stats
-      var total = allIndicateurs.length;
-      var nbConformes = 0, nbNC_min = 0, nbNC_maj = 0, nbNonAudite = 0, nbNA = 0;
-      allIndicateurs.forEach(function(i) {
-        if (i.statut === 'conforme') nbConformes++;
-        else if (i.statut === 'nc_mineure') nbNC_min++;
-        else if (i.statut === 'nc_majeure') nbNC_maj++;
-        else if (i.statut === 'non_applicable') nbNA++;
-        else nbNonAudite++;
-      });
-      var totalAuditable = total - nbNA;
-      var score = totalAuditable > 0 ? Math.round((nbConformes / totalAuditable) * 100) : 0;
-
-      // KPI
-      var el = function(id) { return document.getElementById(id); };
-      if (el('qualiopi-score')) {
-        el('qualiopi-score').textContent = score + '%';
-        el('qualiopi-score-sub').textContent = nbConformes + '/' + totalAuditable + ' auditables';
-      }
-      if (el('qualiopi-nb-conformes')) el('qualiopi-nb-conformes').textContent = nbConformes;
-      if (el('qualiopi-nb-nc')) {
-        el('qualiopi-nb-nc').textContent = (nbNC_min + nbNC_maj);
-        el('qualiopi-nb-nc-sub').textContent = nbNC_maj + ' maj. · ' + nbNC_min + ' min.';
-      }
-      if (el('qualiopi-nb-todo')) el('qualiopi-nb-todo').textContent = nbNonAudite;
-      if (el('qualiopi-subtitle')) {
-        el('qualiopi-subtitle').textContent = 'Referentiel National Qualite v9 · 32 indicateurs · NDA 93132464513';
-      }
-
-      // Render des 7 criteres
-      var container = el('qualiopi-container');
-      if (!container) return;
-
-      // Grouper par critere
-      var parCritere = {};
-      allIndicateurs.forEach(function(i) {
-        if (!parCritere[i.critere]) parCritere[i.critere] = { titre: i.critere_titre, items: [] };
-        parCritere[i.critere].items.push(i);
-      });
-
-      var html = '';
-      var criteres = Object.keys(parCritere).sort(function(a, b) { return parseInt(a) - parseInt(b); });
-      criteres.forEach(function(cNum) {
-        var crit = parCritere[cNum];
-        var items = crit.items;
-        var nbC_items = items.filter(function(i) { return i.statut === 'conforme'; }).length;
-        var nbNC_items = items.filter(function(i) { return i.statut === 'nc_mineure' || i.statut === 'nc_majeure'; }).length;
-        var nbNA_items = items.filter(function(i) { return i.statut === 'non_applicable'; }).length;
-        var nbTodo_items = items.filter(function(i) { return i.statut === 'non_audite'; }).length;
-        var totalAudit = items.length - nbNA_items;
-        var pct = totalAudit > 0 ? Math.round((nbC_items / totalAudit) * 100) : 0;
-
-        // Couleur barre progression
-        var progCls = pct >= 90 ? 'green' : pct >= 60 ? 'gold' : '';
-        var statusIcon = nbNC_items > 0 ? '⚠️' : (nbTodo_items > 0 ? '🕓' : '✅');
-
-        html += '<div class="card" style="margin-bottom:12px">' +
-          '<div class="card-h" style="display:flex;align-items:center;gap:12px">' +
-            '<span class="card-title">' + statusIcon + ' Critere ' + cNum + ' — ' + escapeHtml(crit.titre) + '</span>' +
-            '<div style="flex:1;display:flex;align-items:center;gap:8px;max-width:280px;margin-left:auto">' +
-              '<div class="prog" style="flex:1"><div class="prog-fill ' + progCls + '" style="width:' + pct + '%"></div></div>' +
-              '<span class="text-xs font-sb">' + pct + '%</span>' +
-              '<span class="text-xs text-muted">(' + nbC_items + '/' + totalAudit + ')</span>' +
-            '</div>' +
-          '</div>' +
-          '<div class="card-b" style="padding:0">';
-
-        // Lignes d'indicateurs
-        items.forEach(function(ind) {
-          var info = statutInfo(ind.statut);
-          var libelle = ind.libelle || '';
-          if (libelle.length > 140) libelle = libelle.substring(0, 140) + '...';
-          var dateVerif = ind.date_derniere_verif ? fmtDate(ind.date_derniere_verif) : 'Jamais';
-          var ponderableBadge = ind.ponderable ? '<span class="badge b-gold" style="font-size:9px;margin-left:4px">ponderable</span>' : '';
-
-          html += '<div class="quali-row" style="display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-top:1px solid #f1f5f9;cursor:pointer;transition:background 0.15s" ' +
-              'onmouseover="this.style.background=\'#f8fafc\'" onmouseout="this.style.background=\'transparent\'" ' +
-              'onclick="window.ardalosQualiopiEdit(\'' + ind.id + '\')">' +
-            '<div style="flex:0 0 36px;font-weight:600;color:var(--ard-dark);font-size:13px;padding-top:2px">#' + ind.numero + '</div>' +
-            '<div style="flex:1">' +
-              '<div style="font-size:12px;line-height:1.4;color:#334155">' + escapeHtml(libelle) + ponderableBadge + '</div>' +
-              (ind.notes ? '<div style="font-size:11px;color:#64748b;margin-top:4px;font-style:italic">📝 ' + escapeHtml(ind.notes.substring(0, 100)) + (ind.notes.length > 100 ? '...' : '') + '</div>' : '') +
-              '<div style="font-size:10px;color:#94a3b8;margin-top:4px">Dernier audit : ' + dateVerif + (ind.verifie_par ? ' · ' + escapeHtml(ind.verifie_par) : '') + '</div>' +
-            '</div>' +
-            '<div style="flex:0 0 auto;text-align:right">' +
-              '<span class="badge ' + info.cls + '" style="font-size:10px">' + info.icon + ' ' + info.label + '</span>' +
-            '</div>' +
-          '</div>';
-        });
-
-        html += '</div></div>';
-      });
-
-      container.innerHTML = html;
-      console.log('[Ardalos Qualiopi] OK : ' + total + ' indicateurs, score ' + score + '%');
-    } catch (e) {
-      console.error('[Ardalos Qualiopi]', e);
-      var container = document.getElementById('qualiopi-container');
-      if (container) container.innerHTML = '<div style="padding:20px;color:#dc2626">Erreur: ' + escapeHtml(e.message) + '</div>';
-    }
-  }
-
-  // ======================================================================
-  // Modale edition
-  // ======================================================================
-  window.ardalosQualiopiEdit = function(id) {
-    var ind = allIndicateurs.find(function(i) { return i.id === id; });
-    if (!ind) return;
-    currentEditId = id;
-
-    document.getElementById('qualiopi-modal-title').textContent = 'Indicateur ' + ind.numero + ' — Critere ' + ind.critere;
-    document.getElementById('qualiopi-modal-libelle').textContent = ind.libelle || '';
-    document.getElementById('qualiopi-edit-statut').value = ind.statut || 'non_audite';
-    document.getElementById('qualiopi-edit-verifie-par').value = ind.verifie_par || '';
-    document.getElementById('qualiopi-edit-notes').value = ind.notes || '';
-    document.getElementById('qualiopi-edit-preuves').value = ind.preuves || '';
-    document.getElementById('qualiopi-edit-ponderable-info').style.display = ind.ponderable ? 'block' : 'none';
-    document.getElementById('qualiopi-edit-error').style.display = 'none';
-    if (typeof openModal === 'function') openModal('qualiopi-edit');
-  };
-
-  window.ardalosQualiopiSave = async function() {
-    if (!currentEditId) return;
-    var errEl = document.getElementById('qualiopi-edit-error');
-    var btnEl = document.getElementById('qualiopi-edit-save');
-    errEl.style.display = 'none';
-
-    var payload = {
-      statut: document.getElementById('qualiopi-edit-statut').value,
-      verifie_par: document.getElementById('qualiopi-edit-verifie-par').value.trim() || null,
-      notes: document.getElementById('qualiopi-edit-notes').value.trim() || null,
-      preuves: document.getElementById('qualiopi-edit-preuves').value.trim() || null,
-      date_derniere_verif: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-
-    btnEl.disabled = true;
-    btnEl.textContent = 'Enregistrement...';
-    try {
-      var r = await sb.from('qualiopi_indicateurs').update(payload).eq('id', currentEditId);
-      if (r.error) throw r.error;
-      if (typeof closeModal === 'function') closeModal('qualiopi-edit');
-      loadQualiopi();
-    } catch (e) {
-      errEl.textContent = 'Erreur : ' + (e.message || 'inconnue');
-      errEl.style.display = 'block';
-      btnEl.disabled = false;
-      btnEl.textContent = 'Enregistrer';
-    }
-  };
-
-  // ======================================================================
-  // Refresh + Export CSV
-  // ======================================================================
-  window.ardalosQualiopiRefresh = function() { loadQualiopi(); };
-
-  window.ardalosQualiopiExport = function() {
-    if (allIndicateurs.length === 0) { alert('Aucun indicateur a exporter'); return; }
-    var rows = [['Numero','Critere','Titre critere','Libelle','Ponderable','Statut','Notes','Preuves','Verifie par','Date derniere verif']];
-    allIndicateurs.forEach(function(i) {
-      var info = statutInfo(i.statut);
-      rows.push([
-        i.numero, i.critere, i.critere_titre || '',
-        (i.libelle || '').replace(/"/g, '""'),
-        i.ponderable ? 'Oui' : 'Non',
-        info.label,
-        (i.notes || '').replace(/"/g, '""'),
-        (i.preuves || '').replace(/"/g, '""'),
-        i.verifie_par || '',
-        i.date_derniere_verif ? fmtDate(i.date_derniere_verif) : ''
-      ]);
-    });
-    var csv = rows.map(function(r) { return r.map(function(c) { return '"' + String(c) + '"'; }).join(';'); }).join('\n');
-    var blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    a.href = url;
-    a.download = 'qualiopi_' + new Date().toISOString().substring(0,10) + '.csv';
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', loadQualiopi);
-  } else {
-    loadQualiopi();
   }
 })();
 </script>
