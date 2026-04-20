@@ -55,6 +55,11 @@ function HomeContent() {
             <div style={{fontSize:'15px',fontWeight:'600',color:'#1A2C6B'}}>Inscriptions</div>
             <div style={{fontSize:'12px',color:'#9ca3af',marginTop:'4px'}}>Stagiaires & financements</div>
           </a>
+          <a href="/pipeline" style={{background:'linear-gradient(135deg, #C9A84C 0%, #d4b95e 100%)',border:'1px solid #C9A84C',borderRadius:'12px',padding:'24px',textDecoration:'none',display:'block',boxShadow:'0 4px 12px rgba(201,168,76,0.2)'}}>
+            <div style={{fontSize:'28px',marginBottom:'8px'}}>🎯</div>
+            <div style={{fontSize:'15px',fontWeight:'700',color:'#1A2C6B'}}>Pipeline</div>
+            <div style={{fontSize:'12px',color:'rgba(26,44,107,0.8)',marginTop:'4px'}}>Suivi commercial Kanban</div>
+          </a>
         </div>
         <a href="/crm.html" style={{background:'#1A2C6B',border:'1px solid #1A2C6B',borderRadius:'12px',padding:'20px',textDecoration:'none',display:'block'}}>
           <div style={{fontSize:'24px',marginBottom:'6px'}}>🚀</div>
