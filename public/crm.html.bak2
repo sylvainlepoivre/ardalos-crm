@@ -920,48 +920,52 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
 <!-- ▶ PIPELINE ──────────────────────────── -->
 <div id="page-pipeline" class="page">
   <div class="page-hdr">
-    <div class="page-hdr-left"><h1 class="page-title">Pipeline commercial</h1><p class="page-sub" id="pipe-subtitle">Chargement du pipeline...</p></div>
+    <div class="page-hdr-left"><h1 class="page-title">Pipeline commercial</h1><p class="page-sub">43 deals actifs · 87k€ prévisionnel · Formation Ardalos</p></div>
     <div class="page-hdr-right">
       <select class="fselect" style="width:auto;font-size:12px"><option>Formation Ardalos</option><option>Commercial Groupe</option></select>
       <button class="btn-s">Filtres</button>
       <button class="btn-p">+ Nouveau deal</button>
     </div>
   </div>
-  <div class="kanban-wrap" id="pipe-kanban" style="height:calc(100vh - 220px)">
+  <div class="kanban-wrap" style="height:calc(100vh - 220px)">
     <div class="kb-col" style="min-height:500px">
-      <div class="kb-col-h" style="border-top:3px solid var(--g400)">
-        <span class="kb-col-name">Nouveau lead</span>
-        <span class="kb-col-count" id="pipe-cnt-nouveau">...</span>
+      <div class="kb-col-h" style="border-top:3px solid var(--g400)"><span class="kb-col-name">Nouveau lead</span><span class="kb-col-count">12 · 18k€</span></div>
+      <div class="kb-body">
+        <div class="kb-card"><div class="kb-card-name">Marie DUPONT</div><div class="kb-card-co">Formation voix</div><div class="kb-card-f"><span class="kb-card-val">1 800€</span><span class="badge b-navy" style="font-size:10px">Calendly</span></div></div>
+        <div class="kb-card"><div class="kb-card-name">Théo RENARD</div><div class="kb-card-co">Comédie</div><div class="kb-card-f"><span class="kb-card-val">2 400€</span><span class="badge b-gray" style="font-size:10px">Site web</span></div></div>
+        <div class="kb-card"><div class="kb-card-name">Inès VIDAL</div><div class="kb-card-co">Danse</div><div class="kb-card-f"><span class="kb-card-val">1 200€</span><span class="text-xs text-muted">J+2</span></div></div>
+        <div class="kb-card"><div class="kb-card-name">Romain LAURE</div><div class="kb-card-co">Ostéopathie</div><div class="kb-card-f"><span class="kb-card-val">2 800€</span><span class="text-xs text-muted">J+1</span></div></div>
       </div>
-      <div class="kb-body" id="pipe-col-nouveau"></div>
     </div>
     <div class="kb-col" style="min-height:500px">
-      <div class="kb-col-h" style="border-top:3px solid var(--ard-blue)">
-        <span class="kb-col-name">Qualification</span>
-        <span class="kb-col-count" id="pipe-cnt-qualif">...</span>
+      <div class="kb-col-h" style="border-top:3px solid var(--ard-blue)"><span class="kb-col-name">Qualification</span><span class="kb-col-count">8 · 22k€</span></div>
+      <div class="kb-body">
+        <div class="kb-card"><div class="kb-card-name">Camille FOREST</div><div class="kb-card-co">Pack 3 modules</div><div class="kb-card-f"><span class="kb-card-val">5 200€</span><span class="badge b-amber" style="font-size:10px">AFDAS</span></div></div>
+        <div class="kb-card"><div class="kb-card-name">Julien MOREAU</div><div class="kb-card-co">Formation tech</div><div class="kb-card-f"><span class="kb-card-val">3 600€</span><span class="badge b-green" style="font-size:10px">Score 78</span></div></div>
+        <div class="kb-card"><div class="kb-card-name">Eva CHEN</div><div class="kb-card-co">Stratégie</div><div class="kb-card-f"><span class="kb-card-val">4 800€</span><span class="badge b-teal" style="font-size:10px">OPCO</span></div></div>
       </div>
-      <div class="kb-body" id="pipe-col-qualif"></div>
     </div>
     <div class="kb-col" style="min-height:500px">
-      <div class="kb-col-h" style="border-top:3px solid var(--ard-gold)">
-        <span class="kb-col-name">Montage dossier</span>
-        <span class="kb-col-count" id="pipe-cnt-dossier">...</span>
+      <div class="kb-col-h" style="border-top:3px solid var(--ard-gold)"><span class="kb-col-name">Montage dossier</span><span class="kb-col-count">7 · 31k€</span></div>
+      <div class="kb-body">
+        <div class="kb-card urgent" onclick="navigate('funding')"><div class="kb-card-name">Sophie MARTIN</div><div class="kb-card-co">Formation AFDAS</div><div class="kb-card-f"><span class="kb-card-val">2 800€</span><span class="badge b-red" style="font-size:10px">J-6</span></div></div>
+        <div class="kb-card"><div class="kb-card-name">Paul GIRARD</div><div class="kb-card-co">Parcours 80h</div><div class="kb-card-f"><span class="kb-card-val">6 400€</span><span class="badge b-amber" style="font-size:10px">2 pièces</span></div></div>
+        <div class="kb-card"><div class="kb-card-name">Nadia HARO</div><div class="kb-card-co">Formation OPCO</div><div class="kb-card-f"><span class="kb-card-val">4 800€</span><span class="badge b-navy" style="font-size:10px">En cours</span></div></div>
       </div>
-      <div class="kb-body" id="pipe-col-dossier"></div>
     </div>
     <div class="kb-col" style="min-height:500px">
-      <div class="kb-col-h" style="border-top:3px solid var(--teal)">
-        <span class="kb-col-name">Validation financement</span>
-        <span class="kb-col-count" id="pipe-cnt-financement">...</span>
+      <div class="kb-col-h" style="border-top:3px solid var(--teal)"><span class="kb-col-name">Validation financement</span><span class="kb-col-count">5 · 18k€</span></div>
+      <div class="kb-body">
+        <div class="kb-card"><div class="kb-card-name">Laurent VOSS</div><div class="kb-card-co">CPF validé</div><div class="kb-card-f"><span class="kb-card-val">3 200€</span><span class="badge b-green" style="font-size:10px">Accordé</span></div></div>
+        <div class="kb-card"><div class="kb-card-name">Emma DUVAL</div><div class="kb-card-co">AFDAS Q1</div><div class="kb-card-f"><span class="kb-card-val">2 600€</span><span class="badge b-navy" style="font-size:10px">Instruction</span></div></div>
       </div>
-      <div class="kb-body" id="pipe-col-financement"></div>
     </div>
     <div class="kb-col" style="min-height:500px">
-      <div class="kb-col-h" style="border-top:3px solid var(--green)">
-        <span class="kb-col-name">Closing</span>
-        <span class="kb-col-count" id="pipe-cnt-closing">...</span>
+      <div class="kb-col-h" style="border-top:3px solid var(--green)"><span class="kb-col-name">Closing</span><span class="kb-col-count">4 · 28k€</span></div>
+      <div class="kb-body">
+        <div class="kb-card winning"><div class="kb-card-name">Alice LEBRUN</div><div class="kb-card-co">Formation complète</div><div class="kb-card-f"><span class="kb-card-val">8 200€</span><span class="badge b-green" style="font-size:10px">Signature</span></div></div>
+        <div class="kb-card winning"><div class="kb-card-name">Marc TISSOT</div><div class="kb-card-co">Pack annuel</div><div class="kb-card-f"><span class="kb-card-val">12 000€</span><span class="badge b-gold" style="font-size:10px">À signer</span></div></div>
       </div>
-      <div class="kb-body" id="pipe-col-closing"></div>
     </div>
   </div>
 </div>
@@ -2126,154 +2130,6 @@ document.getElementById('global-search').addEventListener('keyup', function(e) {
     document.addEventListener('DOMContentLoaded', loadKpis);
   } else {
     loadKpis();
-  }
-})();
-</script>
-
-
-<!-- === CONNEXION SUPABASE POUR KANBAN PIPELINE === -->
-<script>
-(function() {
-  var SUPABASE_URL = 'https://cvxzdiutxonnsnwoicqt.supabase.co';
-  var SUPABASE_KEY = 'sb_publishable_J8ta-7L05zgK9rBy2OS9Bg_CjXHwZVK';
-
-  if (typeof window.supabase === 'undefined' || !window.supabase.createClient) {
-    console.warn('[Ardalos Pipeline] Lib Supabase non chargee');
-    return;
-  }
-  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-  // Mapping statut_prospection -> colonne Kanban
-  var STATUS_TO_COL = {
-    'a_contacter':        'nouveau',
-    'interesse':          'qualif',
-    'en_discussion':      'qualif',
-    'dossier_en_cours':   'dossier',
-    'financement_demande':       'financement',
-    'financement_en_instruction':'financement',
-    'confirme':           'closing',
-  };
-
-  function fmtEuro(n) {
-    if (n >= 1000) return (n / 1000).toFixed(1).replace('.0', '') + 'k€';
-    return Math.round(n) + '€';
-  }
-
-  function escapeHtml(s) {
-    if (!s) return '';
-    return String(s).replace(/[&<>"']/g, function(c) {
-      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
-    });
-  }
-
-  function makeCard(ins) {
-    var contact = ins.contacts || {};
-    var session = ins.formation_sessions || {};
-    var formation = session.formations || {};
-
-    var nom = ((contact.prenom || '') + ' ' + (contact.nom || '')).trim() || '(sans nom)';
-    var titreFormation = formation.titre || 'Formation';
-    var montant = Number(ins.montant_total_ht) || 0;
-
-    // Badge: commercial si present, sinon statut
-    var badge = '';
-    if (ins.commercial_responsable) {
-      badge = '<span class="badge b-navy" style="font-size:10px">' + escapeHtml(ins.commercial_responsable) + '</span>';
-    } else if (ins.statut === 'confirme') {
-      badge = '<span class="badge b-green" style="font-size:10px">Confirme</span>';
-    } else {
-      badge = '<span class="badge b-gray" style="font-size:10px">Prospect</span>';
-    }
-
-    // Classe urgente si rappel prevu et date depassee
-    var urgentClass = '';
-    if (ins.date_rappel_prevu) {
-      var today = new Date().toISOString().substring(0, 10);
-      if (ins.date_rappel_prevu < today) urgentClass = ' urgent';
-    }
-    // Classe winning pour closing
-    if (ins.statut === 'confirme') urgentClass = ' winning';
-
-    return '<div class="kb-card' + urgentClass + '">' +
-      '<div class="kb-card-name">' + escapeHtml(nom) + '</div>' +
-      '<div class="kb-card-co">' + escapeHtml(titreFormation) + '</div>' +
-      '<div class="kb-card-f">' +
-        '<span class="kb-card-val">' + fmtEuro(montant) + '</span>' +
-        badge +
-      '</div>' +
-    '</div>';
-  }
-
-  function getColKey(ins) {
-    // Closing : statut d'inscription = confirme ou present
-    if (ins.statut === 'confirme' || ins.statut === 'present') return 'closing';
-    // Abandon : on les ignore
-    if (ins.statut === 'abandon') return null;
-    // Sinon on utilise le statut_prospection
-    var sp = ins.statut_prospection;
-    if (sp && STATUS_TO_COL[sp]) return STATUS_TO_COL[sp];
-    // Par defaut : nouveau lead
-    return 'nouveau';
-  }
-
-  async function loadPipeline() {
-    try {
-      var subtitleEl = document.getElementById('pipe-subtitle');
-      var r = await sb.from('formation_inscriptions')
-        .select('id, statut, statut_prospection, commercial_responsable, date_rappel_prevu, montant_total_ht, contacts(prenom, nom), formation_sessions(formations(titre))')
-        .order('created_at', { ascending: false });
-
-      if (r.error) throw r.error;
-      var inscriptions = r.data || [];
-
-      // Grouper par colonne
-      var cols = { nouveau: [], qualif: [], dossier: [], financement: [], closing: [] };
-      var actives = 0;
-      var ca = 0;
-      for (var i = 0; i < inscriptions.length; i++) {
-        var ins = inscriptions[i];
-        var key = getColKey(ins);
-        if (key) {
-          cols[key].push(ins);
-          actives++;
-          ca += Number(ins.montant_total_ht) || 0;
-        }
-      }
-
-      // Render colonnes
-      var colSums = {};
-      Object.keys(cols).forEach(function(key) {
-        var colEl = document.getElementById('pipe-col-' + key);
-        var cntEl = document.getElementById('pipe-cnt-' + key);
-        if (!colEl) return;
-
-        var list = cols[key];
-        var sum = list.reduce(function(s, x) { return s + (Number(x.montant_total_ht) || 0); }, 0);
-        colSums[key] = sum;
-
-        if (list.length === 0) {
-          colEl.innerHTML = '<div style="padding:20px;text-align:center;color:#9ca3af;font-size:12px;font-style:italic">Aucun dossier</div>';
-        } else {
-          colEl.innerHTML = list.map(makeCard).join('');
-        }
-        if (cntEl) cntEl.textContent = list.length + ' · ' + fmtEuro(sum);
-      });
-
-      // Sous-titre
-      if (subtitleEl) subtitleEl.textContent = actives + ' dossier' + (actives > 1 ? 's' : '') + ' actif' + (actives > 1 ? 's' : '') + ' · ' + fmtEuro(ca) + ' CA previsionnel';
-
-      console.log('[Ardalos Pipeline] OK charge :', actives, 'dossiers,', fmtEuro(ca));
-    } catch (e) {
-      console.error('[Ardalos Pipeline] Erreur:', e);
-      var subtitleEl = document.getElementById('pipe-subtitle');
-      if (subtitleEl) subtitleEl.textContent = 'Erreur de chargement du pipeline';
-    }
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', loadPipeline);
-  } else {
-    loadPipeline();
   }
 })();
 </script>
