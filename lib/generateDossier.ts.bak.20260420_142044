@@ -1,12 +1,15 @@
-// lib/generateDossier.ts  —  V3 (sélection de templates)
+// lib/generateDossier.ts  —  V2 (corrigé pour le vrai schéma Ardalos CRM)
 // ============================================================================
-// Génère un dossier Qualiopi/AFDAS pour une inscription.
-// Permet de choisir quels templates inclure (par défaut : tous les 10).
+// Génère un dossier Qualiopi/AFDAS complet (10 docx) pour une inscription.
+// Fetch les données Supabase via 3 requêtes séparées (tolère FK non déclarées),
+// remplit les templates avec docxtemplater, renvoie un Buffer ZIP.
 //
-// Diff V2 → V3 :
-//   - Import de ALL_TEMPLATE_FILENAMES depuis ./templatesList
-//   - generateDossier() accepte un 3e argument optionnel selectedTemplates?: string[]
-//     Si fourni, seuls les templates listés sont inclus dans le ZIP.
+// Corrections V2 :
+//  - formations.duree (pas duree_heures)
+//  - formations.objectifs (pas description)
+//  - formation_sessions.formateur_principal est un TEXTE (pas un FK)
+//  - .maybeSingle() partout (pas .single())
+//  - Requêtes séparées au lieu d'un gros JOIN avec !inner
 // ============================================================================
 
 import fs from 'fs'
@@ -15,13 +18,26 @@ import Docxtemplater from 'docxtemplater'
 import PizZip from 'pizzip'
 import JSZip from 'jszip'
 import { createClient } from '@supabase/supabase-js'
-import { ALL_TEMPLATE_FILENAMES } from './templatesList'
 
 // Client Supabase (clé publique)
 const supabaseUrl = 'https://cvxzdiutxonnsnwoicqt.supabase.co'
 const supabaseKey = 'sb_publishable_J8ta-7L05zgK9rBy2OS9Bg_CjXHwZVK'
 
 const TEMPLATES_DIR = path.join(process.cwd(), 'templates')
+
+// Liste des templates à inclure dans le dossier généré
+const TEMPLATES = [
+  '01_CONVENTION_DE_FORMATION_PROFESSIONNELLE.docx',
+  '02_PROGRAMME_DE_FORMATION.docx',
+  '03_ANNEXE_1_GRILLE_EVALUATION.docx',
+  '04_ANNEXE_2_FEUILLE_EMARGEMENT.docx',
+  '05_ANNEXE_3_ATTESTATION_FIN_DE_FORMATION.docx',
+  '06_ANNEXE_4_CERTIFICAT_DE_REALISATION.docx',
+  '07_ANNEXE_5_REGLEMENT_INTERIEUR.docx',
+  '08_ANNEXE_5_BIS_ATTESTATION_LECTURE_RI.docx',
+  '09_ANNEXE_6_QUESTIONNAIRE_SATISFACTION.docx',
+  '10_ATTESTATION_FONCTION_DIRIGEANT.docx',
+]
 
 function fmtDate(d: string | null | undefined): string {
   if (!d) return ''
@@ -48,6 +64,7 @@ export async function fetchInscriptionData(inscriptionId: string, authToken?: st
     global: authToken ? { headers: { Authorization: `Bearer ${authToken}` } } : {},
   })
 
+  // 1. Inscription
   const { data: insRaw, error: errIns } = await supabase
     .from('formation_inscriptions')
     .select('*')
@@ -57,6 +74,7 @@ export async function fetchInscriptionData(inscriptionId: string, authToken?: st
   if (errIns) throw new Error(`Erreur requete inscription: ${errIns.message}`)
   if (!insRaw) throw new Error(`Inscription ${inscriptionId} introuvable`)
 
+  // 2. Contact (stagiaire)
   let contact: any = null
   if (insRaw.contact_id) {
     const { data, error } = await supabase
@@ -68,6 +86,7 @@ export async function fetchInscriptionData(inscriptionId: string, authToken?: st
     contact = data
   }
 
+  // 3. Session
   let session: any = null
   if (insRaw.session_id) {
     const { data, error } = await supabase
@@ -79,6 +98,7 @@ export async function fetchInscriptionData(inscriptionId: string, authToken?: st
     session = data
   }
 
+  // 4. Formation (via session.formation_id)
   let formation: any = null
   if (session?.formation_id) {
     const { data, error } = await supabase
@@ -90,6 +110,7 @@ export async function fetchInscriptionData(inscriptionId: string, authToken?: st
     formation = data
   }
 
+  // 5. Dirigeants (pour signatures)
   const { data: dirigeants } = await supabase
     .from('formateurs')
     .select('*')
@@ -98,17 +119,20 @@ export async function fetchInscriptionData(inscriptionId: string, authToken?: st
 
   const president = dirigeants?.find((d: any) => d.est_referent_qualite) || dirigeants?.[0] || null
 
+  // 6. Référent handicap
   const { data: refHandicap } = await supabase
     .from('formateurs')
     .select('*')
     .eq('est_referent_handicap', true)
     .maybeSingle()
 
+  // 7. Financements
   const { data: financements } = await supabase
     .from('formation_financements')
     .select('*')
     .eq('inscription_id', inscriptionId)
 
+  // Formateur principal (texte libre dans formation_sessions)
   const formateurNom = session?.formateur_principal || ''
   const formateurPrincipal = formateurNom ? { prenom: '', nom: formateurNom } : null
 
@@ -214,7 +238,7 @@ export function buildVariables(data: any): Record<string, string> {
       : 'À désigner',
     AUTRES_FORMATEURS: '',
 
-    // ==== Dirigeant ====
+    // ==== Dirigeant (pour attestation fonction) ====
     NOM_PRENOM_DIRIGEANT: president ? `${president.prenom || ''} ${president.nom || ''}`.trim() : 'David CANDELIER',
     DATE_NAISSANCE_DIRIGEANT: fmtDate(president?.date_naissance),
     LIEU_NAISSANCE_DIRIGEANT: president?.lieu_naissance || '',
@@ -239,7 +263,7 @@ export function buildVariables(data: any): Record<string, string> {
 }
 
 // ============================================================================
-// Remplit un template docx et renvoie un Buffer
+// Remplit un template docx avec les variables et renvoie un Buffer
 // ============================================================================
 export function fillTemplate(templateName: string, vars: Record<string, string>): Buffer {
   const templatePath = path.join(TEMPLATES_DIR, templateName)
@@ -258,24 +282,11 @@ export function fillTemplate(templateName: string, vars: Record<string, string>)
 }
 
 // ============================================================================
-// Génère le dossier : renvoie un Buffer ZIP
-// Si selectedTemplates est fourni, ne garde que les templates listés.
+// Génère le dossier complet : renvoie un Buffer ZIP contenant les 10 docx
 // ============================================================================
-export async function generateDossier(
-  inscriptionId: string,
-  authToken?: string | null,
-  selectedTemplates?: string[],
-): Promise<{ buffer: Buffer; filename: string }> {
+export async function generateDossier(inscriptionId: string, authToken?: string | null): Promise<{ buffer: Buffer; filename: string }> {
   const data = await fetchInscriptionData(inscriptionId, authToken)
   const vars = buildVariables(data)
-
-  const validTemplates = (selectedTemplates && selectedTemplates.length > 0)
-    ? ALL_TEMPLATE_FILENAMES.filter(t => selectedTemplates.includes(t))
-    : ALL_TEMPLATE_FILENAMES
-
-  if (validTemplates.length === 0) {
-    throw new Error('Aucun template valide sélectionné')
-  }
 
   const zip = new JSZip()
   const stagiaireName = (vars.NOM_STAGIAIRE || 'STAGIAIRE').toUpperCase().replace(/[^A-Z0-9]/g, '_')
@@ -285,7 +296,7 @@ export async function generateDossier(
   let success = 0
   const errors: string[] = []
 
-  for (const tplName of validTemplates) {
+  for (const tplName of TEMPLATES) {
     try {
       const filled = fillTemplate(tplName, vars)
       const outName = tplName.replace('.docx', `_${stagiaireName}.docx`)

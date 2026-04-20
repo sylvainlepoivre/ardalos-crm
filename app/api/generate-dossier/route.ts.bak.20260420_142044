@@ -1,6 +1,4 @@
-// app/api/generate-dossier/route.ts
-// GET /api/generate-dossier?inscriptionId=XXX[&templates=01_...,02_...]
-// Si 'templates' est absent ou vide, tous les templates sont générés.
+// app/api/generate-dossier/route.ts  —  DEBUG VERSION
 
 import { NextRequest, NextResponse } from 'next/server'
 import { generateDossier } from '@/lib/generateDossier'
@@ -12,20 +10,28 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
     const inscriptionId = searchParams.get('inscriptionId')
-    const templatesParam = searchParams.get('templates')
 
     if (!inscriptionId) {
       return NextResponse.json({ error: 'inscriptionId requis' }, { status: 400 })
     }
 
-    const selectedTemplates = templatesParam
-      ? templatesParam.split(',').map(s => s.trim()).filter(Boolean)
-      : undefined
-
+    // DEBUG : Afficher les cookies recus
     const cookieHeader = req.headers.get('cookie') || ''
-    const authToken = extractSupabaseToken(cookieHeader)
+    console.log('=== DEBUG COOKIES ===')
+    console.log('Cookie header present:', !!cookieHeader)
+    console.log('Cookie length:', cookieHeader.length)
+    // Lister les noms de cookies
+    const cookieNames = cookieHeader.split(';').map(c => c.trim().split('=')[0])
+    console.log('Cookie names:', cookieNames)
+    // Cookies contenant "auth" ou "sb"
+    const authCookies = cookieNames.filter(n => n.includes('auth') || n.startsWith('sb'))
+    console.log('Auth/sb cookies:', authCookies)
 
-    const { buffer, filename } = await generateDossier(inscriptionId, authToken, selectedTemplates)
+    const authToken = extractSupabaseToken(cookieHeader)
+    console.log('Token extrait:', authToken ? `OUI (${authToken.substring(0, 20)}...)` : 'NON')
+    console.log('=====================')
+
+    const { buffer, filename } = await generateDossier(inscriptionId, authToken)
 
     return new NextResponse(buffer as any, {
       status: 200,
@@ -46,6 +52,7 @@ function extractSupabaseToken(cookieHeader: string): string | null {
   if (!match) return null
   try {
     const raw = decodeURIComponent(match[1])
+    // Peut etre une chaine JSON ou un tableau encode en base64 ou direct
     if (raw.startsWith('[')) {
       const parsed = JSON.parse(raw)
       return parsed[0] || null

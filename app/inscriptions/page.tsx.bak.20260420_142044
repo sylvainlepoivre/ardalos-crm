@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/useAuth'
 import { supabase } from '@/lib/supabase'
-import { TEMPLATE_LIST, ALL_TEMPLATE_FILENAMES } from '@/lib/templatesList'
 
 const STATUTS = [
   { value: 'prospect',  label: 'Prospect',  color: '#9ca3af' },
@@ -65,11 +64,6 @@ function InscriptionsContent() {
   const [montantTotal, setMontantTotal] = useState('')
   const [notes, setNotes] = useState('')
   const [financements, setFinancements] = useState<Financement[]>([])
-
-  // Dossier modal state (NEW)
-  const [dossierIns, setDossierIns] = useState<Inscription | null>(null)
-  const [selectedTpls, setSelectedTpls] = useState<Set<string>>(new Set(ALL_TEMPLATE_FILENAMES))
-  const [generatingDossier, setGeneratingDossier] = useState(false)
 
   useEffect(() => { loadAll() }, [])
 
@@ -152,6 +146,7 @@ function InscriptionsContent() {
       inscriptionId = data.id
     }
 
+    // Gérer les financements : stratégie simple = tout supprimer puis réinsérer
     await supabase.from('formation_financements').delete().eq('inscription_id', inscriptionId)
     if (financements.length > 0) {
       const rows = financements.map(f => ({
@@ -178,57 +173,6 @@ function InscriptionsContent() {
     await loadAll()
   }
 
-  // ==== Dossier modal functions (NEW) ====
-  function openDossierModal(ins: Inscription) {
-    setDossierIns(ins)
-    setSelectedTpls(new Set(ALL_TEMPLATE_FILENAMES))
-  }
-  function closeDossierModal() {
-    if (generatingDossier) return
-    setDossierIns(null)
-  }
-  function toggleTpl(filename: string) {
-    const next = new Set(selectedTpls)
-    if (next.has(filename)) next.delete(filename); else next.add(filename)
-    setSelectedTpls(next)
-  }
-  function selectAllTpls() { setSelectedTpls(new Set(ALL_TEMPLATE_FILENAMES)) }
-  function deselectAllTpls() { setSelectedTpls(new Set()) }
-
-  async function runDossierGeneration() {
-    if (!dossierIns || selectedTpls.size === 0) return
-    setGeneratingDossier(true)
-    try {
-      const params = new URLSearchParams({
-        inscriptionId: dossierIns.id,
-        templates: Array.from(selectedTpls).join(','),
-      })
-      const res = await fetch(`/api/generate-dossier?${params}`, { credentials: 'include' })
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }))
-        alert('Erreur génération : ' + (err.error || 'inconnue'))
-        setGeneratingDossier(false)
-        return
-      }
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      const cd = res.headers.get('Content-Disposition') || ''
-      const m = cd.match(/filename="([^"]+)"/)
-      a.download = m ? m[1] : 'dossier.zip'
-      document.body.appendChild(a)
-      a.click()
-      a.remove()
-      URL.revokeObjectURL(url)
-      setGeneratingDossier(false)
-      setDossierIns(null)
-    } catch (e: any) {
-      alert('Erreur : ' + (e?.message || 'inconnue'))
-      setGeneratingDossier(false)
-    }
-  }
-
   const filtered = statutFilter === 'all' ? inscriptions : inscriptions.filter(i => i.statut === statutFilter)
   const totalFinancement = financements.reduce((sum, f) => sum + (Number(f.montant_ht) || 0), 0)
   const montantNum = parseFloat(montantTotal) || 0
@@ -242,6 +186,7 @@ function InscriptionsContent() {
       </div>
       <p style={{ color: '#9ca3af', fontSize: '13px', marginBottom: '24px' }}>{inscriptions.length} inscription{inscriptions.length !== 1 ? 's' : ''} · <a href="/" style={{color:'#1A2C6B'}}>← Accueil</a></p>
 
+      {/* Filtre statut */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
         <button onClick={() => setStatutFilter('all')} style={{ background: statutFilter==='all'?'#1A2C6B':'#fff', color: statutFilter==='all'?'#fff':'#1A2C6B', border: '1px solid #1A2C6B', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' }}>Tous ({inscriptions.length})</button>
         {STATUTS.map(s => {
@@ -250,6 +195,7 @@ function InscriptionsContent() {
         })}
       </div>
 
+      {/* FORMULAIRE */}
       {showForm && (
         <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '24px', marginBottom: '24px' }}>
           <h2 style={{ color: '#1A2C6B', fontSize: '1.1rem', marginBottom: '16px' }}>{selected ? 'Modifier' : 'Nouvelle'} inscription</h2>
@@ -293,6 +239,7 @@ function InscriptionsContent() {
             <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} style={{ width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '6px', marginTop: '4px', fontFamily: 'inherit' }} />
           </div>
 
+          {/* Financements */}
           <div style={{ background: '#f9fafb', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
               <strong style={{ color: '#1A2C6B', fontSize: '14px' }}>Financements ({financements.length})</strong>
@@ -328,6 +275,7 @@ function InscriptionsContent() {
         </div>
       )}
 
+      {/* LISTE */}
       {filtered.length === 0 ? (
         <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '60px', textAlign: 'center', color: '#9ca3af' }}>
           <div style={{ fontSize: '40px', marginBottom: '12px' }}>👥</div>
@@ -367,8 +315,11 @@ function InscriptionsContent() {
                     <td style={{ padding: '12px', fontSize: '12px', color: '#6b7280' }}>{fmtDate(ins.date_inscription)}</td>
                     <td style={{ padding: '12px', textAlign: 'center' }}>
                       <button
-                        onClick={() => openDossierModal(ins)}
-                        title="Générer un dossier Qualiopi/AFDAS (choix des documents)"
+                        onClick={() => {
+                          const url = `/api/generate-dossier?inscriptionId=${ins.id}`
+                          window.location.href = url
+                        }}
+                        title="Télécharger le dossier Qualiopi/AFDAS complet (10 documents)"
                         style={{ background: '#C9A84C', color: '#fff', border: 'none', padding: '4px 10px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer', marginRight: '4px', fontWeight: 500 }}
                       >📥 Dossier</button>
                       <button onClick={() => openEdit(ins)} style={{ background: '#fff', color: '#1A2C6B', border: '1px solid #1A2C6B', padding: '4px 10px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer', marginRight: '4px' }}>Modifier</button>
@@ -379,91 +330,6 @@ function InscriptionsContent() {
               })}
             </tbody>
           </table>
-        </div>
-      )}
-
-      {/* ============ DOSSIER MODAL ============ */}
-      {dossierIns && (
-        <div
-          style={{
-            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
-          }}
-          onClick={closeDossierModal}
-        >
-          <div
-            style={{
-              background: '#fff', borderRadius: '12px', padding: '24px',
-              maxWidth: '560px', width: '92%', maxHeight: '85vh', overflowY: 'auto',
-              boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
-            }}
-            onClick={e => e.stopPropagation()}
-          >
-            <h2 style={{ color: '#1A2C6B', fontSize: '1.2rem', margin: 0, marginBottom: '4px' }}>
-              📥 Générer le dossier
-            </h2>
-            <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '16px', marginTop: 0 }}>
-              {dossierIns.contacts?.prenom} {dossierIns.contacts?.nom}
-              {dossierIns.formation_sessions?.formations?.titre ? ` · ${dossierIns.formation_sessions.formations.titre}` : ''}
-            </p>
-
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', alignItems: 'center' }}>
-              <button onClick={selectAllTpls} style={{ background: '#fff', color: '#1A2C6B', border: '1px solid #1A2C6B', borderRadius: '6px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>Tout cocher</button>
-              <button onClick={deselectAllTpls} style={{ background: '#fff', color: '#6b7280', border: '1px solid #d1d5db', borderRadius: '6px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>Tout décocher</button>
-              <span style={{ marginLeft: 'auto', fontSize: '12px', color: '#6b7280' }}>
-                {selectedTpls.size} / {ALL_TEMPLATE_FILENAMES.length} sélectionnés
-              </span>
-            </div>
-
-            <div style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '6px', marginBottom: '16px' }}>
-              {TEMPLATE_LIST.map(tpl => {
-                const checked = selectedTpls.has(tpl.filename)
-                return (
-                  <label
-                    key={tpl.filename}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: '10px',
-                      padding: '8px 10px', borderRadius: '6px', cursor: 'pointer',
-                      background: checked ? '#f9fafb' : 'transparent',
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={() => toggleTpl(tpl.filename)}
-                      style={{ cursor: 'pointer', accentColor: '#1A2C6B', width: '16px', height: '16px' }}
-                    />
-                    <span style={{ fontSize: '13px', color: '#1A2C6B' }}>{tpl.label}</span>
-                  </label>
-                )
-              })}
-            </div>
-
-            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-              <button
-                onClick={closeDossierModal}
-                disabled={generatingDossier}
-                style={{
-                  background: '#fff', color: '#6b7280', border: '1px solid #d1d5db',
-                  borderRadius: '8px', padding: '10px 20px',
-                  cursor: generatingDossier ? 'not-allowed' : 'pointer',
-                  opacity: generatingDossier ? 0.5 : 1,
-                }}
-              >Annuler</button>
-              <button
-                onClick={runDossierGeneration}
-                disabled={generatingDossier || selectedTpls.size === 0}
-                style={{
-                  background: (generatingDossier || selectedTpls.size === 0) ? '#9ca3af' : '#C9A84C',
-                  color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 20px',
-                  fontWeight: 500,
-                  cursor: (generatingDossier || selectedTpls.size === 0) ? 'not-allowed' : 'pointer',
-                }}
-              >
-                {generatingDossier ? 'Génération…' : `📥 Générer (${selectedTpls.size})`}
-              </button>
-            </div>
-          </div>
         </div>
       )}
     </div>
