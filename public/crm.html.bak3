@@ -834,7 +834,7 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
 <!-- ▶ CONTACTS ──────────────────────────── -->
 <div id="page-contacts" class="page">
   <div class="page-hdr">
-    <div class="page-hdr-left"><h1 class="page-title">Contacts</h1><p class="page-sub" id="contacts-subtitle">Chargement...</p></div>
+    <div class="page-hdr-left"><h1 class="page-title">Contacts</h1><p class="page-sub">247 contacts · 18 nouveaux cette semaine</p></div>
     <div class="page-hdr-right">
       <button class="btn-s">↑ Import CSV</button>
       <button class="btn-s">↓ Export</button>
@@ -855,11 +855,65 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
   <div class="card">
     <table class="dt">
       <thead><tr><th><input type="checkbox"></th><th>Contact</th><th>Statut</th><th>Type</th><th>Score</th><th>AFDAS</th><th>Commercial</th><th>Activité</th><th></th></tr></thead>
-      <tbody id="contacts-tbody">
-        <tr><td colspan="9" style="text-align:center;padding:20px;color:#9ca3af;font-style:italic">Chargement...</td></tr>
+      <tbody>
+        <tr onclick="openModal('contact-detail')">
+          <td><input type="checkbox" onclick="event.stopPropagation()"></td>
+          <td><div class="flex items-c gap-2"><div class="av">LB</div><div><div class="name-cell">Lucas Bernard</div><div class="text-xs text-muted">lucas.bernard@mail.fr</div></div></div></td>
+          <td><span class="badge b-green">Client</span></td>
+          <td><span class="badge b-navy">Intermittent</span></td>
+          <td><div class="flex items-c gap-2"><div class="prog" style="width:44px"><div class="prog-fill green" style="width:82%"></div></div><span class="text-xs">82</span></div></td>
+          <td><span class="badge b-green">Éligible</span></td>
+          <td>Jean M.</td>
+          <td class="text-xs text-muted">Il y a 35 min</td>
+          <td><button class="btn-s" style="font-size:11px;padding:3px 8px" onclick="event.stopPropagation();openModal('contact-detail')">Voir</button></td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" onclick="event.stopPropagation()"></td>
+          <td><div class="flex items-c gap-2"><div class="av" style="background:var(--ard-gold-light);color:var(--ard-gold)">SM</div><div><div class="name-cell">Sophie Martin</div><div class="text-xs text-muted">s.martin@artiste.fr</div></div></div></td>
+          <td><span class="badge b-amber">Prospect chaud</span></td>
+          <td><span class="badge b-navy">Intermittent</span></td>
+          <td><div class="flex items-c gap-2"><div class="prog" style="width:44px"><div class="prog-fill gold" style="width:71%"></div></div><span class="text-xs">71</span></div></td>
+          <td><span class="badge b-red">En carence</span></td>
+          <td>Lucie R.</td>
+          <td class="text-xs text-muted">Il y a 2h</td>
+          <td><button class="btn-s" style="font-size:11px;padding:3px 8px" onclick="event.stopPropagation()">Voir</button></td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" onclick="event.stopPropagation()"></td>
+          <td><div class="flex items-c gap-2"><div class="av" style="background:var(--green-bg);color:var(--green)">PG</div><div><div class="name-cell">Paul Girard</div><div class="text-xs text-muted">paul.girard@pro.fr</div></div></div></td>
+          <td><span class="badge b-blue">Lead qualifié</span></td>
+          <td><span class="badge b-gray">Technicien</span></td>
+          <td><div class="flex items-c gap-2"><div class="prog" style="width:44px"><div class="prog-fill" style="width:65%"></div></div><span class="text-xs">65</span></div></td>
+          <td><span class="badge b-amber">Fenêtre Q2</span></td>
+          <td>Jean M.</td>
+          <td class="text-xs text-muted">Hier</td>
+          <td><button class="btn-s" style="font-size:11px;padding:3px 8px" onclick="event.stopPropagation()">Voir</button></td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" onclick="event.stopPropagation()"></td>
+          <td><div class="flex items-c gap-2"><div class="av" style="background:var(--purple-bg);color:var(--purple)">CF</div><div><div class="name-cell">Camille Forest</div><div class="text-xs text-muted">c.forest@artscene.fr</div></div></div></td>
+          <td><span class="badge b-amber">Prospect</span></td>
+          <td><span class="badge b-navy">Artiste</span></td>
+          <td><div class="flex items-c gap-2"><div class="prog" style="width:44px"><div class="prog-fill" style="width:88%"></div></div><span class="text-xs">88</span></div></td>
+          <td><span class="badge b-green">Éligible</span></td>
+          <td>Lucie R.</td>
+          <td class="text-xs text-muted">Il y a 3j</td>
+          <td><button class="btn-s" style="font-size:11px;padding:3px 8px" onclick="event.stopPropagation()">Voir</button></td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" onclick="event.stopPropagation()"></td>
+          <td><div class="flex items-c gap-2"><div class="av" style="background:var(--teal-bg);color:var(--teal)">NV</div><div><div class="name-cell">Nina Vidal</div><div class="text-xs text-muted">nina.vidal@danse.fr</div></div></div></td>
+          <td><span class="badge b-green">Client</span></td>
+          <td><span class="badge b-navy">Artiste</span></td>
+          <td><div class="flex items-c gap-2"><div class="prog" style="width:44px"><div class="prog-fill green" style="width:91%"></div></div><span class="text-xs">91</span></div></td>
+          <td><span class="badge b-green">Éligible</span></td>
+          <td>Jean M.</td>
+          <td class="text-xs text-muted">Il y a 5j</td>
+          <td><button class="btn-s" style="font-size:11px;padding:3px 8px" onclick="event.stopPropagation()">Voir</button></td>
+        </tr>
       </tbody>
     </table>
-    <div class="card-f"><span class="text-sm text-muted" id="contacts-pagination">Chargement...</span><div style="margin-left:auto;display:flex;gap:4px"><button class="btn-s" style="padding:4px 10px;font-size:12px">‹</button><button class="btn-s" style="padding:4px 10px;font-size:12px">›</button></div></div>
+    <div class="card-f"><span class="text-sm text-muted">1–5 sur 247</span><div style="margin-left:auto;display:flex;gap:4px"><button class="btn-s" style="padding:4px 10px;font-size:12px">‹</button><button class="btn-s" style="padding:4px 10px;font-size:12px">›</button></div></div>
   </div>
 </div>
 
@@ -2220,174 +2274,6 @@ document.getElementById('global-search').addEventListener('keyup', function(e) {
     document.addEventListener('DOMContentLoaded', loadPipeline);
   } else {
     loadPipeline();
-  }
-})();
-</script>
-
-
-<!-- === CONNEXION SUPABASE POUR CONTACTS === -->
-<script>
-(function() {
-  var SUPABASE_URL = 'https://cvxzdiutxonnsnwoicqt.supabase.co';
-  var SUPABASE_KEY = 'sb_publishable_J8ta-7L05zgK9rBy2OS9Bg_CjXHwZVK';
-
-  if (typeof window.supabase === 'undefined' || !window.supabase.createClient) {
-    console.warn('[Ardalos Contacts] Lib Supabase non chargee');
-    return;
-  }
-  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-  function escapeHtml(s) {
-    if (!s) return '';
-    return String(s).replace(/[&<>"']/g, function(c) {
-      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
-    });
-  }
-
-  function getInitials(prenom, nom) {
-    var p = (prenom || '').trim();
-    var n = (nom || '').trim();
-    var ip = p.length > 0 ? p[0].toUpperCase() : '';
-    var in_ = n.length > 0 ? n[0].toUpperCase() : '';
-    return (ip + in_) || '??';
-  }
-
-  // Palette de couleurs pour les avatars (repartition stable via hash du nom)
-  var AVATAR_COLORS = [
-    { bg: 'var(--ard-blue)', fg: '#fff' },
-    { bg: 'var(--ard-gold-light)', fg: 'var(--ard-gold)' },
-    { bg: 'var(--green-bg)', fg: 'var(--green)' },
-    { bg: 'var(--purple-bg)', fg: 'var(--purple)' },
-    { bg: 'var(--teal-bg)', fg: 'var(--teal)' },
-  ];
-  function pickColor(name) {
-    var sum = 0;
-    for (var i = 0; i < name.length; i++) sum += name.charCodeAt(i);
-    return AVATAR_COLORS[sum % AVATAR_COLORS.length];
-  }
-
-  function fmtDate(s) {
-    if (!s) return '';
-    var d = new Date(s);
-    var now = new Date();
-    var diffDays = Math.floor((now - d) / (1000 * 60 * 60 * 24));
-    if (diffDays === 0) return 'Aujourd\'hui';
-    if (diffDays === 1) return 'Hier';
-    if (diffDays < 7) return 'Il y a ' + diffDays + 'j';
-    if (diffDays < 30) return 'Il y a ' + Math.floor(diffDays / 7) + 'sem';
-    return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
-  }
-
-  async function loadContacts() {
-    try {
-      var subtitleEl = document.getElementById('contacts-subtitle');
-      var tbodyEl = document.getElementById('contacts-tbody');
-      var paginationEl = document.getElementById('contacts-pagination');
-
-      // 1. Tous les contacts
-      var cR = await sb.from('contacts').select('*').order('created_at', { ascending: false });
-      if (cR.error) throw cR.error;
-      var contacts = cR.data || [];
-
-      // 2. Toutes les inscriptions pour determiner statut
-      var iR = await sb.from('formation_inscriptions').select('contact_id, statut, commercial_responsable, created_at').order('created_at', { ascending: false });
-      var inscriptions = iR.data || [];
-
-      // 3. Grouper inscriptions par contact
-      var insByContact = {};
-      for (var i = 0; i < inscriptions.length; i++) {
-        var ins = inscriptions[i];
-        if (!insByContact[ins.contact_id]) insByContact[ins.contact_id] = [];
-        insByContact[ins.contact_id].push(ins);
-      }
-
-      // 4. Compter les nouveaux contacts cette semaine
-      var oneWeekAgo = new Date();
-      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-      var nbNouveaux = contacts.filter(function(c) { return new Date(c.created_at) >= oneWeekAgo; }).length;
-
-      // 5. Update sous-titre
-      if (subtitleEl) {
-        subtitleEl.textContent = contacts.length + ' contact' + (contacts.length > 1 ? 's' : '') + ' · ' + nbNouveaux + ' nouveau' + (nbNouveaux > 1 ? 'x' : '') + ' cette semaine';
-      }
-
-      // 6. Render tbody
-      if (contacts.length === 0) {
-        tbodyEl.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:#9ca3af;font-style:italic">Aucun contact</td></tr>';
-      } else {
-        var rows = contacts.map(function(c) {
-          var ins = insByContact[c.id] || [];
-          var lastIns = ins[0];
-          var nbIns = ins.length;
-          var nbConfirmes = ins.filter(function(i) { return i.statut === 'confirme' || i.statut === 'present'; }).length;
-
-          // Badge statut
-          var statutBadge = '<span class="badge b-gray">Lead</span>';
-          if (nbConfirmes > 0) statutBadge = '<span class="badge b-green">Client</span>';
-          else if (nbIns > 0) statutBadge = '<span class="badge b-amber">Prospect</span>';
-
-          // Badge type (heuristique simple: si entreprise dans inscriptions, Salarie, sinon Intermittent)
-          var typeBadge = '<span class="badge b-navy">Stagiaire</span>';
-
-          // Initiales + couleur
-          var initials = getInitials(c.prenom, c.nom);
-          var color = pickColor(c.prenom + c.nom);
-          var avStyle = 'background:' + color.bg + ';color:' + color.fg;
-
-          // Nombre d'inscriptions
-          var nbInsHtml = nbIns > 0
-            ? '<span class="badge b-teal">' + nbIns + ' inscription' + (nbIns > 1 ? 's' : '') + '</span>'
-            : '<span class="text-xs text-muted">—</span>';
-
-          // Commercial
-          var commercial = lastIns && lastIns.commercial_responsable
-            ? escapeHtml(lastIns.commercial_responsable)
-            : '<span class="text-muted">—</span>';
-
-          // Activite = derniere inscription ou creation contact
-          var activityDate = lastIns ? lastIns.created_at : c.created_at;
-
-          return '<tr>' +
-            '<td><input type="checkbox" onclick="event.stopPropagation()"></td>' +
-            '<td><div class="flex items-c gap-2">' +
-              '<div class="av" style="' + avStyle + '">' + initials + '</div>' +
-              '<div>' +
-                '<div class="name-cell">' + escapeHtml((c.prenom || '') + ' ' + (c.nom || '')).trim() + '</div>' +
-                '<div class="text-xs text-muted">' + escapeHtml(c.email || '—') + '</div>' +
-              '</div>' +
-            '</div></td>' +
-            '<td>' + statutBadge + '</td>' +
-            '<td>' + typeBadge + '</td>' +
-            '<td class="text-xs">' + escapeHtml(c.telephone || '—') + '</td>' +
-            '<td>' + nbInsHtml + '</td>' +
-            '<td>' + commercial + '</td>' +
-            '<td class="text-xs text-muted">' + fmtDate(activityDate) + '</td>' +
-            '<td><button class="btn-s" style="font-size:11px;padding:3px 8px" onclick="event.stopPropagation()">Voir</button></td>' +
-          '</tr>';
-        });
-        tbodyEl.innerHTML = rows.join('');
-      }
-
-      // 7. Update pagination footer
-      if (paginationEl) {
-        var shown = Math.min(contacts.length, contacts.length);
-        paginationEl.textContent = contacts.length > 0
-          ? '1–' + shown + ' sur ' + contacts.length
-          : '0 contact';
-      }
-
-      console.log('[Ardalos Contacts] OK charges :', contacts.length, 'contacts,', nbNouveaux, 'nouveaux cette semaine');
-    } catch (e) {
-      console.error('[Ardalos Contacts] Erreur:', e);
-      var tbodyEl = document.getElementById('contacts-tbody');
-      if (tbodyEl) tbodyEl.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:#dc2626">Erreur de chargement : ' + escapeHtml(e.message || 'inconnue') + '</td></tr>';
-    }
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', loadContacts);
-  } else {
-    loadContacts();
   }
 })();
 </script>
