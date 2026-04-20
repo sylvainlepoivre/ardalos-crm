@@ -7,7 +7,13 @@ function HomeContent() {
       <div style={{textAlign:'center',maxWidth:'640px',padding:'40px'}}>
         <div style={{width:'64px',height:'64px',background:'#1A2C6B',borderRadius:'16px',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'28px',fontWeight:'700',color:'#C9A84C',margin:'0 auto 20px',fontFamily:'serif'}}>A</div>
         <h1 style={{fontSize:'2rem',color:'#1A2C6B',marginBottom:'8px'}}>Ardalos CRM</h1>
-        <p style={{color:'#6b7280',marginBottom:'40px'}}>Votre CRM connecté à Supabase</p>
+        <p style={{color:'#6b7280',marginBottom:'24px'}}>Votre CRM connecté à Supabase</p>
+        <a href="/dashboard" style={{background:'linear-gradient(135deg, #1A2C6B 0%, #2d4491 100%)',border:'1px solid #1A2C6B',borderRadius:'12px',padding:'20px',textDecoration:'none',display:'block',marginBottom:'16px',boxShadow:'0 4px 12px rgba(26,44,107,0.15)'}}>
+            <div style={{fontSize:'28px',marginBottom:'6px'}}>📊</div>
+            <div style={{fontSize:'16px',fontWeight:'700',color:'#C9A84C'}}>Dashboard</div>
+            <div style={{fontSize:'12px',color:'rgba(255,255,255,0.75)',marginTop:'4px'}}>Vue d'ensemble · Métriques · Alertes</div>
+          </a>
+          
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'16px',marginBottom:'16px'}}>
           <a href="/contacts" style={{background:'#fff',border:'1px solid #e5e7eb',borderRadius:'12px',padding:'24px',textDecoration:'none',display:'block'}}>
             <div style={{fontSize:'28px',marginBottom:'8px'}}>👥</div>
