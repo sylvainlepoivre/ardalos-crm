@@ -1368,7 +1368,7 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
 <!-- ▶ SESSIONS ──────────────────────────── -->
 <div id="page-sessions" class="page">
   <div class="page-hdr">
-    <div class="page-hdr-left"><h1 class="page-title">Sessions & Cohortes</h1><p class="page-sub" id="sessions-subtitle">Chargement...</p></div>
+    <div class="page-hdr-left"><h1 class="page-title">Sessions & Cohortes</h1><p class="page-sub">4 cohortes actives · 38 apprenants</p></div>
     <div class="page-hdr-right"><button class="btn-p">+ Nouvelle session</button></div>
   </div>
   <div class="g65">
@@ -1376,8 +1376,11 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
       <div class="card-h"><span class="card-title">Cohortes actives</span></div>
       <table class="dt">
         <thead><tr><th>Cohorte</th><th>Formation</th><th>Formateur</th><th>Apprenants</th><th>Avancement</th><th>Statut</th></tr></thead>
-        <tbody id="sessions-tbody">
-          <tr><td colspan="6" style="text-align:center;padding:20px;color:#9ca3af;font-style:italic">Chargement...</td></tr>
+        <tbody>
+          <tr><td class="name-cell">Fév–Mars 2026</td><td>Performance artistique</td><td>Shaun BUI</td><td>8</td><td><div class="flex items-c gap-2"><div class="prog" style="width:60px"><div class="prog-fill" style="width:67%"></div></div><span class="text-xs">67%</span></div></td><td><span class="badge b-green">En cours</span></td></tr>
+          <tr><td class="name-cell">Janv 2026</td><td>Stratégie d'activité</td><td>Julien MELI</td><td>6</td><td><div class="flex items-c gap-2"><div class="prog" style="width:60px"><div class="prog-fill green" style="width:100%"></div></div><span class="text-xs text-green">100%</span></div></td><td><span class="badge b-navy">Clôture</span></td></tr>
+          <tr><td class="name-cell">Mars 2026</td><td>Posture professionnelle</td><td>David CANDELIER</td><td>5</td><td><div class="flex items-c gap-2"><div class="prog" style="width:60px"><div class="prog-fill gold" style="width:20%"></div></div><span class="text-xs">20%</span></div></td><td><span class="badge b-green">En cours</span></td></tr>
+          <tr><td class="name-cell">Avril 2026</td><td>Ostéopathie</td><td>Madeleine FEUILLETTE</td><td>4</td><td><div class="flex items-c gap-2"><div class="prog" style="width:60px"><div class="prog-fill" style="width:5%"></div></div><span class="text-xs">5%</span></div></td><td><span class="badge b-amber">Démarrage</span></td></tr>
         </tbody>
       </table>
     </div>
@@ -2675,138 +2678,6 @@ document.getElementById('global-search').addEventListener('keyup', function(e) {
     document.addEventListener('DOMContentLoaded', loadApprenants);
   } else {
     loadApprenants();
-  }
-})();
-</script>
-
-
-<!-- === CONNEXION SUPABASE POUR SESSIONS === -->
-<script>
-(function() {
-  var SUPABASE_URL = 'https://cvxzdiutxonnsnwoicqt.supabase.co';
-  var SUPABASE_KEY = 'sb_publishable_J8ta-7L05zgK9rBy2OS9Bg_CjXHwZVK';
-  if (typeof window.supabase === 'undefined' || !window.supabase.createClient) return;
-  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-  function escapeHtml(s) {
-    if (!s) return '';
-    return String(s).replace(/[&<>"']/g, function(c) {
-      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
-    });
-  }
-
-  function fmtCohorte(dateDebut, dateFin) {
-    if (!dateDebut) return '—';
-    var d1 = new Date(dateDebut);
-    var mois = ['Janv', 'Fev', 'Mars', 'Avr', 'Mai', 'Juin', 'Juil', 'Aout', 'Sept', 'Oct', 'Nov', 'Dec'];
-    var s = mois[d1.getMonth()] + ' ' + d1.getFullYear();
-    if (dateFin) {
-      var d2 = new Date(dateFin);
-      if (d2.getMonth() !== d1.getMonth() || d2.getFullYear() !== d1.getFullYear()) {
-        s = mois[d1.getMonth()] + '–' + mois[d2.getMonth()] + ' ' + d2.getFullYear();
-      }
-    }
-    return s;
-  }
-
-  function getAvancement(dateDebut, dateFin) {
-    if (!dateDebut) return { pct: 0, label: '0%', cls: '', statut: 'A venir', statutCls: 'b-gray' };
-    var now = Date.now();
-    var d1 = new Date(dateDebut).getTime();
-    var d2 = dateFin ? new Date(dateFin).getTime() : null;
-    if (now < d1) return { pct: 0, label: '0%', cls: '', statut: 'Demarrage', statutCls: 'b-amber' };
-    if (d2 && now > d2) return { pct: 100, label: '100%', cls: 'green', statut: 'Cloture', statutCls: 'b-navy' };
-    if (d2 && d2 > d1) {
-      var pct = Math.round(((now - d1) / (d2 - d1)) * 100);
-      return {
-        pct: pct,
-        label: pct + '%',
-        cls: pct >= 66 ? 'green' : (pct >= 33 ? '' : 'gold'),
-        statut: 'En cours',
-        statutCls: 'b-green'
-      };
-    }
-    return { pct: 50, label: 'En cours', cls: '', statut: 'En cours', statutCls: 'b-green' };
-  }
-
-  async function loadSessions() {
-    try {
-      var subtitleEl = document.getElementById('sessions-subtitle');
-      var tbodyEl = document.getElementById('sessions-tbody');
-
-      // Sessions avec formations jointes
-      var sR = await sb.from('formation_sessions')
-        .select('id, date_debut, date_fin, formateur_principal_id, formateur_principal, formation_id, formations(titre)')
-        .order('date_debut', { ascending: false });
-      if (sR.error) throw sR.error;
-      var sessions = sR.data || [];
-
-      // Formateurs
-      var fR = await sb.from('formateurs').select('id, prenom, nom');
-      var formateursById = {};
-      (fR.data || []).forEach(function(f) { formateursById[f.id] = f; });
-
-      // Inscriptions pour compter apprenants par session
-      var iR = await sb.from('formation_inscriptions').select('session_id, statut');
-      var nbBySession = {};
-      var totalApprenants = 0;
-      (iR.data || []).forEach(function(i) {
-        if (i.statut === 'abandon') return;
-        nbBySession[i.session_id] = (nbBySession[i.session_id] || 0) + 1;
-        totalApprenants++;
-      });
-
-      // Sessions actives (en cours + a venir)
-      var now = Date.now();
-      var actives = sessions.filter(function(s) {
-        if (!s.date_fin) return true;
-        return new Date(s.date_fin).getTime() >= now;
-      });
-
-      if (subtitleEl) {
-        subtitleEl.textContent = actives.length + ' cohorte' + (actives.length > 1 ? 's' : '') + ' active' + (actives.length > 1 ? 's' : '') + ' · ' + totalApprenants + ' apprenant' + (totalApprenants > 1 ? 's' : '');
-      }
-
-      if (sessions.length === 0) {
-        tbodyEl.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:#9ca3af;font-style:italic">Aucune session</td></tr>';
-      } else {
-        var rows = sessions.map(function(s) {
-          var formateur = s.formateur_principal_id ? formateursById[s.formateur_principal_id] : null;
-          var formateurNom = formateur
-            ? ((formateur.prenom || '') + ' ' + (formateur.nom || '')).trim()
-            : (s.formateur_principal || '—');
-          var formationTitre = (s.formations && s.formations.titre) || '—';
-          var cohorte = fmtCohorte(s.date_debut, s.date_fin);
-          var nb = nbBySession[s.id] || 0;
-          var av = getAvancement(s.date_debut, s.date_fin);
-
-          return '<tr>' +
-            '<td class="name-cell">' + escapeHtml(cohorte) + '</td>' +
-            '<td>' + escapeHtml(formationTitre) + '</td>' +
-            '<td>' + escapeHtml(formateurNom) + '</td>' +
-            '<td>' + nb + '</td>' +
-            '<td><div class="flex items-c gap-2">' +
-              '<div class="prog" style="width:60px"><div class="prog-fill ' + av.cls + '" style="width:' + av.pct + '%"></div></div>' +
-              '<span class="text-xs' + (av.cls ? ' text-' + av.cls : '') + '">' + av.label + '</span>' +
-            '</div></td>' +
-            '<td><span class="badge ' + av.statutCls + '">' + av.statut + '</span></td>' +
-          '</tr>';
-        });
-        tbodyEl.innerHTML = rows.join('');
-      }
-
-      console.log('[Ardalos Sessions] OK :', sessions.length, 'sessions,', actives.length, 'actives,', totalApprenants, 'apprenants');
-    } catch (e) {
-      console.error('[Ardalos Sessions] Erreur:', e);
-      var tbodyEl = document.getElementById('sessions-tbody');
-      if (tbodyEl) tbodyEl.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#dc2626">Erreur : ' + escapeHtml(e.message || 'inconnue') + '</td></tr>';
-    }
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', loadSessions);
-  } else {
-    loadSessions();
   }
 })();
 </script>
