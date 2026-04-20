@@ -1511,14 +1511,16 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
 <!-- ▶ APPRENANTS ──────────────────────────── -->
 <div id="page-apprenants" class="page">
   <div class="page-hdr">
-    <div class="page-hdr-left"><h1 class="page-title">Apprenants</h1><p class="page-sub" id="apprenants-subtitle">Chargement...</p></div>
+    <div class="page-hdr-left"><h1 class="page-title">Apprenants</h1><p class="page-sub">38 actifs · 4 cohortes · Assiduité moy. 94%</p></div>
     <div class="page-hdr-right"><button class="btn-p">+ Ajouter apprenant</button></div>
   </div>
   <div class="card">
     <table class="dt">
       <thead><tr><th>Apprenant</th><th>Formation</th><th>Cohorte</th><th>Avancement</th><th>Assiduité</th><th>Financement</th><th>Satisfaction</th><th></th></tr></thead>
-      <tbody id="apprenants-tbody">
-        <tr><td colspan="8" style="text-align:center;padding:20px;color:#9ca3af;font-style:italic">Chargement...</td></tr>
+      <tbody>
+        <tr><td><div class="flex items-c gap-2"><div class="av">LB</div><div><div class="name-cell">Lucas Bernard</div><div class="text-xs text-muted">Intermittent</div></div></div></td><td>Performance artistique</td><td>Fév–Mars 2026</td><td><div class="flex items-c gap-2"><div class="prog" style="width:60px"><div class="prog-fill" style="width:67%"></div></div><span class="text-xs">67%</span></div></td><td><span class="badge b-green">100%</span></td><td><span class="badge b-navy">AFDAS</span></td><td><span class="badge b-green">4.9/5</span></td><td><button class="btn-s" style="font-size:11px;padding:3px 8px">Voir</button></td></tr>
+        <tr><td><div class="flex items-c gap-2"><div class="av" style="background:var(--ard-gold-light);color:var(--ard-gold)">CF</div><div><div class="name-cell">Camille Forest</div><div class="text-xs text-muted">Artiste</div></div></div></td><td>Stratégie d'activité</td><td>Janv 2026</td><td><div class="flex items-c gap-2"><div class="prog" style="width:60px"><div class="prog-fill green" style="width:100%"></div></div><span class="text-xs text-green">Terminé</span></div></td><td><span class="badge b-green">96%</span></td><td><span class="badge b-teal">OPCO</span></td><td><span class="badge b-green">4.7/5</span></td><td><button class="btn-s" style="font-size:11px;padding:3px 8px">Voir</button></td></tr>
+        <tr><td><div class="flex items-c gap-2"><div class="av" style="background:var(--green-bg);color:var(--green)">PG</div><div><div class="name-cell">Paul Girard</div><div class="text-xs text-muted">Technicien</div></div></div></td><td>Posture professionnelle</td><td>Mars 2026</td><td><div class="flex items-c gap-2"><div class="prog" style="width:60px"><div class="prog-fill gold" style="width:20%"></div></div><span class="text-xs">20%</span></div></td><td><span class="badge b-amber">80%</span></td><td><span class="badge b-amber">En attente</span></td><td class="text-muted text-xs">—</td><td><button class="btn-s" style="font-size:11px;padding:3px 8px">Voir</button></td></tr>
       </tbody>
     </table>
   </div>
@@ -2500,184 +2502,6 @@ document.getElementById('global-search').addEventListener('keyup', function(e) {
     document.addEventListener('DOMContentLoaded', loadFormateurs);
   } else {
     loadFormateurs();
-  }
-})();
-</script>
-
-
-<!-- === CONNEXION SUPABASE POUR APPRENANTS === -->
-<script>
-(function() {
-  var SUPABASE_URL = 'https://cvxzdiutxonnsnwoicqt.supabase.co';
-  var SUPABASE_KEY = 'sb_publishable_J8ta-7L05zgK9rBy2OS9Bg_CjXHwZVK';
-  if (typeof window.supabase === 'undefined' || !window.supabase.createClient) {
-    console.warn('[Ardalos Apprenants] Lib Supabase non chargee');
-    return;
-  }
-  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-  function escapeHtml(s) {
-    if (!s) return '';
-    return String(s).replace(/[&<>"']/g, function(c) {
-      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
-    });
-  }
-
-  function getInitials(prenom, nom) {
-    var p = (prenom || '').trim();
-    var n = (nom || '').trim();
-    return ((p[0] || '').toUpperCase() + (n[0] || '').toUpperCase()) || '??';
-  }
-
-  var AVATAR_COLORS = [
-    { bg: 'var(--ard-blue)', fg: '#fff' },
-    { bg: 'var(--ard-gold-light)', fg: 'var(--ard-gold)' },
-    { bg: 'var(--green-bg)', fg: 'var(--green)' },
-    { bg: 'var(--purple-bg)', fg: 'var(--purple)' },
-    { bg: 'var(--teal-bg)', fg: 'var(--teal)' },
-  ];
-  function pickColor(name) {
-    var sum = 0;
-    for (var i = 0; i < name.length; i++) sum += name.charCodeAt(i);
-    return AVATAR_COLORS[sum % AVATAR_COLORS.length];
-  }
-
-  function fmtCohorte(dateDebut, dateFin) {
-    if (!dateDebut) return '—';
-    var d1 = new Date(dateDebut);
-    var mois = ['Janv', 'Fev', 'Mars', 'Avr', 'Mai', 'Juin', 'Juil', 'Aout', 'Sept', 'Oct', 'Nov', 'Dec'];
-    var s = mois[d1.getMonth()] + ' ' + d1.getFullYear();
-    if (dateFin) {
-      var d2 = new Date(dateFin);
-      if (d2.getMonth() !== d1.getMonth() || d2.getFullYear() !== d1.getFullYear()) {
-        s = mois[d1.getMonth()] + '–' + mois[d2.getMonth()] + ' ' + d2.getFullYear();
-      }
-    }
-    return s;
-  }
-
-  function getAvancement(dateDebut, dateFin) {
-    if (!dateDebut) return { pct: 0, label: 'A venir', cls: '' };
-    var now = Date.now();
-    var d1 = new Date(dateDebut).getTime();
-    var d2 = dateFin ? new Date(dateFin).getTime() : null;
-    if (now < d1) return { pct: 0, label: 'A venir', cls: '' };
-    if (d2 && now > d2) return { pct: 100, label: 'Termine', cls: 'green' };
-    if (d2 && d2 > d1) {
-      var pct = Math.round(((now - d1) / (d2 - d1)) * 100);
-      return { pct: pct, label: pct + '%', cls: pct >= 66 ? 'green' : (pct >= 33 ? '' : 'gold') };
-    }
-    return { pct: 50, label: 'En cours', cls: '' };
-  }
-
-  async function loadApprenants() {
-    try {
-      var subtitleEl = document.getElementById('apprenants-subtitle');
-      var tbodyEl = document.getElementById('apprenants-tbody');
-
-      // 1. Inscriptions actives + jointures
-      var iR = await sb.from('formation_inscriptions')
-        .select('id, statut, contact_id, session_id, contacts(prenom, nom), formation_sessions(date_debut, date_fin, formations(titre))')
-        .neq('statut', 'abandon')
-        .order('created_at', { ascending: false });
-      if (iR.error) throw iR.error;
-      var inscriptions = iR.data || [];
-
-      // 2. Financements
-      var fR = await sb.from('formation_financements').select('inscription_id, type_financement, statut_dossier');
-      var finByIns = {};
-      (fR.data || []).forEach(function(f) {
-        if (!finByIns[f.inscription_id]) finByIns[f.inscription_id] = [];
-        finByIns[f.inscription_id].push(f);
-      });
-
-      // Dedup par contact_id : on garde seulement la derniere inscription par personne
-      var seenContacts = {};
-      var apprenants = [];
-      for (var i = 0; i < inscriptions.length; i++) {
-        var ins = inscriptions[i];
-        if (!ins.contact_id || seenContacts[ins.contact_id]) continue;
-        seenContacts[ins.contact_id] = true;
-        apprenants.push(ins);
-      }
-
-      // Calculer nb cohortes distinctes
-      var cohortes = {};
-      apprenants.forEach(function(a) {
-        if (a.formation_sessions) {
-          cohortes[a.formation_sessions.date_debut + '|' + (a.formation_sessions.formations ? a.formation_sessions.formations.titre : '')] = true;
-        }
-      });
-      var nbCohortes = Object.keys(cohortes).length;
-
-      // Sous-titre
-      if (subtitleEl) {
-        subtitleEl.textContent = apprenants.length + ' actif' + (apprenants.length > 1 ? 's' : '') + ' · ' + nbCohortes + ' cohorte' + (nbCohortes > 1 ? 's' : '');
-      }
-
-      // Render
-      if (apprenants.length === 0) {
-        tbodyEl.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:#9ca3af;font-style:italic">Aucun apprenant actif</td></tr>';
-      } else {
-        var rows = apprenants.map(function(a) {
-          var contact = a.contacts || {};
-          var session = a.formation_sessions || {};
-          var formation = session.formations || {};
-          var nom = ((contact.prenom || '') + ' ' + (contact.nom || '')).trim() || 'Sans nom';
-          var initials = getInitials(contact.prenom, contact.nom);
-          var color = pickColor(nom);
-          var avStyle = 'background:' + color.bg + ';color:' + color.fg;
-
-          var cohorte = fmtCohorte(session.date_debut, session.date_fin);
-          var avancement = getAvancement(session.date_debut, session.date_fin);
-
-          // Financement
-          var fins = finByIns[a.id] || [];
-          var finBadge = '<span class="text-muted text-xs">—</span>';
-          if (fins.length > 0) {
-            var types = fins.map(function(f) { return f.type_financement; }).join(', ');
-            var cls = 'b-navy';
-            if (types.indexOf('AFDAS') !== -1) cls = 'b-navy';
-            else if (types.indexOf('CPF') !== -1) cls = 'b-teal';
-            else if (types.indexOf('OPCO') !== -1) cls = 'b-teal';
-            finBadge = '<span class="badge ' + cls + '">' + escapeHtml(types) + '</span>';
-          }
-
-          return '<tr>' +
-            '<td><div class="flex items-c gap-2">' +
-              '<div class="av" style="' + avStyle + '">' + initials + '</div>' +
-              '<div>' +
-                '<div class="name-cell">' + escapeHtml(nom) + '</div>' +
-                '<div class="text-xs text-muted">Stagiaire</div>' +
-              '</div>' +
-            '</div></td>' +
-            '<td>' + escapeHtml(formation.titre || '—') + '</td>' +
-            '<td>' + escapeHtml(cohorte) + '</td>' +
-            '<td><div class="flex items-c gap-2">' +
-              '<div class="prog" style="width:60px"><div class="prog-fill ' + avancement.cls + '" style="width:' + avancement.pct + '%"></div></div>' +
-              '<span class="text-xs' + (avancement.cls ? ' text-' + avancement.cls : '') + '">' + avancement.label + '</span>' +
-            '</div></td>' +
-            '<td><span class="text-muted text-xs">—</span></td>' +
-            '<td>' + finBadge + '</td>' +
-            '<td><span class="text-muted text-xs">—</span></td>' +
-            '<td><button class="btn-s" style="font-size:11px;padding:3px 8px">Voir</button></td>' +
-          '</tr>';
-        });
-        tbodyEl.innerHTML = rows.join('');
-      }
-
-      console.log('[Ardalos Apprenants] OK charges :', apprenants.length, 'apprenants,', nbCohortes, 'cohortes');
-    } catch (e) {
-      console.error('[Ardalos Apprenants] Erreur:', e);
-      var tbodyEl = document.getElementById('apprenants-tbody');
-      if (tbodyEl) tbodyEl.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:#dc2626">Erreur : ' + escapeHtml(e.message || 'inconnue') + '</td></tr>';
-    }
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', loadApprenants);
-  } else {
-    loadApprenants();
   }
 })();
 </script>
