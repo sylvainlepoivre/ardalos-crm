@@ -1,16 +1,16 @@
 // app/api/send-dossier-email/route.ts
 // POST /api/send-dossier-email
-// Body: { inscriptionId, templates?, to, subject, message, format?: 'pdf' | 'zip' }
 // - Genere le dossier (ZIP ou PDF fusionne via CloudConvert)
-// - Envoie par email via Gmail SMTP avec CC aux 3 associes Ardalos
+// - Envoie par email via Gmail SMTP avec CC aux 3 associes
+// - Log l'envoi dans la table email_logs pour historique
 
 import { NextRequest, NextResponse } from 'next/server'
 import nodemailer from 'nodemailer'
 import { generateDossier } from '@/lib/generateDossier'
+import { createClient } from '@supabase/supabase-js'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
-// Timeout long car la conversion PDF peut prendre jusqu'a 2 min
 export const maxDuration = 180
 
 const CC_ASSOCIES = [
@@ -19,11 +19,55 @@ const CC_ASSOCIES = [
   'sylvain.lepoivre@gmail.com',
 ]
 
-export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json()
-    const { inscriptionId, templates, to, subject, message, format } = body
+const supabaseUrl = 'https://cvxzdiutxonnsnwoicqt.supabase.co'
+const supabaseKey = 'sb_publishable_J8ta-7L05zgK9rBy2OS9Bg_CjXHwZVK'
 
+async function logEmail(data: {
+  inscriptionId: string
+  destinataire: string
+  cc: string[]
+  sujet: string
+  message: string
+  filename: string
+  format: 'pdf' | 'zip'
+  nbTemplates: number
+  templatesList: string[]
+  success: boolean
+  errorMessage?: string
+  messageId?: string
+  envoyePar?: string
+}) {
+  try {
+    const supabase = createClient(supabaseUrl, supabaseKey)
+    await supabase.from('email_logs').insert({
+      inscription_id: data.inscriptionId,
+      destinataire: data.destinataire,
+      cc: data.cc,
+      sujet: data.sujet,
+      message: data.message,
+      filename: data.filename,
+      format: data.format,
+      nb_templates: data.nbTemplates,
+      templates_list: data.templatesList,
+      success: data.success,
+      error_message: data.errorMessage || null,
+      message_id: data.messageId || null,
+      envoye_par: data.envoyePar || null,
+    })
+  } catch (e) {
+    console.warn('[logEmail] erreur:', e)
+  }
+}
+
+export async function POST(req: NextRequest) {
+  const body = await req.json().catch(() => ({}))
+  const { inscriptionId, templates, to, subject, message, format, envoyePar } = body
+
+  // Variables utilisees dans le catch pour logger meme en cas d'erreur
+  const outputFormat: 'zip' | 'pdf' = format === 'zip' ? 'zip' : 'pdf'
+  const selectedTemplates: string[] = Array.isArray(templates) && templates.length > 0 ? templates : []
+
+  try {
     if (!inscriptionId) return NextResponse.json({ error: 'inscriptionId requis' }, { status: 400 })
     if (!to || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) {
       return NextResponse.json({ error: 'Email destinataire invalide' }, { status: 400 })
@@ -41,50 +85,59 @@ export async function POST(req: NextRequest) {
     const cookieHeader = req.headers.get('cookie') || ''
     const authToken = extractSupabaseToken(cookieHeader)
 
-    // Format : PDF par defaut (plus pro), ZIP si explicitement demande
-    const outputFormat: 'zip' | 'pdf' = format === 'zip' ? 'zip' : 'pdf'
-
     // 1. Generer le dossier (ZIP ou PDF selon format)
-    const selectedTemplates = Array.isArray(templates) && templates.length > 0 ? templates : undefined
     const { buffer, filename, contentType } = await generateDossier(
-      inscriptionId, authToken, selectedTemplates, outputFormat,
+      inscriptionId, authToken,
+      selectedTemplates.length > 0 ? selectedTemplates : undefined,
+      outputFormat,
     )
 
-    // 2. Preparer le transporteur SMTP Gmail
+    // 2. Envoyer par email
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: { user: gmailUser, pass: gmailPwd },
     })
 
-    // 3. Envoyer l'email avec la piece jointe
     const info = await transporter.sendMail({
       from: `"Ardalos Formation" <${gmailUser}>`,
       to: to,
       cc: CC_ASSOCIES.join(', '),
       subject: subject,
       text: message,
-      attachments: [
-        {
-          filename: filename,
-          content: buffer,
-          contentType: contentType,
-        },
-      ],
+      attachments: [{ filename, content: buffer, contentType }],
     })
 
     console.log('[send-dossier-email] Email envoye:', info.messageId, 'to:', to, 'format:', outputFormat)
 
+    // 3. Logger l'envoi en succes
+    await logEmail({
+      inscriptionId, destinataire: to, cc: CC_ASSOCIES,
+      sujet: subject, message, filename, format: outputFormat,
+      nbTemplates: selectedTemplates.length, templatesList: selectedTemplates,
+      success: true, messageId: info.messageId, envoyePar: envoyePar || null,
+    })
+
     return NextResponse.json({
       success: true,
       messageId: info.messageId,
-      to: to,
-      cc: CC_ASSOCIES,
-      filename: filename,
-      format: outputFormat,
+      to, cc: CC_ASSOCIES, filename, format: outputFormat,
     })
   } catch (e: any) {
     console.error('[send-dossier-email] Erreur:', e)
-    return NextResponse.json({ error: e?.message || 'Erreur inconnue' }, { status: 500 })
+    const errMsg = e?.message || 'Erreur inconnue'
+
+    // Logger l'echec aussi (si on a assez d'infos)
+    if (inscriptionId && to) {
+      await logEmail({
+        inscriptionId, destinataire: to, cc: CC_ASSOCIES,
+        sujet: subject || '', message: message || '',
+        filename: '(non genere)', format: outputFormat,
+        nbTemplates: selectedTemplates.length, templatesList: selectedTemplates,
+        success: false, errorMessage: errMsg, envoyePar: envoyePar || null,
+      })
+    }
+
+    return NextResponse.json({ error: errMsg }, { status: 500 })
   }
 }
 
@@ -101,7 +154,5 @@ function extractSupabaseToken(cookieHeader: string): string | null {
       return parsed?.access_token || parsed?.[0] || null
     }
     return raw
-  } catch {
-    return null
-  }
+  } catch { return null }
 }

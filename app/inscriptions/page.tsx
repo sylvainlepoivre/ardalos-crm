@@ -61,7 +61,7 @@ function InscriptionsContent() {
   const [loading, setLoading] = useState(false)
 
   // Onglets dans la modale édition
-  const [activeTab, setActiveTab] = useState<'infos' | 'commercial' | 'documents' | 'financement'>('infos')
+  const [activeTab, setActiveTab] = useState<'infos' | 'commercial' | 'documents' | 'financement' | 'emails'>('infos')
 
   // Formulaire — onglet 1 Infos
   const [sessionId, setSessionId] = useState('')
@@ -91,6 +91,7 @@ function InscriptionsContent() {
   const [dateRappelPrevu, setDateRappelPrevu] = useState('')
   const [notesCommerciales, setNotesCommerciales] = useState('')
   const [etapesLog, setEtapesLog] = useState<any[]>([])
+  const [emailHistory, setEmailHistory] = useState<any[]>([])
 
   // Formulaire — onglet 3 Documents (NOUVEAU — cases à cocher avec horodatage)
   const [devisEnvoye, setDevisEnvoye] = useState<string | null>(null)
@@ -203,6 +204,9 @@ function InscriptionsContent() {
     // Charger l'historique
     const { data: logs } = await supabase.from('inscription_etapes_log').select('*').eq('inscription_id', ins.id).order('created_at', { ascending: false }).limit(20)
     setEtapesLog(logs || [])
+
+    const { data: emails } = await supabase.from('email_logs').select('*').eq('inscription_id', ins.id).order('created_at', { ascending: false }).limit(50)
+    setEmailHistory(emails || [])
 
     setShowForm(true)
   }
@@ -403,7 +407,7 @@ function InscriptionsContent() {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
         body: JSON.stringify({
           inscriptionId: dossierIns.id, templates: Array.from(selectedTpls),
-          to: emailTo, subject: emailSubject, message: emailMessage, format: dossierFormat,
+          to: emailTo, subject: emailSubject, message: emailMessage, format: dossierFormat, envoyePar: commercialResponsable,
         }),
       })
       const data = await res.json()
@@ -455,6 +459,7 @@ function InscriptionsContent() {
               { key: 'commercial', label: '🎯 Suivi commercial' },
               { key: 'documents', label: '📄 Documents' },
               { key: 'financement', label: '💰 Financement' },
+              { key: 'emails', label: '📧 Historique emails' },
             ].map(t => (
               <button key={t.key} onClick={() => setActiveTab(t.key as any)}
                 style={{
@@ -706,6 +711,84 @@ function InscriptionsContent() {
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* ============ ONGLET 5 : HISTORIQUE EMAILS ============ */}
+          {activeTab === 'emails' && (
+            <div>
+              <div style={{ background: '#ede9fe', border: '1px solid #c4b5fd', borderRadius: '8px', padding: '12px', marginBottom: '16px', fontSize: '12px', color: '#5b21b6' }}>
+                📧 Historique des dossiers envoyes par email pour ce stagiaire.
+              </div>
+              {!selected ? (
+                <div style={{ padding: '40px', textAlign: 'center', color: '#9ca3af', fontSize: '13px' }}>
+                  Enregistre d'abord l'inscription pour voir l'historique des emails.
+                </div>
+              ) : emailHistory.length === 0 ? (
+                <div style={{ padding: '40px', textAlign: 'center', color: '#9ca3af', fontSize: '13px' }}>
+                  ✉️ Aucun email envoye pour cette inscription.
+                  <div style={{ marginTop: '8px', fontSize: '11px' }}>
+                    Utilise le bouton <strong style={{ color: '#C9A84C' }}>📥 Dossier</strong> dans la liste pour envoyer un dossier par email.
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '12px' }}>
+                    {emailHistory.length} email{emailHistory.length > 1 ? 's' : ''} envoye{emailHistory.length > 1 ? 's' : ''}
+                  </div>
+                  {emailHistory.map((e: any) => (
+                    <div key={e.id} style={{
+                      background: e.success ? '#f0fdf4' : '#fef2f2',
+                      border: `1px solid ${e.success ? '#86efac' : '#fca5a5'}`,
+                      borderRadius: '8px', padding: '14px', marginBottom: '10px',
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
+                        <div>
+                          <span style={{
+                            background: e.success ? '#059669' : '#ef4444',
+                            color: '#fff', padding: '2px 8px', borderRadius: '10px',
+                            fontSize: '10px', fontWeight: 600, marginRight: '8px',
+                          }}>{e.success ? '✅ ENVOYE' : '❌ ECHEC'}</span>
+                          <span style={{ color: '#1A2C6B', fontWeight: 600, fontSize: '13px' }}>
+                            {e.format === 'pdf' ? '📄 PDF' : '🗂️ ZIP'} · {e.nb_templates} doc{e.nb_templates > 1 ? 's' : ''}
+                          </span>
+                        </div>
+                        <span style={{ color: '#6b7280', fontSize: '11px' }}>
+                          {fmtDateTime(e.created_at)}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#374151', marginBottom: '4px' }}>
+                        <strong>À :</strong> {e.destinataire}
+                      </div>
+                      {e.cc && e.cc.length > 0 && (
+                        <div style={{ fontSize: '11px', color: '#6b7280', marginBottom: '4px' }}>
+                          <strong>CC :</strong> {e.cc.join(', ')}
+                        </div>
+                      )}
+                      {e.sujet && (
+                        <div style={{ fontSize: '12px', color: '#374151', marginBottom: '4px' }}>
+                          <strong>Objet :</strong> {e.sujet}
+                        </div>
+                      )}
+                      {e.filename && (
+                        <div style={{ fontSize: '11px', color: '#6b7280', marginBottom: '4px' }}>
+                          📎 {e.filename}
+                        </div>
+                      )}
+                      {e.envoye_par && (
+                        <div style={{ fontSize: '11px', color: '#6b7280' }}>
+                          👤 Envoye par : <strong>{e.envoye_par}</strong>
+                        </div>
+                      )}
+                      {!e.success && e.error_message && (
+                        <div style={{ fontSize: '11px', color: '#991b1b', marginTop: '6px', padding: '6px', background: '#fee2e2', borderRadius: '4px' }}>
+                          ⚠️ {e.error_message}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
