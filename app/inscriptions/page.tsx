@@ -85,7 +85,7 @@ function InscriptionsContent() {
   const [selectedTpls, setSelectedTpls] = useState<Set<string>>(new Set(ALL_TEMPLATE_FILENAMES))
   const [generatingDossier, setGeneratingDossier] = useState(false)
 
-  // ==== NEW P2 : format ZIP ou PDF ====
+  // Format PDF (defaut) ou ZIP — partagé entre téléchargement ET email
   const [dossierFormat, setDossierFormat] = useState<'pdf' | 'zip'>('pdf')
 
   // Mode envoi email
@@ -263,7 +263,7 @@ function InscriptionsContent() {
     setDossierIns(ins)
     setSelectedTpls(new Set(ALL_TEMPLATE_FILENAMES))
     setEmailMode(false)
-    setDossierFormat('pdf')  // PDF par defaut
+    setDossierFormat('pdf')
     const emailDest = ins.contacts?.email || ''
     const nomStagiaire = `${ins.contacts?.prenom || ''} ${ins.contacts?.nom || ''}`.trim() || 'Stagiaire'
     const titreFormation = ins.formation_sessions?.formations?.titre || 'Formation'
@@ -340,6 +340,7 @@ function InscriptionsContent() {
           inscriptionId: dossierIns.id,
           templates: Array.from(selectedTpls),
           to: emailTo, subject: emailSubject, message: emailMessage,
+          format: dossierFormat,
         }),
       })
       const data = await res.json()
@@ -347,7 +348,8 @@ function InscriptionsContent() {
         alert('Erreur envoi email : ' + (data.error || 'inconnue'))
         setSendingEmail(false); return
       }
-      alert(`✅ Email envoyé !\n\nDestinataire : ${data.to}\nEn CC : ${(data.cc || []).join(', ')}\nFichier : ${data.filename}`)
+      const formatLabel = data.format === 'pdf' ? 'PDF fusionné' : 'ZIP de docx'
+      alert(`✅ Email envoyé !\n\nDestinataire : ${data.to}\nEn CC : ${(data.cc || []).join(', ')}\nFichier : ${data.filename}\nFormat : ${formatLabel}`)
       setSendingEmail(false)
       setDossierIns(null)
       setEmailMode(false)
@@ -581,7 +583,6 @@ function InscriptionsContent() {
               {dossierIns.formation_sessions?.formations?.titre ? ` · ${dossierIns.formation_sessions.formations.titre}` : ''}
             </p>
 
-            {/* Onglets Télécharger / Email */}
             <div style={{ display: 'flex', gap: '4px', marginBottom: '16px', borderBottom: '1px solid #e5e7eb' }}>
               <button onClick={() => setEmailMode(false)} disabled={isBusy}
                 style={{ background: 'transparent', border: 'none', padding: '8px 16px', fontSize: '13px',
@@ -599,47 +600,44 @@ function InscriptionsContent() {
               </button>
             </div>
 
-            {/* Switch format PDF/ZIP (mode téléchargement uniquement pour l'instant en Phase 2A) */}
-            {!emailMode && (
-              <div style={{ background: '#f9fafb', padding: '12px', borderRadius: '8px', marginBottom: '12px', border: '1px solid #e5e7eb' }}>
-                <label style={{ ...labelStyle, marginBottom: '8px' }}>Format du fichier</label>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button onClick={() => setDossierFormat('pdf')} disabled={isBusy}
-                    style={{
-                      flex: 1, padding: '10px', borderRadius: '6px', fontSize: '13px', cursor: isBusy ? 'not-allowed' : 'pointer',
-                      background: dossierFormat === 'pdf' ? '#1A2C6B' : '#fff',
-                      color: dossierFormat === 'pdf' ? '#fff' : '#1A2C6B',
-                      border: `1px solid ${dossierFormat === 'pdf' ? '#1A2C6B' : '#d1d5db'}`,
-                      fontWeight: dossierFormat === 'pdf' ? 600 : 400,
-                    }}>
-                    📄 PDF fusionné <span style={{ fontSize: '11px', opacity: 0.8 }}>(1 fichier, signature unique)</span>
-                  </button>
-                  <button onClick={() => setDossierFormat('zip')} disabled={isBusy}
-                    style={{
-                      flex: 1, padding: '10px', borderRadius: '6px', fontSize: '13px', cursor: isBusy ? 'not-allowed' : 'pointer',
-                      background: dossierFormat === 'zip' ? '#1A2C6B' : '#fff',
-                      color: dossierFormat === 'zip' ? '#fff' : '#1A2C6B',
-                      border: `1px solid ${dossierFormat === 'zip' ? '#1A2C6B' : '#d1d5db'}`,
-                      fontWeight: dossierFormat === 'zip' ? 600 : 400,
-                    }}>
-                    🗂️ ZIP docx <span style={{ fontSize: '11px', opacity: 0.8 }}>(fichiers éditables)</span>
-                  </button>
-                </div>
-                {dossierFormat === 'pdf' && (
-                  <p style={{ fontSize: '11px', color: '#6b7280', marginTop: '8px', marginBottom: 0 }}>
-                    ⏱️ La génération PDF prend ~30-60 secondes (conversion + fusion via CloudConvert).
-                  </p>
-                )}
+            {/* Switch format PDF/ZIP — visible dans les 2 modes */}
+            <div style={{ background: '#f9fafb', padding: '12px', borderRadius: '8px', marginBottom: '12px', border: '1px solid #e5e7eb' }}>
+              <label style={{ ...labelStyle, marginBottom: '8px' }}>Format du fichier</label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button onClick={() => setDossierFormat('pdf')} disabled={isBusy}
+                  style={{
+                    flex: 1, padding: '10px', borderRadius: '6px', fontSize: '13px', cursor: isBusy ? 'not-allowed' : 'pointer',
+                    background: dossierFormat === 'pdf' ? '#1A2C6B' : '#fff',
+                    color: dossierFormat === 'pdf' ? '#fff' : '#1A2C6B',
+                    border: `1px solid ${dossierFormat === 'pdf' ? '#1A2C6B' : '#d1d5db'}`,
+                    fontWeight: dossierFormat === 'pdf' ? 600 : 400,
+                  }}>
+                  📄 PDF fusionné <span style={{ fontSize: '11px', opacity: 0.8 }}>(1 fichier pro)</span>
+                </button>
+                <button onClick={() => setDossierFormat('zip')} disabled={isBusy}
+                  style={{
+                    flex: 1, padding: '10px', borderRadius: '6px', fontSize: '13px', cursor: isBusy ? 'not-allowed' : 'pointer',
+                    background: dossierFormat === 'zip' ? '#1A2C6B' : '#fff',
+                    color: dossierFormat === 'zip' ? '#fff' : '#1A2C6B',
+                    border: `1px solid ${dossierFormat === 'zip' ? '#1A2C6B' : '#d1d5db'}`,
+                    fontWeight: dossierFormat === 'zip' ? 600 : 400,
+                  }}>
+                  🗂️ ZIP docx <span style={{ fontSize: '11px', opacity: 0.8 }}>(fichiers éditables)</span>
+                </button>
               </div>
-            )}
+              {dossierFormat === 'pdf' && (
+                <p style={{ fontSize: '11px', color: '#6b7280', marginTop: '8px', marginBottom: 0 }}>
+                  ⏱️ La génération PDF prend ~30-60 secondes (conversion via CloudConvert).
+                </p>
+              )}
+            </div>
 
-            {/* Cases à cocher */}
             <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', alignItems: 'center' }}>
               <button onClick={selectAllTpls} style={{ background: '#fff', color: '#1A2C6B', border: '1px solid #1A2C6B', borderRadius: '6px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>Tout cocher</button>
               <button onClick={deselectAllTpls} style={{ background: '#fff', color: '#6b7280', border: '1px solid #d1d5db', borderRadius: '6px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>Tout décocher</button>
               <span style={{ marginLeft: 'auto', fontSize: '12px', color: '#6b7280' }}>{selectedTpls.size} / {ALL_TEMPLATE_FILENAMES.length} sélectionnés</span>
             </div>
-            <div style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '6px', marginBottom: '16px', maxHeight: '200px', overflowY: 'auto' }}>
+            <div style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '6px', marginBottom: '16px', maxHeight: '180px', overflowY: 'auto' }}>
               {TEMPLATE_LIST.map(tpl => {
                 const checked = selectedTpls.has(tpl.filename)
                 return (
@@ -661,7 +659,7 @@ function InscriptionsContent() {
                 <div style={{ fontSize: '11px', color: '#6b7280', marginBottom: '10px' }}>
                   📧 Expéditeur : <strong>ardalosformation@gmail.com</strong><br />
                   📋 CC automatique : David, Julien, Sylvain<br />
-                  📎 Format de la pièce jointe : ZIP de docx (PDF en email arrive en Phase 2B)
+                  📎 Pièce jointe : <strong>{dossierFormat === 'pdf' ? 'PDF fusionné' : 'ZIP de docx éditables'}</strong>
                 </div>
                 <div style={{ marginBottom: '10px' }}>
                   <label style={labelStyle}>Objet *</label>
@@ -674,7 +672,6 @@ function InscriptionsContent() {
               </div>
             )}
 
-            {/* Boutons */}
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
               <button onClick={closeDossierModal} disabled={isBusy} style={{ background: '#fff', color: '#6b7280', border: '1px solid #d1d5db', borderRadius: '8px', padding: '10px 20px', cursor: isBusy ? 'not-allowed' : 'pointer', opacity: isBusy ? 0.5 : 1 }}>Annuler</button>
               {!emailMode ? (
@@ -683,7 +680,7 @@ function InscriptionsContent() {
                 </button>
               ) : (
                 <button onClick={runDossierEmail} disabled={isBusy || selectedTpls.size === 0} style={{ background: (isBusy || selectedTpls.size === 0) ? '#9ca3af' : '#1A2C6B', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 20px', fontWeight: 500, cursor: (isBusy || selectedTpls.size === 0) ? 'not-allowed' : 'pointer' }}>
-                  {sendingEmail ? 'Envoi en cours…' : `✉️ Envoyer (${selectedTpls.size})`}
+                  {sendingEmail ? (dossierFormat === 'pdf' ? 'Conversion PDF + envoi…' : 'Envoi en cours…') : `✉️ Envoyer ${dossierFormat === 'pdf' ? 'PDF' : 'ZIP'} (${selectedTpls.size})`}
                 </button>
               )}
             </div>
