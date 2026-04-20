@@ -342,6 +342,32 @@ function InscriptionsContent() {
 
   const currentContact = contacts.find(c => c.id === contactId)
 
+  async function downloadFacture(ins: any) {
+    if (!ins.montant_total_ht || Number(ins.montant_total_ht) <= 0) {
+      alert('Pas de montant HT sur cette inscription - impossible de generer la facture.')
+      return
+    }
+    try {
+      const res = await fetch(`/api/generate-facture?inscriptionId=${ins.id}`, { credentials: 'include' })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }))
+        alert('Erreur facture : ' + (err.error || 'inconnue'))
+        return
+      }
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      const cd = res.headers.get('Content-Disposition') || ''
+      const m = cd.match(/filename=\"([^\"]+)\"/)
+      a.download = m ? m[1] : 'FACTURE.pdf'
+      document.body.appendChild(a); a.click(); a.remove()
+      URL.revokeObjectURL(url)
+    } catch (e: any) {
+      alert('Erreur : ' + (e?.message || 'inconnue'))
+    }
+  }
+
   function openDossierModal(ins: any) {
     setDossierIns(ins)
     setSelectedTpls(new Set(ALL_TEMPLATE_FILENAMES))
@@ -841,6 +867,7 @@ function InscriptionsContent() {
                     <td style={{ padding: '12px', textAlign: 'right', color: '#C9A84C', fontWeight: 500 }}>{ins.montant_total_ht ? `${Number(ins.montant_total_ht).toLocaleString('fr-FR')} €` : '—'}</td>
                     <td style={{ padding: '12px', textAlign: 'center' }}>
                       <button onClick={() => openDossierModal(ins)} style={{ background: '#C9A84C', color: '#fff', border: 'none', padding: '4px 10px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer', marginRight: '4px', fontWeight: 500 }}>📥 Dossier</button>
+                      <button onClick={() => downloadFacture(ins)} style={{ background: '#059669', color: '#fff', border: 'none', padding: '4px 10px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer', marginRight: '4px', fontWeight: 500 }}>📄 Facture</button>
                       <button onClick={() => openEdit(ins)} style={{ background: '#fff', color: '#1A2C6B', border: '1px solid #1A2C6B', padding: '4px 10px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer', marginRight: '4px' }}>Modifier</button>
                       <button onClick={() => del(ins)} style={{ background: '#fff', color: '#ef4444', border: 'none', padding: '4px 10px', fontSize: '12px', cursor: 'pointer' }}>×</button>
                     </td>
