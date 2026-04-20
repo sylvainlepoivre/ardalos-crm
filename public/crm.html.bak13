@@ -1167,22 +1167,74 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
 <!-- ▶ WORKFLOWS ──────────────────────────── -->
 <div id="page-workflows" class="page">
   <div class="page-hdr">
-    <div class="page-hdr-left"><h1 class="page-title">Workflows & Automatisations</h1><p class="page-sub" id="wf-subtitle">Chargement...</p></div>
-    <div class="page-hdr-right"><button class="btn-p" onclick="window.ardalosWorkflowInfo()">+ Nouveau workflow</button></div>
+    <div class="page-hdr-left"><h1 class="page-title">Workflows & Automatisations</h1><p class="page-sub">18 actifs · 1 247 exécutions ce mois · 98.2% succès</p></div>
+    <div class="page-hdr-right"><button class="btn-p">+ Nouveau workflow</button></div>
   </div>
   <div class="kpi-grid g4 anim-kpi">
-    <div class="kpi green"><div class="kpi-label">Emails envoyes total</div><div class="kpi-value" id="wf-kpi-total">...</div><div class="kpi-sub">Tous workflows</div></div>
-    <div class="kpi"><div class="kpi-label">Ce mois</div><div class="kpi-value" id="wf-kpi-mois">...</div><div class="kpi-sub" id="wf-kpi-mois-sub">...</div></div>
-    <div class="kpi gold"><div class="kpi-label">Taux succes</div><div class="kpi-value" id="wf-kpi-succes">...</div><div class="kpi-sub">Envois reussis</div></div>
-    <div class="kpi red"><div class="kpi-label">Echecs</div><div class="kpi-value" id="wf-kpi-echecs">...</div><div class="kpi-sub">Tous workflows</div></div>
+    <div class="kpi green"><div class="kpi-label">Actifs</div><div class="kpi-value">18</div></div>
+    <div class="kpi"><div class="kpi-label">Exécutions/mois</div><div class="kpi-value">1 247</div></div>
+    <div class="kpi gold"><div class="kpi-label">Taux succès</div><div class="kpi-value">98.2%</div></div>
+    <div class="kpi red"><div class="kpi-label">Erreurs</div><div class="kpi-value">22</div></div>
   </div>
-  <div class="alert alert-b" style="margin:14px 0;padding:12px 16px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;color:#1e40af;font-size:12px">
-    <strong>ℹ Statut workflows :</strong> Les 4 workflows affiches ci-dessous sont des templates documentaires.
-    Les executions reelles sont tracees via la table email_logs (visible dans les KPI ci-dessus).
-    L'automatisation complete sera branchee lors de la phase 2.
-  </div>
-  <div id="wf-cards-container" class="g2">
-    <div style="grid-column:1/-1;padding:30px;text-align:center;color:#9ca3af;font-style:italic">Chargement des workflows...</div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-h"><span class="card-title">WF01 — Lead entrant : Traitement auto</span><span class="badge b-green">Actif</span></div>
+      <div class="card-b">
+        <div class="wf-step"><div class="wf-num trigger">T</div><div class="wf-content"><div class="wf-title">Déclencheur : Contact créé</div><div class="wf-desc">Toutes sources · Toutes entités</div></div></div>
+        <div class="wf-arrow">↓</div>
+        <div class="wf-step"><div class="wf-num">1</div><div class="wf-content"><div class="wf-title">Déduplication email + téléphone</div><div class="wf-desc">Si doublon → fusion + notification commerciale</div></div></div>
+        <div class="wf-arrow">↓</div>
+        <div class="wf-step"><div class="wf-num">2</div><div class="wf-content"><div class="wf-title">Lead scoring automatique (0–100)</div><div class="wf-desc">Source, données, comportement, AFDAS éligible</div></div></div>
+        <div class="wf-arrow">↓ Si score ≥ 60 → notification push</div>
+        <div class="wf-step"><div class="wf-num">3</div><div class="wf-content"><div class="wf-title">Attribution commerciale</div><div class="wf-desc">Territoire → secteur → round-robin</div></div></div>
+        <div class="wf-arrow">↓</div>
+        <div class="wf-step"><div class="wf-num">4</div><div class="wf-content"><div class="wf-title">Email bienvenue + Tâche J+1</div><div class="wf-desc">Template « Premier contact » · Tâche rappel 24h</div></div></div>
+        <div class="wf-arrow">↓ Si non complété J+3 → nurturing</div>
+        <div class="wf-step"><div class="wf-num">5</div><div class="wf-content"><div class="wf-title">J+7 sans activité → Lead froid</div><div class="wf-desc">Reclassification + notification manager</div></div></div>
+      </div>
+      <div class="card-f"><span class="text-xs text-muted">312 exécutions ce mois · 99.4% succès</span><button class="btn-s" style="font-size:11px;margin-left:auto">Éditer</button></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><span class="card-title">WF04 — Dossier AFDAS automatique</span><span class="badge b-green">Actif</span></div>
+      <div class="card-b">
+        <div class="wf-step"><div class="wf-num trigger">T</div><div class="wf-content"><div class="wf-title">Déclencheur : Éligibilité AFDAS confirmée</div><div class="wf-desc">Contact intermittent qualifié + formation sélectionnée</div></div></div>
+        <div class="wf-arrow">↓</div>
+        <div class="wf-step"><div class="wf-num">1</div><div class="wf-content"><div class="wf-title">Vérification catégorie + volume activité</div><div class="wf-desc">Cachets/jours vs seuil 2026 · Calcul carence auto</div></div></div>
+        <div class="wf-arrow">↓ Si en carence → alternative CPF/OPCO suggérée</div>
+        <div class="wf-step"><div class="wf-num condition">C</div><div class="wf-content"><div class="wf-title">Condition : Fenêtre quadrimestre</div><div class="wf-desc">Recommandation Q1/Q2/Q3 selon date</div></div></div>
+        <div class="wf-arrow">↓</div>
+        <div class="wf-step"><div class="wf-num">2</div><div class="wf-content"><div class="wf-title">Création dossier + liste pièces auto</div><div class="wf-desc">Référence DOSS-YYYY-XXXX · Pièces obligatoires générées</div></div></div>
+        <div class="wf-arrow">↓</div>
+        <div class="wf-step"><div class="wf-num">3</div><div class="wf-content"><div class="wf-title">Relances J+5 / J+8 / J+12</div><div class="wf-desc">Email pièces manquantes · Escalade si dépôt proche</div></div></div>
+      </div>
+      <div class="card-f"><span class="text-xs text-muted">43 exécutions ce mois · 97.7% succès</span><button class="btn-s" style="font-size:11px;margin-left:auto">Éditer</button></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><span class="card-title">WF02 — Lead Calendly → Contact + RDV</span><span class="badge b-green">Actif</span></div>
+      <div class="card-b">
+        <div class="wf-step"><div class="wf-num trigger">T</div><div class="wf-content"><div class="wf-title">Webhook Calendly invitee.created</div><div class="wf-desc">Données RDV reçues · Auth HMAC-SHA256</div></div></div>
+        <div class="wf-arrow">↓</div>
+        <div class="wf-step"><div class="wf-num">1</div><div class="wf-content"><div class="wf-title">Recherche contact existant par email</div><div class="wf-desc">Si nouveau → WF01 lancé en parallèle</div></div></div>
+        <div class="wf-arrow">↓</div>
+        <div class="wf-step"><div class="wf-num">2</div><div class="wf-content"><div class="wf-title">Activité « RDV Calendly » créée</div><div class="wf-desc">Timeline + détails + réponses questionnaire</div></div></div>
+        <div class="wf-arrow">↓</div>
+        <div class="wf-step"><div class="wf-num">3</div><div class="wf-content"><div class="wf-title">Email confirmation + rappels J-1 et J-2h</div><div class="wf-desc">Template personnalisé · Lifecycle → prospect</div></div></div>
+      </div>
+      <div class="card-f"><span class="text-xs text-muted">87 exécutions · 100% succès</span><button class="btn-s" style="font-size:11px;margin-left:auto">Éditer</button></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><span class="card-title">WF06 — Clôture formation → Documents auto</span><span class="badge b-green">Actif</span></div>
+      <div class="card-b">
+        <div class="wf-step"><div class="wf-num trigger">T</div><div class="wf-content"><div class="wf-title">Déclencheur : Fin de session atteinte</div><div class="wf-desc">Date de fin passée · Statut TERMINEE</div></div></div>
+        <div class="wf-arrow">↓</div>
+        <div class="wf-step"><div class="wf-num">1</div><div class="wf-content"><div class="wf-title">Génération auto : Attestations + Certificats</div><div class="wf-desc">Pour chaque apprenant · PDF signé Yousign</div></div></div>
+        <div class="wf-arrow">↓</div>
+        <div class="wf-step"><div class="wf-num">2</div><div class="wf-content"><div class="wf-title">Questionnaires satisfaction à chaud J+0</div><div class="wf-desc">Envoi auto apprenant + formateur</div></div></div>
+        <div class="wf-arrow">↓</div>
+        <div class="wf-step"><div class="wf-num">3</div><div class="wf-content"><div class="wf-title">Passage statut Alumni + séquence J+30</div><div class="wf-desc">Questionnaire à froid · Upsell parcours suivant</div></div></div>
+      </div>
+      <div class="card-f"><span class="text-xs text-muted">19 exécutions · 100% succès</span><button class="btn-s" style="font-size:11px;margin-left:auto">Éditer</button></div>
+    </div>
   </div>
 </div>
 
@@ -1190,35 +1242,42 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
 <div id="page-reporting" class="page">
   <div class="page-hdr">
     <div class="page-hdr-left"><h1 class="page-title">Reporting & Analytics</h1><p class="page-sub">Données consolidées Ardalos Groupe · Temps réel</p></div>
-    <div class="page-hdr-right"><select class="fselect" style="width:auto;font-size:12px"><option>Ce trimestre</option><option>Ce mois</option><option>Cette année</option></select><button class="btn-p" onclick="window.ardalosReportingExport && window.ardalosReportingExport()">↓ Exporter CSV</button></div>
+    <div class="page-hdr-right"><select class="fselect" style="width:auto;font-size:12px"><option>Ce trimestre</option><option>Ce mois</option><option>Cette année</option></select><button class="btn-p">↓ Exporter PDF</button></div>
   </div>
   <div class="kpi-grid anim-kpi">
-    <div class="kpi"><div class="kpi-label">CA realise</div><div class="kpi-value" id="reporting-ca-realise">...</div><div class="kpi-sub" id="reporting-ca-realise-sub">Chargement...</div></div>
-    <div class="kpi gold"><div class="kpi-label">CA previsionnel</div><div class="kpi-value" id="reporting-ca-previ">...</div><div class="kpi-sub" id="reporting-ca-previ-sub">Chargement...</div></div>
-    <div class="kpi green"><div class="kpi-label">Taux de closing</div><div class="kpi-value" id="reporting-closing">...</div><div class="kpi-sub" id="reporting-closing-sub">...</div></div>
-    <div class="kpi"><div class="kpi-label">Score Qualiopi</div><div class="kpi-value" id="reporting-qualiopi">...</div><div class="kpi-sub" id="reporting-qualiopi-sub">sur 32 indicateurs</div></div>
-    <div class="kpi teal"><div class="kpi-label">Financement accorde</div><div class="kpi-value" id="reporting-finance">...</div><div class="kpi-sub">YTD · AFDAS + OPCO + CPF</div></div>
-    <div class="kpi green"><div class="kpi-label">Apprenants formes</div><div class="kpi-value" id="reporting-apprenants">...</div><div class="kpi-sub">YTD</div></div>
+    <div class="kpi"><div class="kpi-label">CA réalisé</div><div class="kpi-value">62k€</div><div class="kpi-sub up">↑ 23% vs N-1</div></div>
+    <div class="kpi gold"><div class="kpi-label">CA prévisionnel</div><div class="kpi-value">87k€</div><div class="kpi-sub up">↑ 12% objectif</div></div>
+    <div class="kpi green"><div class="kpi-label">Taux de closing</div><div class="kpi-value">52%</div><div class="kpi-sub up">↑ 8pts vs N-1</div></div>
+    <div class="kpi"><div class="kpi-label">NPS Formation</div><div class="kpi-value">72</div><div class="kpi-sub">Excellent</div></div>
+    <div class="kpi teal"><div class="kpi-label">Financement accordé</div><div class="kpi-value">24k€</div><div class="kpi-sub">YTD · AFDAS + OPCO</div></div>
+    <div class="kpi green"><div class="kpi-label">Satisfaction moy.</div><div class="kpi-value">4.6/5</div><div class="kpi-sub">Toutes formations</div></div>
   </div>
   <div class="g2">
     <div class="card card-accent-blue">
       <div class="card-h"><span class="card-title">Performance commerciale</span></div>
-      <div class="card-b" id="reporting-perf-commerciale">
-        <div style="padding:20px;text-align:center;color:#9ca3af">Chargement...</div>
+      <div class="card-b">
+        <div class="si"><span class="si-l">Leads générés</span><span class="si-r">47</span></div>
+        <div class="si"><span class="si-l">RDV pris</span><span class="si-r">16 <span class="text-muted">(34%)</span></span></div>
+        <div class="si"><span class="si-l">Qualifications</span><span class="si-r">11 <span class="text-muted">(71%)</span></span></div>
+        <div class="si"><span class="si-l">Deals closés</span><span class="si-r">6 <span class="text-muted">(52%)</span></span></div>
+        <div class="si"><span class="si-l">Valeur moy. deal</span><span class="si-r font-sb">4 200€</span></div>
+        <div class="si"><span class="si-l">Durée cycle vente</span><span class="si-r">18 jours</span></div>
+        <div class="si"><span class="si-l">Taux no-show</span><span class="si-r">12%</span></div>
+        <div class="si"><span class="si-l">Taux abandon dossier AFDAS</span><span class="si-r text-green">8.3%</span></div>
       </div>
     </div>
     <div class="card card-accent-gold">
       <div class="card-h"><span class="card-title">Formation & Financement</span></div>
-      <div class="card-b" id="reporting-formation-finance">
-        <div style="padding:20px;text-align:center;color:#9ca3af">Chargement...</div>
+      <div class="card-b">
+        <div class="si"><span class="si-l">Apprenants formés</span><span class="si-r">38</span></div>
+        <div class="si"><span class="si-l">Heures de formation</span><span class="si-r">2 840h</span></div>
+        <div class="si"><span class="si-l">Dossiers AFDAS soumis</span><span class="si-r">8</span></div>
+        <div class="si"><span class="si-l">Taux acceptation AFDAS</span><span class="si-r text-green">87.5%</span></div>
+        <div class="si"><span class="si-l">Satisfaction à chaud</span><span class="si-r text-green">4.8/5</span></div>
+        <div class="si"><span class="si-l">Score Qualiopi</span><span class="si-r text-green">94%</span></div>
+        <div class="si"><span class="si-l">Taux abandon formation</span><span class="si-r">2.6%</span></div>
+        <div class="si"><span class="si-l">Financement accordé</span><span class="si-r font-sb text-blue">24k€</span></div>
       </div>
-    </div>
-  </div>
-
-  <div class="card" style="margin-top:14px">
-    <div class="card-h"><span class="card-title">Repartition du CA par commercial</span></div>
-    <div class="card-b" id="reporting-par-commercial">
-      <div style="padding:20px;text-align:center;color:#9ca3af">Chargement...</div>
     </div>
   </div>
 </div>
@@ -1374,14 +1433,16 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
 <!-- ▶ CAMPAIGNS ──────────────────────────── -->
 <div id="page-campaigns" class="page">
   <div class="page-hdr">
-    <div class="page-hdr-left"><h1 class="page-title">Campagnes & Emails</h1><p class="page-sub" id="camp-subtitle">Chargement...</p></div>
+    <div class="page-hdr-left"><h1 class="page-title">Campagnes & Emails</h1><p class="page-sub">12 campagnes · 1 actives · 847 contacts touchés</p></div>
     <div class="page-hdr-right"><button class="btn-p">+ Nouvelle campagne</button></div>
   </div>
   <div class="card">
     <table class="dt">
       <thead><tr><th>Campagne</th><th>Type</th><th>Statut</th><th>Envois</th><th>Ouvertures</th><th>Clics</th><th>Créé le</th><th></th></tr></thead>
-      <tbody id="camp-tbody">
-        <tr><td colspan="8" style="text-align:center;padding:30px;color:#9ca3af;font-style:italic">Chargement...</td></tr>
+      <tbody>
+        <tr><td class="name-cell">Ouverture Q2 AFDAS 2026</td><td><span class="badge b-navy">Email</span></td><td><span class="badge b-green">Envoyé</span></td><td>124</td><td class="text-green font-sb">42%</td><td class="font-sb">18%</td><td class="text-xs text-muted">01/04/2026</td><td><button class="btn-s" style="font-size:11px;padding:3px 8px">Stats</button></td></tr>
+        <tr><td class="name-cell">Bienvenue nouveaux leads</td><td><span class="badge b-navy">Séquence</span></td><td><span class="badge b-green">Actif</span></td><td>—</td><td>—</td><td>—</td><td class="text-xs text-muted">15/01/2026</td><td><button class="btn-s" style="font-size:11px;padding:3px 8px">Voir</button></td></tr>
+        <tr><td class="name-cell">Relance alumni J+30</td><td><span class="badge b-teal">Auto</span></td><td><span class="badge b-green">Actif</span></td><td>—</td><td>—</td><td>—</td><td class="text-xs text-muted">01/12/2025</td><td><button class="btn-s" style="font-size:11px;padding:3px 8px">Voir</button></td></tr>
       </tbody>
     </table>
   </div>
@@ -1526,34 +1587,6 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
         <button class="btn-p" id="new-ent-save" onclick="window.ardalosSaveEntreprise()">Créer l'entreprise</button>
       </div>
       <div id="new-ent-error" style="margin-top:10px;color:#dc2626;font-size:12px;display:none"></div>
-    </div>
-  </div>
-</div>
-
-<!-- Modale info Workflows Ardalos -->
-<div class="modal-ov" id="modal-wf-info">
-  <div class="modal" style="max-width:520px">
-    <div class="modal-h">
-      <span class="modal-title">🚧 Creation de workflow</span>
-      <button class="modal-close" onclick="closeModal('wf-info')">✕</button>
-    </div>
-    <div class="modal-b">
-      <div style="padding:16px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;color:#1e40af;font-size:13px;line-height:1.6">
-        <strong>Fonctionnalite en preparation (Phase 2)</strong><br><br>
-        La creation de workflows automatises necessite un backend de cron jobs
-        (Vercel Cron, n8n ou Make). Cette fonctionnalite sera livree apres
-        l'obtention de la certification Qualiopi.<br><br>
-        En attendant, les workflows affiches sont <strong>connectes aux vraies donnees</strong> :
-        <ul style="margin-top:8px;padding-left:20px">
-          <li>WF01 : nombre de contacts crees cette semaine</li>
-          <li>WF04 : nombre de dossiers AFDAS crees ce mois</li>
-          <li>WF05 : emails envoyes depuis la plateforme</li>
-          <li>WF06 : sessions formation terminees</li>
-        </ul>
-      </div>
-      <div style="display:flex;justify-content:flex-end;margin-top:16px">
-        <button class="btn-p" onclick="closeModal('wf-info')">Compris</button>
-      </div>
     </div>
   </div>
 </div>
@@ -4641,659 +4674,6 @@ document.getElementById('global-search').addEventListener('keyup', function(e) {
     document.addEventListener('DOMContentLoaded', loadQualiopi);
   } else {
     loadQualiopi();
-  }
-})();
-</script>
-
-
-<!-- === CONNEXION SUPABASE REPORTING + WORKFLOWS + CAMPAGNES === -->
-<script>
-(function() {
-  var SUPABASE_URL = 'https://cvxzdiutxonnsnwoicqt.supabase.co';
-  var SUPABASE_KEY = 'sb_publishable_J8ta-7L05zgK9rBy2OS9Bg_CjXHwZVK';
-  if (typeof window.supabase === 'undefined' || !window.supabase.createClient) return;
-  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-  var COMMERCIAUX = ['Sylvain', 'David', 'Shaun', 'Jerome', 'Julien'];
-
-  function escapeHtml(s) {
-    if (s === null || s === undefined) return '';
-    return String(s).replace(/[&<>"']/g, function(c) {
-      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
-    });
-  }
-
-  function fmtEuro(n) {
-    if (!n || n === 0) return '0€';
-    if (n >= 1000) return (n / 1000).toFixed(1).replace('.0', '') + 'k€';
-    return Math.round(n) + '€';
-  }
-
-  function fmtDate(s) {
-    if (!s) return '—';
-    return new Date(s).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
-  }
-
-  // ======================================================================
-  // REPORTING : KPI + sections performance/formation + repartition commerciaux
-  // ======================================================================
-  async function loadReporting() {
-    try {
-      var year = new Date().getFullYear();
-
-      // Inscriptions
-      var iR = await sb.from('formation_inscriptions').select('id, statut, statut_prospection, montant_total_ht, commercial_responsable, date_inscription, date_confirmation, contact_id, session_id, formation_sessions(date_debut, date_fin)');
-      if (iR.error) throw iR.error;
-      var inscriptions = iR.data || [];
-
-      // Inscriptions YTD
-      var insYTD = inscriptions.filter(function(i) {
-        if (!i.date_inscription) return false;
-        return new Date(i.date_inscription).getFullYear() === year;
-      });
-
-      var caRealise = 0, caPrev = 0;
-      insYTD.forEach(function(i) {
-        var mt = Number(i.montant_total_ht || 0);
-        var s = i.statut;
-        if (s === 'confirme' || s === 'present' || s === 'termine') caRealise += mt;
-        if (s !== 'abandon' && s !== 'refuse') caPrev += mt;
-      });
-
-      var closes = insYTD.filter(function(i) { return i.statut === 'confirme' || i.statut === 'present' || i.statut === 'termine'; });
-      var totalDeals = insYTD.filter(function(i) { return i.statut !== 'abandon'; }).length;
-      var txClosing = totalDeals > 0 ? Math.round((closes.length / totalDeals) * 100) : 0;
-
-      // Financements
-      var fR = await sb.from('formation_financements').select('*');
-      var financements = (fR.error ? [] : (fR.data || []));
-      var financeAccorde = 0;
-      financements.forEach(function(f) {
-        if ((f.statut_dossier || '').toLowerCase().indexOf('accorde') === -1) return;
-        if (f.date_decision && new Date(f.date_decision).getFullYear() !== year) return;
-        financeAccorde += Number(f.montant_accorde || f.montant_ht || 0);
-      });
-
-      // Apprenants distincts YTD
-      var contactsSet = new Set();
-      insYTD.forEach(function(i) { if (i.contact_id && i.statut !== 'abandon') contactsSet.add(i.contact_id); });
-      var nbApprenants = contactsSet.size;
-
-      // Qualiopi score
-      var qR = await sb.from('qualiopi_indicateurs').select('statut');
-      var quali = (qR.error ? [] : (qR.data || []));
-      var nbC = quali.filter(function(i) { return i.statut === 'conforme'; }).length;
-      var nbNA = quali.filter(function(i) { return i.statut === 'non_applicable'; }).length;
-      var auditable = quali.length - nbNA;
-      var scoreQuali = auditable > 0 ? Math.round((nbC / auditable) * 100) : 0;
-
-      var el = function(id) { return document.getElementById(id); };
-      if (el('reporting-ca-realise')) {
-        el('reporting-ca-realise').textContent = fmtEuro(caRealise);
-        el('reporting-ca-realise-sub').textContent = 'YTD ' + year;
-      }
-      if (el('reporting-ca-previ')) {
-        el('reporting-ca-previ').textContent = fmtEuro(caPrev);
-        el('reporting-ca-previ-sub').textContent = 'Pipeline + realise';
-      }
-      if (el('reporting-closing')) {
-        el('reporting-closing').textContent = txClosing + '%';
-        el('reporting-closing-sub').textContent = closes.length + '/' + totalDeals + ' inscriptions';
-      }
-      if (el('reporting-qualiopi')) {
-        el('reporting-qualiopi').textContent = scoreQuali + '%';
-        el('reporting-qualiopi-sub').textContent = nbC + '/' + auditable + ' conformes';
-      }
-      if (el('reporting-finance')) el('reporting-finance').textContent = fmtEuro(financeAccorde);
-      if (el('reporting-apprenants')) el('reporting-apprenants').textContent = nbApprenants;
-
-      // Performance commerciale (sur YTD)
-      var nbLeads = insYTD.filter(function(i) { return !i.statut_prospection || i.statut_prospection === 'a_contacter'; }).length;
-      var nbQualif = insYTD.filter(function(i) { var s = i.statut_prospection; return s === 'interesse' || s === 'en_discussion' || s === 'dossier_en_cours'; }).length;
-      var nbClosed = closes.length;
-      var valeurMoy = nbClosed > 0 ? Math.round(closes.reduce(function(s, i) { return s + Number(i.montant_total_ht || 0); }, 0) / nbClosed) : 0;
-
-      // Cycle vente moyen
-      var cycleInscr = closes.filter(function(i) { return i.date_inscription && i.date_confirmation; });
-      var cycleMoy = 0;
-      if (cycleInscr.length > 0) {
-        var total = cycleInscr.reduce(function(s, i) {
-          return s + (new Date(i.date_confirmation) - new Date(i.date_inscription)) / 86400000;
-        }, 0);
-        cycleMoy = Math.round(total / cycleInscr.length);
-      }
-
-      var perfHtml =
-        '<div class="si"><span class="si-l">Inscriptions YTD</span><span class="si-r font-sb">' + insYTD.length + '</span></div>' +
-        '<div class="si"><span class="si-l">Leads</span><span class="si-r">' + nbLeads + '</span></div>' +
-        '<div class="si"><span class="si-l">Qualifications en cours</span><span class="si-r">' + nbQualif + '</span></div>' +
-        '<div class="si"><span class="si-l">Inscriptions closees</span><span class="si-r font-sb text-green">' + nbClosed + '</span></div>' +
-        '<div class="si"><span class="si-l">Taux de closing</span><span class="si-r font-sb">' + txClosing + '%</span></div>' +
-        '<div class="si"><span class="si-l">Valeur moyenne deal</span><span class="si-r font-sb">' + fmtEuro(valeurMoy) + '</span></div>' +
-        '<div class="si"><span class="si-l">Cycle vente moyen</span><span class="si-r">' + cycleMoy + ' jours</span></div>';
-      if (el('reporting-perf-commerciale')) el('reporting-perf-commerciale').innerHTML = perfHtml;
-
-      // Formation & Financement
-      var nbAfdas = financements.filter(function(f) { return (f.type_financement || '').toLowerCase().indexOf('afdas') !== -1; }).length;
-      var nbAfdasAccorde = financements.filter(function(f) {
-        return (f.type_financement || '').toLowerCase().indexOf('afdas') !== -1 &&
-               (f.statut_dossier || '').toLowerCase().indexOf('accorde') !== -1;
-      }).length;
-      var txAfdasOK = nbAfdas > 0 ? Math.round((nbAfdasAccorde / nbAfdas) * 100) : 0;
-
-      var nbAbandon = insYTD.filter(function(i) { return i.statut === 'abandon'; }).length;
-      var txAbandon = insYTD.length > 0 ? ((nbAbandon / insYTD.length) * 100).toFixed(1) : '0';
-
-      var formationHtml =
-        '<div class="si"><span class="si-l">Apprenants formes YTD</span><span class="si-r font-sb">' + nbApprenants + '</span></div>' +
-        '<div class="si"><span class="si-l">Dossiers financement total</span><span class="si-r">' + financements.length + '</span></div>' +
-        '<div class="si"><span class="si-l">Dont AFDAS</span><span class="si-r">' + nbAfdas + '</span></div>' +
-        '<div class="si"><span class="si-l">AFDAS accordes</span><span class="si-r font-sb text-green">' + nbAfdasAccorde + ' (' + txAfdasOK + '%)</span></div>' +
-        '<div class="si"><span class="si-l">Score Qualiopi</span><span class="si-r font-sb text-green">' + scoreQuali + '%</span></div>' +
-        '<div class="si"><span class="si-l">Taux abandon</span><span class="si-r">' + txAbandon + '%</span></div>' +
-        '<div class="si"><span class="si-l">Financement accorde YTD</span><span class="si-r font-sb text-blue">' + fmtEuro(financeAccorde) + '</span></div>';
-      if (el('reporting-formation-finance')) el('reporting-formation-finance').innerHTML = formationHtml;
-
-      // Repartition par commercial
-      var statsCom = {};
-      COMMERCIAUX.forEach(function(c) { statsCom[c] = { ca: 0, nb: 0 }; });
-      insYTD.forEach(function(i) {
-        var c = i.commercial_responsable;
-        if (!c || !statsCom[c]) return;
-        if (i.statut !== 'abandon' && i.statut !== 'refuse') {
-          statsCom[c].ca += Number(i.montant_total_ht || 0);
-          statsCom[c].nb++;
-        }
-      });
-      var maxCA = Math.max.apply(null, COMMERCIAUX.map(function(c) { return statsCom[c].ca; }).concat([1]));
-
-      var comHtml = '<div style="display:flex;flex-direction:column;gap:10px">';
-      COMMERCIAUX.sort(function(a, b) { return statsCom[b].ca - statsCom[a].ca; });
-      COMMERCIAUX.forEach(function(c, idx) {
-        var s = statsCom[c];
-        var pct = maxCA > 0 ? Math.round((s.ca / maxCA) * 100) : 0;
-        var medal = idx === 0 && s.ca > 0 ? '🥇 ' : idx === 1 && s.ca > 0 ? '🥈 ' : idx === 2 && s.ca > 0 ? '🥉 ' : '';
-        comHtml += '<div>' +
-          '<div class="flex items-c justify-b mb-1" style="font-size:12px">' +
-            '<span class="font-sb">' + medal + escapeHtml(c) + '</span>' +
-            '<span class="text-muted">' + s.nb + ' inscr. · <span class="font-sb text-blue">' + fmtEuro(s.ca) + '</span></span>' +
-          '</div>' +
-          '<div class="prog"><div class="prog-fill ' + (idx === 0 ? 'gold' : idx < 3 ? 'green' : '') + '" style="width:' + pct + '%"></div></div>' +
-        '</div>';
-      });
-      comHtml += '</div>';
-      if (el('reporting-par-commercial')) el('reporting-par-commercial').innerHTML = comHtml;
-
-      console.log('[Ardalos Reporting] OK');
-    } catch (e) {
-      console.error('[Ardalos Reporting]', e);
-    }
-  }
-
-  // ======================================================================
-  // WORKFLOWS : stats email_logs
-  // ======================================================================
-  async function loadWorkflows() {
-    try {
-      var rC = await sb.from('email_logs').select('id', { count: 'exact', head: true });
-      var total = rC.count || 0;
-
-      // Ce mois
-      var now = new Date();
-      var moisDebut = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-      var rM = await sb.from('email_logs').select('*').gte('created_at', moisDebut);
-      var emailsMois = (rM.error ? [] : (rM.data || []));
-
-      var reussis = emailsMois.filter(function(e) { return e.success; }).length;
-      var echecs = emailsMois.length - reussis;
-      var txSucces = emailsMois.length > 0 ? Math.round((reussis / emailsMois.length) * 100) : 100;
-
-      // Echecs totaux
-      var rE = await sb.from('email_logs').select('id', { count: 'exact', head: true }).eq('success', false);
-      var totalEchecs = rE.count || 0;
-
-      var el = function(id) { return document.getElementById(id); };
-      if (el('wf-subtitle')) el('wf-subtitle').textContent = total + ' email' + (total > 1 ? 's' : '') + ' envoye' + (total > 1 ? 's' : '') + ' au total · ' + emailsMois.length + ' ce mois';
-      if (el('wf-kpi-total')) el('wf-kpi-total').textContent = total;
-      if (el('wf-kpi-mois')) {
-        el('wf-kpi-mois').textContent = emailsMois.length;
-        el('wf-kpi-mois-sub').textContent = reussis + ' reussis · ' + echecs + ' echecs';
-      }
-      if (el('wf-kpi-succes')) el('wf-kpi-succes').textContent = txSucces + '%';
-      if (el('wf-kpi-echecs')) el('wf-kpi-echecs').textContent = totalEchecs;
-
-      console.log('[Ardalos Workflows] OK :', total, 'total,', emailsMois.length, 'ce mois');
-    } catch (e) {
-      console.error('[Ardalos Workflows]', e);
-    }
-  }
-
-  // ======================================================================
-  // CAMPAGNES : emails groupes par sujet
-  // ======================================================================
-  async function loadCampagnes() {
-    try {
-      var r = await sb.from('email_logs').select('*').order('created_at', { ascending: false });
-      if (r.error) throw r.error;
-      var logs = r.data || [];
-
-      // Grouper par sujet
-      var groupes = {};
-      logs.forEach(function(l) {
-        var sujet = l.sujet || '(Sans sujet)';
-        if (!groupes[sujet]) {
-          groupes[sujet] = { sujet: sujet, envois: 0, reussis: 0, echecs: 0, firstDate: null, lastDate: null };
-        }
-        var g = groupes[sujet];
-        g.envois++;
-        if (l.success) g.reussis++;
-        else g.echecs++;
-        if (!g.firstDate || l.created_at < g.firstDate) g.firstDate = l.created_at;
-        if (!g.lastDate || l.created_at > g.lastDate) g.lastDate = l.created_at;
-      });
-
-      var campagnes = Object.values(groupes);
-      campagnes.sort(function(a, b) { return (b.lastDate || '').localeCompare(a.lastDate || ''); });
-
-      var subtitleEl = document.getElementById('camp-subtitle');
-      var tbodyEl = document.getElementById('camp-tbody');
-      if (!tbodyEl) return;
-
-      if (subtitleEl) {
-        subtitleEl.textContent = campagnes.length + ' campagne' + (campagnes.length > 1 ? 's' : '') + ' · ' + logs.length + ' email' + (logs.length > 1 ? 's' : '') + ' envoye' + (logs.length > 1 ? 's' : '');
-      }
-
-      if (campagnes.length === 0) {
-        tbodyEl.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:#9ca3af;font-style:italic">Aucune campagne · Les emails envoyes depuis la plateforme apparaitront ici</td></tr>';
-      } else {
-        var rows = campagnes.map(function(c) {
-          var txSucces = c.envois > 0 ? Math.round((c.reussis / c.envois) * 100) : 0;
-          var statutBadge;
-          if (c.echecs === 0) statutBadge = '<span class="badge b-green">Succes</span>';
-          else if (c.reussis === 0) statutBadge = '<span class="badge b-red">Echec</span>';
-          else statutBadge = '<span class="badge b-amber">Partiel</span>';
-
-          var type = c.envois === 1 ? '<span class="badge b-navy">Email</span>' : '<span class="badge b-teal">Campagne (' + c.envois + ')</span>';
-
-          return '<tr>' +
-            '<td class="name-cell">' + escapeHtml(c.sujet) + '</td>' +
-            '<td>' + type + '</td>' +
-            '<td>' + statutBadge + '</td>' +
-            '<td>' + c.envois + '</td>' +
-            '<td class="font-sb ' + (txSucces >= 80 ? 'text-green' : txSucces >= 50 ? 'text-amber' : 'text-red') + '">' + txSucces + '%</td>' +
-            '<td class="text-xs">' + c.reussis + ' / ' + c.echecs + '</td>' +
-            '<td class="text-xs text-muted">' + fmtDate(c.lastDate) + '</td>' +
-            '<td><button class="btn-s" style="font-size:11px;padding:3px 8px" disabled>Voir</button></td>' +
-          '</tr>';
-        });
-        tbodyEl.innerHTML = rows.join('');
-      }
-
-      console.log('[Ardalos Campagnes] OK :', campagnes.length, 'campagnes /', logs.length, 'emails');
-    } catch (e) {
-      console.error('[Ardalos Campagnes]', e);
-      var tbodyEl = document.getElementById('camp-tbody');
-      if (tbodyEl) tbodyEl.innerHTML = '<tr><td colspan="8" style="padding:20px;color:#dc2626">Erreur: ' + escapeHtml(e.message) + '</td></tr>';
-    }
-  }
-
-  function init() {
-    loadReporting();
-    loadWorkflows();
-    loadCampagnes();
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
-})();
-</script>
-
-
-<!-- === WORKFLOWS REELS + BOUTONS FONCTIONNELS === -->
-<script>
-(function() {
-  var SUPABASE_URL = 'https://cvxzdiutxonnsnwoicqt.supabase.co';
-  var SUPABASE_KEY = 'sb_publishable_J8ta-7L05zgK9rBy2OS9Bg_CjXHwZVK';
-  if (typeof window.supabase === 'undefined' || !window.supabase.createClient) return;
-  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-  var workflowsData = [];
-
-  function escapeHtml(s) {
-    if (s === null || s === undefined) return '';
-    return String(s).replace(/[&<>"']/g, function(c) {
-      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
-    });
-  }
-
-  function fmtDate(s) {
-    if (!s) return '—';
-    return new Date(s).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
-  }
-
-  function fmtDateRel(s) {
-    if (!s) return '—';
-    var d = new Date(s);
-    var now = new Date();
-    var diff = Math.floor((now - d) / 86400000);
-    if (diff === 0) return "Aujourd'hui";
-    if (diff === 1) return 'Hier';
-    if (diff < 7) return 'Il y a ' + diff + 'j';
-    if (diff < 30) return 'Il y a ' + Math.floor(diff / 7) + 'sem';
-    return fmtDate(s);
-  }
-
-  function fmtEuro(n) {
-    if (!n || n === 0) return '0€';
-    if (n >= 1000) return (n / 1000).toFixed(1).replace('.0', '') + 'k€';
-    return Math.round(n) + '€';
-  }
-
-  // Info modale nouveau workflow
-  window.ardalosWorkflowInfo = function() {
-    if (typeof openModal === 'function') openModal('wf-info');
-  };
-
-  // ======================================================================
-  // WORKFLOWS REELS : 5 workflows branches sur Supabase
-  // ======================================================================
-  async function loadWorkflowsReels() {
-    var container = document.getElementById('wf-cards-container');
-    if (!container) return;
-
-    try {
-      var now = new Date();
-      var debutSemaine = new Date(now.getTime() - 7 * 86400000).toISOString();
-      var debutMois = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-      var il30j = new Date(now.getTime() - 30 * 86400000).toISOString();
-
-      // WF01 : contacts crees cette semaine + ce mois
-      var cSem = await sb.from('contacts').select('id', { count: 'exact', head: true }).gte('created_at', debutSemaine);
-      var cMois = await sb.from('contacts').select('id', { count: 'exact', head: true }).gte('created_at', debutMois);
-      var derniersCont = await sb.from('contacts').select('prenom, nom, email, created_at').order('created_at', { ascending: false }).limit(5);
-
-      // WF04 : dossiers AFDAS crees
-      var afdasMois = await sb.from('formation_financements').select('id', { count: 'exact', head: true })
-        .ilike('type_financement', '%afdas%').gte('created_at', debutMois);
-      var afdasTotal = await sb.from('formation_financements').select('id', { count: 'exact', head: true })
-        .ilike('type_financement', '%afdas%');
-      var derniersAfdas = await sb.from('formation_financements')
-        .select('id, type_financement, montant_ht, statut_dossier, created_at, formation_inscriptions(contacts(prenom, nom))')
-        .ilike('type_financement', '%afdas%').order('created_at', { ascending: false }).limit(5);
-
-      // WF05 : emails envoyes (via plateforme)
-      var emailsMois = await sb.from('email_logs').select('id', { count: 'exact', head: true }).gte('created_at', debutMois);
-      var emailsTotal = await sb.from('email_logs').select('id', { count: 'exact', head: true });
-      var emailsReussis = await sb.from('email_logs').select('id', { count: 'exact', head: true }).eq('success', true);
-      var derniersEmails = await sb.from('email_logs').select('sujet, destinataire, success, created_at').order('created_at', { ascending: false }).limit(5);
-
-      // WF06 : sessions terminees recentes
-      var hier = new Date(now.getTime() - 86400000).toISOString().substring(0, 10);
-      var sessionsTerm = await sb.from('formation_sessions').select('id', { count: 'exact', head: true }).lt('date_fin', hier);
-      var sessionsTerm30j = await sb.from('formation_sessions').select('id', { count: 'exact', head: true })
-        .lt('date_fin', hier).gte('date_fin', il30j.substring(0, 10));
-      var dernieresSessions = await sb.from('formation_sessions')
-        .select('id, date_debut, date_fin, formations(titre)')
-        .lt('date_fin', hier).order('date_fin', { ascending: false }).limit(5);
-
-      // Definition des 4 workflows reels + 1 grise (Calendly)
-      workflowsData = [
-        {
-          id: 'wf01',
-          code: 'WF01',
-          titre: 'Lead entrant : Suivi commercial',
-          desc: 'Detection des nouveaux contacts pour attribution commerciale',
-          actif: true,
-          connecte: true,
-          nbSemaine: cSem.count || 0,
-          nbMois: cMois.count || 0,
-          etapes: [
-            { num: 'T', label: 'Declencheur : Contact cree', desc: 'Table contacts · INSERT detecte' },
-            { num: '1', label: 'Deduplication email + telephone', desc: 'A faire manuellement pour le moment' },
-            { num: '2', label: 'Lead scoring (manuel)', desc: 'Commercial qualifie le lead en pipeline' },
-            { num: '3', label: 'Attribution commerciale', desc: 'Champ commercial_responsable dans l\'inscription' },
-          ],
-          derniersEvents: (derniersCont.data || []).map(function(c) {
-            return {
-              label: (c.prenom || '') + ' ' + (c.nom || ''),
-              desc: c.email || '—',
-              date: c.created_at,
-            };
-          }),
-        },
-        {
-          id: 'wf04',
-          code: 'WF04',
-          titre: 'Dossier AFDAS : Traitement',
-          desc: 'Suivi des dossiers AFDAS crees',
-          actif: true,
-          connecte: true,
-          nbSemaine: null,
-          nbMois: afdasMois.count || 0,
-          nbTotal: afdasTotal.count || 0,
-          etapes: [
-            { num: 'T', label: 'Declencheur : Financement AFDAS cree', desc: 'Table formation_financements · type_financement AFDAS' },
-            { num: '1', label: 'Verification categorie + volume', desc: 'Donnees AFDAS contact (categorie, cachets/jours)' },
-            { num: '2', label: 'Suivi statut dossier', desc: 'Constitution → Depose → En instruction → Accorde' },
-            { num: '3', label: 'Relances manuelles', desc: 'Automatisation J+5 / J+8 / J+12 en phase 2' },
-          ],
-          derniersEvents: (derniersAfdas.data || []).map(function(f) {
-            var c = f.formation_inscriptions && f.formation_inscriptions.contacts ? f.formation_inscriptions.contacts : null;
-            var nom = c ? ((c.prenom || '') + ' ' + (c.nom || '')).trim() : '(Sans contact)';
-            return {
-              label: nom,
-              desc: f.type_financement + ' · ' + fmtEuro(Number(f.montant_ht || 0)) + ' · ' + (f.statut_dossier || 'En cours'),
-              date: f.created_at,
-            };
-          }),
-        },
-        {
-          id: 'wf02',
-          code: 'WF02',
-          titre: 'Lead Calendly → RDV auto',
-          desc: 'Webhook Calendly pour creation automatique de contacts',
-          actif: false,
-          connecte: false,
-          nbSemaine: null,
-          nbMois: null,
-          etapes: [
-            { num: 'T', label: 'Webhook Calendly invitee.created', desc: 'NON BRANCHE (Phase 2)' },
-            { num: '1', label: 'Recherche contact existant par email', desc: 'Deduplication auto' },
-            { num: '2', label: 'Creation activite RDV', desc: 'Timeline + details' },
-            { num: '3', label: 'Email confirmation + rappels', desc: 'Notifications programees' },
-          ],
-          derniersEvents: [],
-        },
-        {
-          id: 'wf05',
-          code: 'WF05',
-          titre: 'Email dossier : Envoi & tracking',
-          desc: 'Suivi des emails envoyes depuis la plateforme',
-          actif: true,
-          connecte: true,
-          nbSemaine: null,
-          nbMois: emailsMois.count || 0,
-          nbTotal: emailsTotal.count || 0,
-          txSucces: emailsTotal.count > 0 ? Math.round(((emailsReussis.count || 0) / emailsTotal.count) * 100) : 100,
-          etapes: [
-            { num: 'T', label: 'Declencheur : Email envoye', desc: 'Table email_logs · API /send-dossier-email' },
-            { num: '1', label: 'Generation PDF du dossier', desc: 'Cloudmersive docx-to-pdf + fusion pdf-lib' },
-            { num: '2', label: 'Envoi SMTP via Nodemailer', desc: 'Avec piece jointe PDF' },
-            { num: '3', label: 'Log succes/echec', desc: 'Trace dans email_logs pour audit Qualiopi' },
-          ],
-          derniersEvents: (derniersEmails.data || []).map(function(e) {
-            return {
-              label: e.sujet || '(Sans sujet)',
-              desc: 'Vers ' + (e.destinataire || '—') + ' · ' + (e.success ? '✓ Reussi' : '✗ Echec'),
-              date: e.created_at,
-            };
-          }),
-        },
-        {
-          id: 'wf06',
-          code: 'WF06',
-          titre: 'Cloture formation : Documents',
-          desc: 'Sessions formation terminees (date_fin depassee)',
-          actif: true,
-          connecte: true,
-          nbSemaine: null,
-          nbMois: sessionsTerm30j.count || 0,
-          nbTotal: sessionsTerm.count || 0,
-          etapes: [
-            { num: 'T', label: 'Declencheur : Session terminee', desc: 'formation_sessions WHERE date_fin < today' },
-            { num: '1', label: 'Generation attestations (manuel)', desc: 'Via module Documents du CRM' },
-            { num: '2', label: 'Envoi questionnaire satisfaction', desc: 'Formulaire Google Forms externe' },
-            { num: '3', label: 'Update Qualiopi indicateur 11', desc: 'Evaluation de l\'atteinte des objectifs' },
-          ],
-          derniersEvents: (dernieresSessions.data || []).map(function(s) {
-            var titre = s.formations ? s.formations.titre : 'Session';
-            return {
-              label: titre,
-              desc: 'Du ' + fmtDate(s.date_debut) + ' au ' + fmtDate(s.date_fin),
-              date: s.date_fin,
-            };
-          }),
-        },
-      ];
-
-      // Render
-      var html = '';
-      workflowsData.forEach(function(wf) {
-        var statutBadge = !wf.connecte
-          ? '<span class="badge b-gray">Non connecte</span>'
-          : wf.actif
-            ? '<span class="badge b-green">Actif</span>'
-            : '<span class="badge b-amber">Inactif</span>';
-
-        var metric = '';
-        if (wf.nbSemaine !== null && wf.nbSemaine !== undefined) {
-          metric = wf.nbSemaine + ' cette semaine · ' + wf.nbMois + ' ce mois';
-        } else if (wf.nbMois !== null && wf.nbMois !== undefined) {
-          metric = wf.nbMois + ' ce mois';
-          if (wf.nbTotal !== undefined) metric += ' · ' + wf.nbTotal + ' au total';
-          if (wf.txSucces !== undefined) metric += ' · ' + wf.txSucces + '% succes';
-        } else {
-          metric = wf.connecte ? '0 execution' : 'Non branche';
-        }
-
-        html += '<div class="card" ' + (!wf.connecte ? 'style="opacity:0.6"' : '') + '>' +
-          '<div class="card-h"><span class="card-title">' + wf.code + ' — ' + escapeHtml(wf.titre) + '</span>' + statutBadge + '</div>' +
-          '<div class="card-b">';
-
-        wf.etapes.forEach(function(e, idx) {
-          var numClass = e.num === 'T' ? 'trigger' : (e.num === 'C' ? 'condition' : '');
-          html += '<div class="wf-step"><div class="wf-num ' + numClass + '">' + e.num + '</div>' +
-            '<div class="wf-content"><div class="wf-title">' + escapeHtml(e.label) + '</div>' +
-            '<div class="wf-desc">' + escapeHtml(e.desc) + '</div></div></div>';
-          if (idx < wf.etapes.length - 1) html += '<div class="wf-arrow">↓</div>';
-        });
-
-        html += '</div>' +
-          '<div class="card-f">' +
-            '<span class="text-xs text-muted">' + escapeHtml(metric) + '</span>' +
-            '<button class="btn-s" style="font-size:11px;margin-left:auto" data-wf-id="' + wf.id + '" onclick="window.ardalosWorkflowDetail(this.dataset.wfId)"' + (!wf.connecte ? ' disabled' : '') + '>' + (wf.connecte ? 'Voir executions' : 'Indisponible') + '</button>' +
-          '</div>' +
-        '</div>';
-      });
-
-      container.innerHTML = html;
-      console.log('[Ardalos Workflows Reels] OK :', workflowsData.length, 'workflows');
-    } catch (e) {
-      console.error('[Ardalos Workflows Reels]', e);
-      container.innerHTML = '<div style="grid-column:1/-1;padding:20px;color:#dc2626">Erreur: ' + escapeHtml(e.message) + '</div>';
-    }
-  }
-
-  // ======================================================================
-  // Modale detail workflow (reutilise modal-detail)
-  // ======================================================================
-  window.ardalosWorkflowDetail = function(wfId) {
-    var wf = workflowsData.find(function(w) { return w.id === wfId; });
-    if (!wf) return;
-
-    var titleEl = document.getElementById('detail-modal-title');
-    var bodyEl = document.getElementById('detail-modal-body');
-    if (!titleEl || !bodyEl) { alert('Modale detail introuvable'); return; }
-
-    titleEl.textContent = wf.code + ' — ' + wf.titre;
-
-    var html = '<div style="padding:12px;background:#f1f5f9;border-radius:8px;margin-bottom:14px;font-size:13px;color:#475569">' +
-      escapeHtml(wf.desc) + '</div>';
-
-    html += '<div class="font-sb" style="font-size:13px;margin-bottom:10px;color:var(--ard-dark)">Dernieres executions reelles</div>';
-
-    if (wf.derniersEvents.length === 0) {
-      html += '<div style="padding:20px;text-align:center;color:#9ca3af;font-style:italic">Aucune execution enregistree pour le moment</div>';
-    } else {
-      html += '<div style="display:flex;flex-direction:column;gap:8px">';
-      wf.derniersEvents.forEach(function(ev) {
-        html += '<div style="padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:12px">' +
-          '<div class="flex items-c justify-b">' +
-            '<span class="font-sb" style="color:var(--ard-dark)">' + escapeHtml(ev.label) + '</span>' +
-            '<span class="text-xs text-muted">' + fmtDateRel(ev.date) + '</span>' +
-          '</div>' +
-          '<div class="text-xs text-muted" style="margin-top:3px">' + escapeHtml(ev.desc) + '</div>' +
-        '</div>';
-      });
-      html += '</div>';
-    }
-
-    html += '<div style="margin-top:16px;padding:12px;background:#fef3c7;border:1px solid #fde68a;border-radius:8px;font-size:11px;color:#78350F">' +
-      '<strong>⚙ Automatisation :</strong> Ce workflow est actuellement en mode <em>suivi</em>. ' +
-      'L\'automatisation complete (triggers auto, actions enchainees) sera livree en Phase 2 ' +
-      'apres la certification Qualiopi.' +
-    '</div>';
-
-    bodyEl.innerHTML = html;
-    if (typeof openModal === 'function') openModal('detail');
-  };
-
-  // ======================================================================
-  // Export Reporting CSV
-  // ======================================================================
-  window.ardalosReportingExport = async function() {
-    try {
-      var year = new Date().getFullYear();
-      var iR = await sb.from('formation_inscriptions').select('id, statut, statut_prospection, montant_total_ht, commercial_responsable, date_inscription, contacts(prenom, nom, email), formation_sessions(date_debut, formations(titre))');
-      var inscriptions = (iR.error ? [] : (iR.data || []));
-
-      var rows = [['Date inscription','Stagiaire','Email','Formation','Commercial','Statut','Statut prospection','Montant HT']];
-      inscriptions.forEach(function(i) {
-        var c = i.contacts || {};
-        var f = i.formation_sessions && i.formation_sessions.formations ? i.formation_sessions.formations.titre : '—';
-        rows.push([
-          i.date_inscription ? fmtDate(i.date_inscription) : '',
-          ((c.prenom || '') + ' ' + (c.nom || '')).trim(),
-          c.email || '',
-          f,
-          i.commercial_responsable || '',
-          i.statut || '',
-          i.statut_prospection || '',
-          String(i.montant_total_ht || 0).replace('.', ','),
-        ]);
-      });
-
-      var csv = rows.map(function(r) { return r.map(function(c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(';'); }).join('\n');
-      var blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = url;
-      a.download = 'reporting_' + year + '_' + new Date().toISOString().substring(0,10) + '.csv';
-      a.click();
-      URL.revokeObjectURL(url);
-      console.log('[Ardalos Reporting Export] ' + inscriptions.length + ' inscriptions');
-    } catch (e) {
-      alert('Erreur export : ' + (e.message || 'inconnue'));
-    }
-  };
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', loadWorkflowsReels);
-  } else {
-    loadWorkflowsReels();
   }
 })();
 </script>
