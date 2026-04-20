@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/useAuth'
 import { supabase } from '@/lib/supabase'
+import { COMMERCIAUX } from '@/lib/pipelineConstants'
 
 // ============================================================================
 // COULEURS ARDALOS
@@ -531,6 +532,118 @@ function DashboardContent() {
           </div>
         </>
       )}
+
+      {/* ============================================= */}
+      {/* 6. PERFORMANCE COMMERCIALE */}
+      {/* ============================================= */}
+      <SectionTitle emoji="👥">Performance commerciale</SectionTitle>
+
+      {(() => {
+        // Calcul des stats par commercial
+        const statsCom: Record<string, any> = {}
+        COMMERCIAUX.forEach((c: string) => {
+          const dossiers = inscriptions.filter(i => i.commercial_responsable === c)
+          const confirmes = dossiers.filter(i => i.statut === 'confirme' || i.statut === 'present')
+          const prospects = dossiers.filter(i => i.statut === 'prospect')
+
+          const caGenere = confirmes.reduce((s, i) => s + (Number(i.montant_total_ht) || 0), 0)
+
+          const totalConvertibles = prospects.length + confirmes.length
+          const taux = totalConvertibles > 0 ? Math.round((confirmes.length / totalConvertibles) * 100) : 0
+
+          // Temps moyen prospection -> confirmation
+          const avecConv = confirmes.filter(i => i.date_confirmation && i.created_at)
+          const tempsMoy = avecConv.length > 0
+            ? Math.round(avecConv.reduce((s, i) => {
+                const d1 = new Date(i.created_at).getTime()
+                const d2 = new Date(i.date_confirmation).getTime()
+                return s + (d2 - d1) / (1000 * 60 * 60 * 24)
+              }, 0) / avecConv.length)
+            : null
+
+          statsCom[c] = {
+            nbDossiers: dossiers.length,
+            nbConfirmes: confirmes.length,
+            nbProspects: prospects.length,
+            caGenere,
+            taux,
+            tempsMoy,
+          }
+        })
+
+        // Classement par CA
+        const classement = [...COMMERCIAUX].sort((a: string, b: string) => statsCom[b].caGenere - statsCom[a].caGenere)
+        const topCA = classement[0]
+
+        return (
+          <>
+            {/* Grid des cards commerciaux */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '12px', marginBottom: '20px' }}>
+              {COMMERCIAUX.map((c: string) => {
+                const s = statsCom[c]
+                const isTop = c === topCA && s.caGenere > 0
+                return (
+                  <div key={c} style={{
+                    background: '#fff',
+                    border: isTop ? `2px solid ${DORE}` : '1px solid #e5e7eb',
+                    borderRadius: '12px', padding: '14px',
+                    boxShadow: isTop ? '0 4px 12px rgba(201,168,76,0.2)' : 'none',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                      {isTop && <span style={{ fontSize: '14px' }}>🏆</span>}
+                      <strong style={{ color: BLEU, fontSize: '13px' }}>{c}</strong>
+                    </div>
+                    <div style={{ fontSize: '22px', fontWeight: 700, color: isTop ? DORE : BLEU, lineHeight: 1 }}>{fmtEuro(s.caGenere)}</div>
+                    <div style={{ fontSize: '10px', color: '#9ca3af', marginTop: '2px' }}>CA genere</div>
+
+                    <div style={{ borderTop: '1px solid #f3f4f6', marginTop: '10px', paddingTop: '8px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', fontSize: '11px' }}>
+                      <div>
+                        <div style={{ color: BLEU, fontWeight: 600 }}>{s.nbDossiers}</div>
+                        <div style={{ color: '#9ca3af', fontSize: '10px' }}>dossiers</div>
+                      </div>
+                      <div>
+                        <div style={{ color: s.taux >= 50 ? COLORS.vert : (s.taux >= 20 ? COLORS.orange : '#9ca3af'), fontWeight: 600 }}>{s.taux}%</div>
+                        <div style={{ color: '#9ca3af', fontSize: '10px' }}>conversion</div>
+                      </div>
+                      <div style={{ gridColumn: 'span 2' }}>
+                        <div style={{ color: '#6b7280', fontWeight: 500 }}>
+                          {s.tempsMoy !== null ? `${s.tempsMoy} j` : '—'}
+                        </div>
+                        <div style={{ color: '#9ca3af', fontSize: '10px' }}>temps moyen prospection → confirme</div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Classement */}
+            <Card title="Classement par CA genere">
+              {classement.map((c: string, idx: number) => {
+                const s = statsCom[c]
+                const pct = statsCom[topCA].caGenere > 0 ? (s.caGenere / statsCom[topCA].caGenere) * 100 : 0
+                const medaille = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `${idx + 1}.`
+                return (
+                  <div key={c} style={{ marginBottom: '10px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px', fontSize: '12px' }}>
+                      <span style={{ color: BLEU, fontWeight: 500 }}>{medaille} {c}</span>
+                      <span style={{ color: '#6b7280' }}>{fmtEuro(s.caGenere)} · {s.nbConfirmes} confirme{s.nbConfirmes > 1 ? 's' : ''}</span>
+                    </div>
+                    <div style={{ height: '6px', background: '#f3f4f6', borderRadius: '3px', overflow: 'hidden' }}>
+                      <div style={{ width: `${pct}%`, height: '100%', background: idx === 0 ? DORE : BLEU, transition: 'width 0.3s' }} />
+                    </div>
+                  </div>
+                )
+              })}
+              {statsCom[topCA].caGenere === 0 && (
+                <p style={{ color: '#9ca3af', fontSize: '12px', marginTop: '8px', fontStyle: 'italic' }}>
+                  Aucun CA genere pour le moment (aucune inscription confirmee avec commercial attribue).
+                </p>
+              )}
+            </Card>
+          </>
+        )
+      })()}
 
       <div style={{ textAlign: 'center', marginTop: '40px', color: '#9ca3af', fontSize: '11px' }}>
         Données mises à jour à {new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
