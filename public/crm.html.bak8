@@ -1149,7 +1149,7 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
 <!-- ▶ DOSSIERS FINANCEMENT ──────────────── -->
 <div id="page-funding" class="page">
   <div class="page-hdr">
-    <div class="page-hdr-left"><h1 class="page-title">Dossiers de financement</h1><p class="page-sub" id="funding-subtitle">Chargement...</p></div>
+    <div class="page-hdr-left"><h1 class="page-title">Dossiers de financement</h1><p class="page-sub">12 dossiers actifs · 3 urgences · AFDAS / OPCO / CPF</p></div>
     <div class="page-hdr-right"><button class="btn-s">Filtres avancés</button><button class="btn-p">+ Nouveau dossier</button></div>
   </div>
   <div class="alert alert-r">
@@ -1159,25 +1159,66 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
   <div class="card">
     <table class="dt">
       <thead><tr><th>Référence</th><th>Contact</th><th>Type</th><th>Statut</th><th>Montant</th><th>Complétude</th><th>Risque</th><th>Dépôt limite</th><th>Resp.</th><th></th></tr></thead>
-      <tbody id="funding-tbody">
-        <tr><td colspan="10" style="text-align:center;padding:20px;color:#9ca3af;font-style:italic">Chargement...</td></tr>
+      <tbody>
+        <tr>
+          <td class="name-cell text-blue">DOSS-2026-0042</td>
+          <td><div class="flex items-c gap-2"><div class="av" style="background:var(--red-bg);color:var(--red)">SM</div><div><div style="font-size:12px;font-weight:500">Sophie Martin</div><div class="text-xs text-muted">Artiste · 52 cachets</div></div></div></td>
+          <td><span class="badge b-navy">AFDAS</span></td>
+          <td><span class="badge b-amber">Constitution</span></td>
+          <td class="font-sb text-blue">2 800€</td>
+          <td><div class="flex items-c gap-2"><div class="prog" style="width:48px"><div class="prog-fill gold" style="width:60%"></div></div><span class="text-xs">60%</span></div></td>
+          <td><span class="badge b-red">87%</span></td>
+          <td style="color:var(--red);font-weight:500;font-size:12px">01/05/26</td>
+          <td>Lucie R.</td>
+          <td><button class="btn-s" style="font-size:11px;padding:3px 8px" onclick="openModal('dossier-detail')">Ouvrir</button></td>
+        </tr>
+        <tr>
+          <td class="name-cell text-blue">DOSS-2026-0041</td>
+          <td><div class="flex items-c gap-2"><div class="av">LB</div><div><div style="font-size:12px;font-weight:500">Lucas Bernard</div><div class="text-xs text-muted">Technicien · 95j</div></div></div></td>
+          <td><span class="badge b-navy">AFDAS</span></td>
+          <td><span class="badge b-green">Prêt à déposer</span></td>
+          <td class="font-sb text-green">3 840€</td>
+          <td><div class="flex items-c gap-2"><div class="prog" style="width:48px"><div class="prog-fill green" style="width:95%"></div></div><span class="text-xs">95%</span></div></td>
+          <td><span class="badge b-green">12%</span></td>
+          <td style="color:var(--green);font-weight:500;font-size:12px">03/05/26</td>
+          <td>Jean M.</td>
+          <td><button class="btn-s" style="font-size:11px;padding:3px 8px">Ouvrir</button></td>
+        </tr>
+        <tr>
+          <td class="name-cell text-blue">DOSS-2026-0039</td>
+          <td><div class="flex items-c gap-2"><div class="av" style="background:var(--green-bg);color:var(--green)">PL</div><div><div style="font-size:12px;font-weight:500">Pierre Lefebvre</div><div class="text-xs text-muted">Artiste · 54 cachets</div></div></div></td>
+          <td><span class="badge b-navy">AFDAS</span></td>
+          <td><span class="badge b-green">Accordé ✓</span></td>
+          <td class="font-sb text-green">2 400€</td>
+          <td><div class="flex items-c gap-2"><div class="prog" style="width:48px"><div class="prog-fill green" style="width:100%"></div></div><span class="text-xs">100%</span></div></td>
+          <td><span class="badge b-green">5%</span></td>
+          <td class="text-muted text-xs">Accordé</td>
+          <td>Jean M.</td>
+          <td><button class="btn-s" style="font-size:11px;padding:3px 8px">Voir</button></td>
+        </tr>
+        <tr>
+          <td class="name-cell text-blue">DOSS-2026-0038</td>
+          <td><div class="flex items-c gap-2"><div class="av" style="background:var(--teal-bg);color:var(--teal)">NH</div><div><div style="font-size:12px;font-weight:500">Nadia Haro</div><div class="text-xs text-muted">Salarié</div></div></div></td>
+          <td><span class="badge b-teal">OPCO Atlas</span></td>
+          <td><span class="badge b-navy">En instruction</span></td>
+          <td class="font-sb text-blue">4 800€</td>
+          <td><div class="flex items-c gap-2"><div class="prog" style="width:48px"><div class="prog-fill" style="width:80%"></div></div><span class="text-xs">80%</span></div></td>
+          <td><span class="badge b-amber">31%</span></td>
+          <td class="text-muted text-xs">Déposé</td>
+          <td>Lucie R.</td>
+          <td><button class="btn-s" style="font-size:11px;padding:3px 8px">Ouvrir</button></td>
+        </tr>
       </tbody>
     </table>
-    <div class="card-f"><span class="text-sm text-muted" id="funding-pagination">Chargement...</span><div style="margin-left:auto;display:flex;gap:4px"><button class="btn-s" style="padding:4px 10px;font-size:12px">‹</button><button class="btn-s" style="padding:4px 10px;font-size:12px">›</button></div></div>
+    <div class="card-f"><span class="text-sm text-muted">1–4 sur 12</span><div style="margin-left:auto;display:flex;gap:4px"><button class="btn-s" style="padding:4px 10px;font-size:12px">‹</button><button class="btn-s" style="padding:4px 10px;font-size:12px">›</button></div></div>
   </div>
 </div>
 
 <!-- ▶ DOCUMENTS ──────────────────────────── -->
 <div id="page-documents" class="page">
   <div class="page-hdr">
-    <div class="page-hdr-left"><h1 class="page-title">Documents & Modèles</h1><p class="page-sub" id="docs-subtitle">Chargement...</p></div>
+    <div class="page-hdr-left"><h1 class="page-title">Documents & Modèles</h1><p class="page-sub">49 modèles · Génération auto · Versioning · PDF / DOCX</p></div>
     <div class="page-hdr-right"><button class="btn-s">Import modèle</button><button class="btn-p">+ Nouveau modèle</button></div>
-  </div>
-  <div class="card" style="margin-bottom:14px" id="docs-history-card">
-    <div class="card-h"><span class="card-title">Historique generations recentes</span><span class="text-xs text-muted" id="docs-history-count">Chargement...</span></div>
-    <div class="card-b" id="docs-history-body" style="padding:8px 16px">
-      <div style="padding:10px;text-align:center;color:#9ca3af;font-style:italic">Chargement...</div>
-    </div>
   </div>
   <div class="tabs" id="doc-tabs">
     <div class="tab active" onclick="setTab(this,'doc-tabs')">Tous (49)</div>
@@ -1375,16 +1416,38 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
 <!-- ▶ TASKS ──────────────────────────────── -->
 <div id="page-tasks" class="page">
   <div class="page-hdr">
-    <div class="page-hdr-left"><h1 class="page-title">Tâches & Agenda</h1><p class="page-sub" id="tasks-subtitle">Chargement...</p></div>
+    <div class="page-hdr-left"><h1 class="page-title">Tâches & Agenda</h1><p class="page-sub">8 tâches urgentes · 3 RDV aujourd'hui</p></div>
     <div class="page-hdr-right"><button class="btn-p">+ Nouvelle tâche</button></div>
   </div>
   <div class="g2">
     <div class="card">
-      <div class="card-h"><span class="card-title">Tâches prioritaires</span><span class="badge b-red" id="tasks-urgent-count">...</span></div>
-      <div class="card-b" style="padding:8px" id="tasks-list">
-        <div style="padding:20px;text-align:center;color:#9ca3af;font-style:italic">Chargement...</div>
-      </div>
-    </div>
+      <div class="card-h"><span class="card-title">Tâches prioritaires</span><span class="badge b-red">8 urgentes</span></div>
+      <div class="card-b" style="padding:8px">
+        <div style="display:flex;align-items:flex-start;gap:9px;padding:9px;border-radius:var(--r8);background:var(--red-bg);border:1px solid var(--red-bdr);margin-bottom:6px">
+          <input type="checkbox" style="margin-top:2px">
+          <div class="flex-1"><div class="font-sb" style="font-size:13px;color:#7F1D1D">Relancer Sophie M. — 2 pièces AFDAS manquantes</div><div class="text-xs text-muted mt-1">DOSS-2026-0042 · Limite 01/05/2026</div></div>
+          <span class="badge b-red">J-6</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:9px;padding:9px;border-radius:var(--r8);background:var(--amber-bg);border:1px solid var(--amber-bdr);margin-bottom:6px">
+          <input type="checkbox" style="margin-top:2px">
+          <div class="flex-1"><div class="font-sb" style="font-size:13px;color:#78350F">Qualifier Camille Forest · Deal 5 200€</div><div class="text-xs text-muted mt-1">Pipeline étape 2 · 3 modules AFDAS</div></div>
+          <span class="badge b-amber">Aujourd'hui</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:9px;padding:9px;border-radius:var(--r8);border:1px solid var(--g200);margin-bottom:6px">
+          <input type="checkbox" style="margin-top:2px">
+          <div class="flex-1"><div style="font-size:13px;font-weight:500;color:var(--g700)">Envoyer devis Marc Tissot · Pack annuel</div><div class="text-xs text-muted mt-1">Deal 12 000€ · À signer</div></div>
+          <span class="badge b-gray">Demain</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:9px;padding:9px;border-radius:var(--r8);border:1px solid var(--g200);margin-bottom:6px">
+          <input type="checkbox" style="margin-top:2px">
+          <div class="flex-1"><div style="font-size:13px;font-weight:500;color:var(--g700)">Préparer revue Qualiopi · Indicateur 27</div><div class="text-xs text-muted mt-1">Non-conformité sous-traitants · Plan correctif</div></div>
+          <span class="badge b-navy">Cette semaine</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:9px;padding:9px;border-radius:var(--r8);border:1px solid var(--g200)">
+          <input type="checkbox" style="margin-top:2px">
+          <div class="flex-1"><div style="font-size:13px;font-weight:500;color:var(--g700)">Préparer dossier Lucas Bernard Q2</div><div class="text-xs text-muted mt-1">AFDAS · Dépôt 1–5 mai · 3 840€</div></div>
+          <span class="badge b-gold">Prioritaire</span>
+        </div>
       </div>
     </div>
     <div class="card">
@@ -1437,14 +1500,17 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
 <!-- ▶ COMPANIES ──────────────────────────── -->
 <div id="page-companies" class="page">
   <div class="page-hdr">
-    <div class="page-hdr-left"><h1 class="page-title">Entreprises</h1><p class="page-sub" id="entreprises-subtitle">Chargement...</p></div>
+    <div class="page-hdr-left"><h1 class="page-title">Entreprises</h1><p class="page-sub">84 entreprises · Clients & partenaires</p></div>
     <div class="page-hdr-right"><button class="btn-p">+ Nouvelle entreprise</button></div>
   </div>
   <div class="card">
     <table class="dt">
       <thead><tr><th>Entreprise</th><th>Secteur</th><th>Contacts</th><th>Deals actifs</th><th>CA total</th><th>Statut</th><th></th></tr></thead>
-      <tbody id="entreprises-tbody">
-        <tr><td colspan="7" style="text-align:center;padding:20px;color:#9ca3af;font-style:italic">Chargement...</td></tr>
+      <tbody>
+        <tr><td class="name-cell">Théâtre National de Paris</td><td>Spectacle vivant</td><td>8</td><td>3</td><td class="font-sb text-blue">24 800€</td><td><span class="badge b-green">Client actif</span></td><td><button class="btn-s" style="font-size:11px;padding:3px 8px">Voir</button></td></tr>
+        <tr><td class="name-cell">Compagnie des Arts Vivants</td><td>Danse</td><td>4</td><td>1</td><td class="font-sb text-blue">9 600€</td><td><span class="badge b-green">Client actif</span></td><td><button class="btn-s" style="font-size:11px;padding:3px 8px">Voir</button></td></tr>
+        <tr><td class="name-cell">Studio 42 Productions</td><td>Audiovisuel</td><td>6</td><td>2</td><td class="font-sb text-blue">18 200€</td><td><span class="badge b-amber">Prospect</span></td><td><button class="btn-s" style="font-size:11px;padding:3px 8px">Voir</button></td></tr>
+        <tr><td class="name-cell">Orchestre Philharmonique</td><td>Musique</td><td>3</td><td>0</td><td class="text-muted">—</td><td><span class="badge b-gray">Lead</span></td><td><button class="btn-s" style="font-size:11px;padding:3px 8px">Voir</button></td></tr>
       </tbody>
     </table>
   </div>
@@ -3195,367 +3261,6 @@ document.getElementById('global-search').addEventListener('keyup', function(e) {
   function init() {
     loadFormations();
     attachButtons();
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
-})();
-</script>
-
-
-<!-- === CONNEXION SUPABASE ENTREPRISES + TACHES + FUNDING + DOCUMENTS === -->
-<script>
-(function() {
-  var SUPABASE_URL = 'https://cvxzdiutxonnsnwoicqt.supabase.co';
-  var SUPABASE_KEY = 'sb_publishable_J8ta-7L05zgK9rBy2OS9Bg_CjXHwZVK';
-  if (typeof window.supabase === 'undefined' || !window.supabase.createClient) return;
-  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-  function escapeHtml(s) {
-    if (s === null || s === undefined) return '';
-    return String(s).replace(/[&<>"']/g, function(c) {
-      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
-    });
-  }
-
-  function fmtEuro(n) {
-    if (!n || n === 0) return '—';
-    if (n >= 1000) return (n / 1000).toFixed(1).replace('.0', '') + 'k€';
-    return Math.round(n) + '€';
-  }
-
-  function fmtDate(s) {
-    if (!s) return '—';
-    return new Date(s).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
-  }
-
-  function fmtDateRel(s) {
-    if (!s) return '—';
-    var d = new Date(s);
-    var now = new Date();
-    var diff = Math.floor((now - d) / 86400000);
-    if (diff === 0) return 'Aujourd\'hui';
-    if (diff === 1) return 'Hier';
-    if (diff < 7) return 'Il y a ' + diff + 'j';
-    if (diff < 30) return 'Il y a ' + Math.floor(diff / 7) + 'sem';
-    return fmtDate(s);
-  }
-
-  function getInitials(nom) {
-    if (!nom) return '??';
-    var parts = nom.trim().split(/\s+/);
-    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-    return (parts[0][0] + (parts[0][1] || '')).toUpperCase();
-  }
-
-  // ==============================================================
-  // 1) ENTREPRISES : agreger depuis formation_inscriptions par raison_sociale_client
-  // ==============================================================
-  async function loadEntreprises() {
-    try {
-      var subtitleEl = document.getElementById('entreprises-subtitle');
-      var tbodyEl = document.getElementById('entreprises-tbody');
-      if (!tbodyEl) return;
-
-      var r = await sb.from('formation_inscriptions')
-        .select('raison_sociale_client, siret_client, montant_total_ht, statut, contact_id');
-      if (r.error) throw r.error;
-      var inscriptions = r.data || [];
-
-      // Grouper par raison sociale non vide
-      var entreprisesByName = {};
-      inscriptions.forEach(function(i) {
-        if (!i.raison_sociale_client || !i.raison_sociale_client.trim()) return;
-        var key = i.raison_sociale_client.trim();
-        if (!entreprisesByName[key]) {
-          entreprisesByName[key] = { nom: key, siret: i.siret_client, ca: 0, deals: 0, contacts: new Set(), abandons: 0 };
-        }
-        entreprisesByName[key].deals++;
-        if (i.statut !== 'abandon') {
-          entreprisesByName[key].ca += Number(i.montant_total_ht || 0);
-        } else {
-          entreprisesByName[key].abandons++;
-        }
-        if (i.contact_id) entreprisesByName[key].contacts.add(i.contact_id);
-      });
-
-      var entreprises = Object.values(entreprisesByName);
-      entreprises.sort(function(a, b) { return b.ca - a.ca; });
-
-      if (subtitleEl) {
-        subtitleEl.textContent = entreprises.length + ' entreprise' + (entreprises.length > 1 ? 's' : '') + ' · Clients & partenaires';
-      }
-
-      if (entreprises.length === 0) {
-        tbodyEl.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:#9ca3af;font-style:italic">Aucune entreprise cliente pour le moment</td></tr>';
-      } else {
-        var rows = entreprises.map(function(e) {
-          var statut = e.ca > 0 ? '<span class="badge b-green">Client actif</span>' : '<span class="badge b-amber">Prospect</span>';
-          return '<tr>' +
-            '<td class="name-cell">' + escapeHtml(e.nom) + '</td>' +
-            '<td class="text-xs text-muted">' + escapeHtml(e.siret || '—') + '</td>' +
-            '<td>' + e.contacts.size + '</td>' +
-            '<td>' + e.deals + '</td>' +
-            '<td class="font-sb text-blue">' + fmtEuro(e.ca) + '</td>' +
-            '<td>' + statut + '</td>' +
-            '<td><button class="btn-s" style="font-size:11px;padding:3px 8px">Voir</button></td>' +
-          '</tr>';
-        });
-        tbodyEl.innerHTML = rows.join('');
-      }
-
-      console.log('[Ardalos Entreprises] OK :', entreprises.length);
-    } catch (e) {
-      console.error('[Ardalos Entreprises]', e);
-      var tbodyEl = document.getElementById('entreprises-tbody');
-      if (tbodyEl) tbodyEl.innerHTML = '<tr><td colspan="7" style="padding:20px;color:#dc2626">Erreur: ' + escapeHtml(e.message) + '</td></tr>';
-    }
-  }
-
-  // ==============================================================
-  // 2) TACHES : table taches avec checkbox pour marquer done
-  // ==============================================================
-  async function loadTasks() {
-    try {
-      var subtitleEl = document.getElementById('tasks-subtitle');
-      var listEl = document.getElementById('tasks-list');
-      var urgentEl = document.getElementById('tasks-urgent-count');
-      if (!listEl) return;
-
-      var r = await sb.from('taches').select('*').order('date_echeance', { ascending: true, nullsFirst: false });
-      if (r.error) throw r.error;
-      var taches = r.data || [];
-      var actives = taches.filter(function(t) { return !t.done; });
-
-      // Compter urgentes (echeance dans les 7j ou depasse)
-      var now = new Date();
-      var dans7j = new Date(now.getTime() + 7 * 86400000);
-      var urgentes = actives.filter(function(t) {
-        if (!t.date_echeance) return false;
-        var d = new Date(t.date_echeance);
-        return d <= dans7j;
-      });
-
-      if (subtitleEl) {
-        subtitleEl.textContent = actives.length + ' tache' + (actives.length > 1 ? 's' : '') + ' active' + (actives.length > 1 ? 's' : '') + ' · ' + urgentes.length + ' urgente' + (urgentes.length > 1 ? 's' : '');
-      }
-      if (urgentEl) {
-        urgentEl.textContent = urgentes.length + ' urgente' + (urgentes.length > 1 ? 's' : '');
-      }
-
-      if (actives.length === 0) {
-        listEl.innerHTML = '<div style="padding:30px;text-align:center;color:#9ca3af;font-style:italic">Aucune tache active</div>';
-      } else {
-        var rows = actives.map(function(t) {
-          var prio = (t.priorite || '').toLowerCase();
-          var badgeLabel = 'A faire';
-          var badgeCls = 'b-gray';
-          var containerStyle = 'border:1px solid var(--g200)';
-          if (t.date_echeance) {
-            var d = new Date(t.date_echeance);
-            var diffDays = Math.floor((d - now) / 86400000);
-            if (diffDays < 0) {
-              badgeLabel = 'Retard ' + Math.abs(diffDays) + 'j';
-              badgeCls = 'b-red';
-              containerStyle = 'background:var(--red-bg);border:1px solid var(--red-bdr)';
-            } else if (diffDays === 0) {
-              badgeLabel = "Aujourd'hui";
-              badgeCls = 'b-amber';
-              containerStyle = 'background:var(--amber-bg);border:1px solid var(--amber-bdr)';
-            } else if (diffDays === 1) {
-              badgeLabel = 'Demain';
-              badgeCls = 'b-amber';
-            } else if (diffDays <= 7) {
-              badgeLabel = 'J+' + diffDays;
-              badgeCls = 'b-navy';
-            } else {
-              badgeLabel = fmtDate(t.date_echeance);
-            }
-          }
-          if (prio === 'haute' || prio === 'prioritaire' || prio === 'urgent') {
-            badgeCls = 'b-red';
-          }
-
-          return '<div style="display:flex;align-items:flex-start;gap:9px;padding:9px;border-radius:var(--r8);' + containerStyle + ';margin-bottom:6px">' +
-            '<input type="checkbox" style="margin-top:2px" data-task-id="' + escapeHtml(t.id) + '" class="task-cb">' +
-            '<div class="flex-1">' +
-              '<div class="font-sb" style="font-size:13px">' + escapeHtml(t.titre || 'Sans titre') + '</div>' +
-              (t.contact ? '<div class="text-xs text-muted mt-1">Contact : ' + escapeHtml(t.contact) + '</div>' : '') +
-            '</div>' +
-            '<span class="badge ' + badgeCls + '">' + escapeHtml(badgeLabel) + '</span>' +
-          '</div>';
-        });
-        listEl.innerHTML = rows.join('');
-
-        // Brancher les checkboxes
-        var cbs = listEl.querySelectorAll('.task-cb');
-        cbs.forEach(function(cb) {
-          cb.addEventListener('change', async function() {
-            var id = cb.dataset.taskId;
-            cb.disabled = true;
-            try {
-              var upd = await sb.from('taches').update({ done: cb.checked }).eq('id', id);
-              if (upd.error) throw upd.error;
-              // Recharger
-              loadTasks();
-            } catch (e) {
-              alert('Erreur : ' + e.message);
-              cb.checked = !cb.checked;
-              cb.disabled = false;
-            }
-          });
-        });
-      }
-
-      console.log('[Ardalos Tasks] OK :', actives.length, 'actives,', urgentes.length, 'urgentes');
-    } catch (e) {
-      console.error('[Ardalos Tasks]', e);
-      var listEl = document.getElementById('tasks-list');
-      if (listEl) listEl.innerHTML = '<div style="padding:20px;color:#dc2626">Erreur: ' + escapeHtml(e.message) + '</div>';
-    }
-  }
-
-  // ==============================================================
-  // 3) FUNDING : Dossiers de financement
-  // ==============================================================
-  async function loadFunding() {
-    try {
-      var subtitleEl = document.getElementById('funding-subtitle');
-      var tbodyEl = document.getElementById('funding-tbody');
-      var pageEl = document.getElementById('funding-pagination');
-      if (!tbodyEl) return;
-
-      // Financements + inscriptions jointes
-      var fR = await sb.from('formation_financements').select('*').order('created_at', { ascending: false });
-      if (fR.error) throw fR.error;
-      var financements = fR.data || [];
-
-      // Inscriptions pour avoir les contacts
-      var insIds = [...new Set(financements.map(function(f) { return f.inscription_id; }).filter(Boolean))];
-      var inscriptions = [];
-      if (insIds.length > 0) {
-        var iR = await sb.from('formation_inscriptions')
-          .select('id, contacts(prenom, nom), commercial_responsable')
-          .in('id', insIds);
-        inscriptions = iR.data || [];
-      }
-      var insById = {};
-      inscriptions.forEach(function(i) { insById[i.id] = i; });
-
-      // Urgences = statut != accorde et dossier recent
-      var actives = financements.filter(function(f) {
-        return (f.statut_dossier || '').toLowerCase() !== 'accorde' &&
-               (f.statut_dossier || '').toLowerCase() !== 'refuse';
-      });
-
-      if (subtitleEl) {
-        subtitleEl.textContent = actives.length + ' dossier' + (actives.length > 1 ? 's' : '') + ' actif' + (actives.length > 1 ? 's' : '') + ' · AFDAS / OPCO / CPF';
-      }
-
-      if (financements.length === 0) {
-        tbodyEl.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:40px;color:#9ca3af;font-style:italic">Aucun dossier de financement</td></tr>';
-      } else {
-        var rows = financements.map(function(f, idx) {
-          var ins = insById[f.inscription_id] || {};
-          var contact = ins.contacts || {};
-          var nom = ((contact.prenom || '') + ' ' + (contact.nom || '')).trim() || '—';
-          var initials = getInitials(nom);
-          var ref = 'DOSS-' + (new Date(f.created_at || Date.now()).getFullYear()) + '-' + String(idx + 1).padStart(4, '0');
-
-          var typeBadge = '<span class="badge b-navy">' + escapeHtml(f.type_financement || '—') + '</span>';
-          var statut = (f.statut_dossier || 'En cours').toLowerCase();
-          var statutCls = 'b-amber';
-          var statutLabel = f.statut_dossier || 'En cours';
-          if (statut.indexOf('accorde') !== -1) { statutCls = 'b-green'; statutLabel = 'Accorde'; }
-          else if (statut.indexOf('refuse') !== -1) { statutCls = 'b-red'; statutLabel = 'Refuse'; }
-          else if (statut.indexOf('instruction') !== -1) { statutCls = 'b-navy'; }
-          else if (statut.indexOf('depose') !== -1) { statutCls = 'b-teal'; }
-
-          return '<tr>' +
-            '<td class="name-cell text-blue">' + ref + '</td>' +
-            '<td><div class="flex items-c gap-2"><div class="av">' + initials + '</div><div><div style="font-size:12px;font-weight:500">' + escapeHtml(nom) + '</div></div></div></td>' +
-            '<td>' + typeBadge + '</td>' +
-            '<td><span class="badge ' + statutCls + '">' + escapeHtml(statutLabel) + '</span></td>' +
-            '<td class="font-sb text-blue">' + fmtEuro(Number(f.montant_ht || 0)) + '</td>' +
-            '<td class="text-xs text-muted">' + (f.piece_manquante ? escapeHtml(f.piece_manquante) : '—') + '</td>' +
-            '<td class="text-xs text-muted">' + (f.date_depot ? fmtDate(f.date_depot) : '—') + '</td>' +
-            '<td class="text-xs text-muted">' + (f.date_decision ? fmtDate(f.date_decision) : '—') + '</td>' +
-            '<td class="text-xs">' + escapeHtml(ins.commercial_responsable || '—') + '</td>' +
-            '<td><button class="btn-s" style="font-size:11px;padding:3px 8px">Ouvrir</button></td>' +
-          '</tr>';
-        });
-        tbodyEl.innerHTML = rows.join('');
-      }
-
-      if (pageEl) pageEl.textContent = financements.length > 0 ? '1–' + financements.length + ' sur ' + financements.length : '0 dossier';
-
-      console.log('[Ardalos Funding] OK :', financements.length);
-    } catch (e) {
-      console.error('[Ardalos Funding]', e);
-      var tbodyEl = document.getElementById('funding-tbody');
-      if (tbodyEl) tbodyEl.innerHTML = '<tr><td colspan="10" style="padding:20px;color:#dc2626">Erreur: ' + escapeHtml(e.message) + '</td></tr>';
-    }
-  }
-
-  // ==============================================================
-  // 4) DOCUMENTS : historique email_logs (sert de preuve des generations)
-  // ==============================================================
-  async function loadDocsHistory() {
-    try {
-      var subtitleEl = document.getElementById('docs-subtitle');
-      var historyBody = document.getElementById('docs-history-body');
-      var historyCount = document.getElementById('docs-history-count');
-      if (!historyBody) return;
-
-      var r = await sb.from('email_logs').select('*').order('created_at', { ascending: false }).limit(20);
-      if (r.error) throw r.error;
-      var logs = r.data || [];
-
-      // Compter total generations
-      var rCount = await sb.from('email_logs').select('id', { count: 'exact', head: true });
-      var total = rCount.count || logs.length;
-
-      if (subtitleEl) {
-        subtitleEl.textContent = '10 modeles · ' + total + ' generation' + (total > 1 ? 's' : '') + ' · PDF / DOCX';
-      }
-      if (historyCount) {
-        historyCount.textContent = '20 dernieres sur ' + total;
-      }
-
-      if (logs.length === 0) {
-        historyBody.innerHTML = '<div style="padding:20px;text-align:center;color:#9ca3af;font-style:italic">Aucune generation enregistree</div>';
-      } else {
-        var rows = logs.map(function(l) {
-          var succCls = l.success ? 'b-green' : 'b-red';
-          var succLabel = l.success ? 'Envoye' : 'Echec';
-          var fmt = l.format ? '<span class="badge b-navy" style="font-size:10px;margin-left:4px">' + escapeHtml(l.format.toUpperCase()) + '</span>' : '';
-          return '<div style="padding:8px 10px;border-bottom:1px solid #f1f5f9;font-size:12px">' +
-            '<div class="flex items-c justify-b">' +
-              '<div><span class="font-sb">' + escapeHtml(l.filename || 'Sans nom') + '</span>' + fmt + '</div>' +
-              '<span class="badge ' + succCls + '" style="font-size:10px">' + succLabel + '</span>' +
-            '</div>' +
-            '<div class="text-xs text-muted" style="margin-top:3px">Vers ' + escapeHtml(l.destinataire || '—') + ' · ' + fmtDateRel(l.created_at) + (l.envoye_par ? ' · ' + escapeHtml(l.envoye_par) : '') + '</div>' +
-          '</div>';
-        });
-        historyBody.innerHTML = rows.join('');
-      }
-
-      console.log('[Ardalos Docs] OK :', logs.length, 'sur', total);
-    } catch (e) {
-      console.error('[Ardalos Docs]', e);
-      var historyBody = document.getElementById('docs-history-body');
-      if (historyBody) historyBody.innerHTML = '<div style="padding:20px;color:#dc2626">Erreur: ' + escapeHtml(e.message) + '</div>';
-    }
-  }
-
-  function init() {
-    loadEntreprises();
-    loadTasks();
-    loadFunding();
-    loadDocsHistory();
   }
 
   if (document.readyState === 'loading') {
