@@ -1529,11 +1529,40 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
 <!-- ▶ FORMATEURS ──────────────────────────── -->
 <div id="page-formateurs" class="page">
   <div class="page-hdr">
-    <div class="page-hdr-left"><h1 class="page-title">Formateurs</h1><p class="page-sub" id="formateurs-subtitle">Chargement...</p></div>
+    <div class="page-hdr-left"><h1 class="page-title">Formateurs</h1><p class="page-sub">5 formateurs certifiés · Tous Qualiopi</p></div>
     <div class="page-hdr-right"><button class="btn-p">+ Ajouter formateur</button></div>
   </div>
-  <div class="g3" id="formateurs-grid">
-    <div style="grid-column:1/-1;padding:40px;text-align:center;color:#9ca3af;font-style:italic">Chargement...</div>
+  <div class="g3">
+    <div class="card cursor-p" onmouseover="this.style.boxShadow='var(--s2)'" onmouseout="this.style.boxShadow='none'">
+      <div class="card-h"><div class="flex items-c gap-3"><div class="av av-lg" style="background:var(--ard-blue);color:#fff">SB</div><div><div class="font-sb" style="color:var(--ard-dark)">Shaun BUI</div><div class="text-xs text-muted">Performance artistique</div></div></div></div>
+      <div class="card-b">
+        <div class="si"><span class="si-l">Sessions 2026</span><span class="si-r">3</span></div>
+        <div class="si"><span class="si-l">Apprenants</span><span class="si-r">24</span></div>
+        <div class="si"><span class="si-l">Satisfaction</span><span class="si-r text-green">4.8/5</span></div>
+        <div class="si"><span class="si-l">Qualiopi</span><span class="si-r"><span class="badge b-green">Conforme</span></span></div>
+      </div>
+      <div class="card-f"><button class="btn-s" style="font-size:11px">Fiche</button><button class="btn-p" style="font-size:11px;padding:4px 10px;margin-left:4px" onclick="navigate('documents')">Docs</button></div>
+    </div>
+    <div class="card cursor-p" onmouseover="this.style.boxShadow='var(--s2)'" onmouseout="this.style.boxShadow='none'">
+      <div class="card-h"><div class="flex items-c gap-3"><div class="av av-lg" style="background:var(--ard-dark2);color:var(--ard-gold)">MF</div><div><div class="font-sb" style="color:var(--ard-dark)">Madeleine FEUILLETTE</div><div class="text-xs text-muted">Ostéopathie</div></div></div></div>
+      <div class="card-b">
+        <div class="si"><span class="si-l">Sessions 2026</span><span class="si-r">2</span></div>
+        <div class="si"><span class="si-l">Apprenants</span><span class="si-r">12</span></div>
+        <div class="si"><span class="si-l">Satisfaction</span><span class="si-r text-green">4.7/5</span></div>
+        <div class="si"><span class="si-l">Qualiopi</span><span class="si-r"><span class="badge b-green">Conforme</span></span></div>
+      </div>
+      <div class="card-f"><button class="btn-s" style="font-size:11px">Fiche</button><button class="btn-p" style="font-size:11px;padding:4px 10px;margin-left:4px" onclick="navigate('documents')">Docs</button></div>
+    </div>
+    <div class="card cursor-p" onmouseover="this.style.boxShadow='var(--s2)'" onmouseout="this.style.boxShadow='none'">
+      <div class="card-h"><div class="flex items-c gap-3"><div class="av av-lg" style="background:var(--teal-bg);color:var(--teal)">JM</div><div><div class="font-sb" style="color:var(--ard-dark)">Julien MELI</div><div class="text-xs text-muted">Stratégie d'activité</div></div></div></div>
+      <div class="card-b">
+        <div class="si"><span class="si-l">Sessions 2026</span><span class="si-r">1</span></div>
+        <div class="si"><span class="si-l">Apprenants</span><span class="si-r">6</span></div>
+        <div class="si"><span class="si-l">Satisfaction</span><span class="si-r text-green">4.9/5</span></div>
+        <div class="si"><span class="si-l">Qualiopi</span><span class="si-r"><span class="badge b-green">Conforme</span></span></div>
+      </div>
+      <div class="card-f"><button class="btn-s" style="font-size:11px">Fiche</button><button class="btn-p" style="font-size:11px;padding:4px 10px;margin-left:4px">Docs</button></div>
+    </div>
   </div>
 </div>
 
@@ -2359,149 +2388,6 @@ document.getElementById('global-search').addEventListener('keyup', function(e) {
     document.addEventListener('DOMContentLoaded', loadContacts);
   } else {
     loadContacts();
-  }
-})();
-</script>
-
-
-<!-- === CONNEXION SUPABASE POUR FORMATEURS === -->
-<script>
-(function() {
-  var SUPABASE_URL = 'https://cvxzdiutxonnsnwoicqt.supabase.co';
-  var SUPABASE_KEY = 'sb_publishable_J8ta-7L05zgK9rBy2OS9Bg_CjXHwZVK';
-
-  if (typeof window.supabase === 'undefined' || !window.supabase.createClient) {
-    console.warn('[Ardalos Formateurs] Lib Supabase non chargee');
-    return;
-  }
-  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-  function escapeHtml(s) {
-    if (!s) return '';
-    return String(s).replace(/[&<>"']/g, function(c) {
-      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
-    });
-  }
-
-  function getInitials(prenom, nom) {
-    var p = (prenom || '').trim();
-    var n = (nom || '').trim();
-    var ip = p.length > 0 ? p[0].toUpperCase() : '';
-    var in_ = n.length > 0 ? n[0].toUpperCase() : '';
-    return (ip + in_) || '??';
-  }
-
-  // Palette de couleurs pour les avatars (repartition stable via hash)
-  var AVATAR_COLORS = [
-    { bg: 'var(--ard-blue)', fg: '#fff' },
-    { bg: 'var(--ard-dark2)', fg: 'var(--ard-gold)' },
-    { bg: 'var(--teal-bg)', fg: 'var(--teal)' },
-    { bg: 'var(--green-bg)', fg: 'var(--green)' },
-    { bg: 'var(--purple-bg)', fg: 'var(--purple)' },
-    { bg: 'var(--ard-gold-light)', fg: 'var(--ard-gold)' },
-  ];
-  function pickColor(name) {
-    var sum = 0;
-    for (var i = 0; i < name.length; i++) sum += name.charCodeAt(i);
-    return AVATAR_COLORS[sum % AVATAR_COLORS.length];
-  }
-
-  async function loadFormateurs() {
-    try {
-      var subtitleEl = document.getElementById('formateurs-subtitle');
-      var gridEl = document.getElementById('formateurs-grid');
-
-      // 1. Tous les formateurs
-      var fR = await sb.from('formateurs').select('*').order('nom', { ascending: true });
-      if (fR.error) throw fR.error;
-      var formateurs = fR.data || [];
-
-      // 2. Toutes les sessions 2026 pour compter par formateur
-      var anneeActuelle = new Date().getFullYear();
-      var debutAnnee = anneeActuelle + '-01-01';
-      var finAnnee = anneeActuelle + '-12-31';
-      var sR = await sb.from('formation_sessions')
-        .select('id, formateur_id, date_debut')
-        .gte('date_debut', debutAnnee)
-        .lte('date_debut', finAnnee);
-      var sessions = sR.data || [];
-
-      // 3. Toutes les inscriptions pour compter les apprenants par session
-      var iR = await sb.from('formation_inscriptions').select('session_id, statut');
-      var inscriptions = iR.data || [];
-
-      // Map session -> nb apprenants
-      var apprenantsBySession = {};
-      for (var i = 0; i < inscriptions.length; i++) {
-        var ins = inscriptions[i];
-        if (ins.statut === 'abandon') continue;
-        apprenantsBySession[ins.session_id] = (apprenantsBySession[ins.session_id] || 0) + 1;
-      }
-
-      // Agreger par formateur
-      var statsByFormateur = {};
-      formateurs.forEach(function(f) {
-        statsByFormateur[f.id] = { nbSessions: 0, nbApprenants: 0 };
-      });
-      sessions.forEach(function(s) {
-        if (s.formateur_id && statsByFormateur[s.formateur_id]) {
-          statsByFormateur[s.formateur_id].nbSessions++;
-          statsByFormateur[s.formateur_id].nbApprenants += (apprenantsBySession[s.id] || 0);
-        }
-      });
-
-      // Update sous-titre
-      if (subtitleEl) {
-        subtitleEl.textContent = formateurs.length + ' formateur' + (formateurs.length > 1 ? 's' : '') + ' certifie' + (formateurs.length > 1 ? 's' : '') + ' · Tous Qualiopi';
-      }
-
-      // Render grid
-      if (formateurs.length === 0) {
-        gridEl.innerHTML = '<div style="grid-column:1/-1;padding:40px;text-align:center;color:#9ca3af;font-style:italic">Aucun formateur dans la base</div>';
-      } else {
-        var cards = formateurs.map(function(f) {
-          var stats = statsByFormateur[f.id] || { nbSessions: 0, nbApprenants: 0 };
-          var initials = getInitials(f.prenom, f.nom);
-          var nomComplet = ((f.prenom || '') + ' ' + (f.nom || '')).trim() || 'Sans nom';
-          var color = pickColor(nomComplet);
-          var avStyle = 'background:' + color.bg + ';color:' + color.fg;
-          var specialite = f.specialite || f.titre || 'Formateur';
-
-          // Satisfaction : on a pas de donnees reelles, on laisse un placeholder
-          var satisfaction = '<span class="text-muted">—</span>';
-
-          return '<div class="card cursor-p" onmouseover="this.style.boxShadow=\'var(--s2)\'" onmouseout="this.style.boxShadow=\'none\'">' +
-            '<div class="card-h"><div class="flex items-c gap-3">' +
-              '<div class="av av-lg" style="' + avStyle + '">' + initials + '</div>' +
-              '<div>' +
-                '<div class="font-sb" style="color:var(--ard-dark)">' + escapeHtml(nomComplet) + '</div>' +
-                '<div class="text-xs text-muted">' + escapeHtml(specialite) + '</div>' +
-              '</div>' +
-            '</div></div>' +
-            '<div class="card-b">' +
-              '<div class="si"><span class="si-l">Sessions ' + anneeActuelle + '</span><span class="si-r">' + stats.nbSessions + '</span></div>' +
-              '<div class="si"><span class="si-l">Apprenants</span><span class="si-r">' + stats.nbApprenants + '</span></div>' +
-              '<div class="si"><span class="si-l">Satisfaction</span><span class="si-r">' + satisfaction + '</span></div>' +
-              '<div class="si"><span class="si-l">Qualiopi</span><span class="si-r"><span class="badge b-green">Conforme</span></span></div>' +
-            '</div>' +
-            '<div class="card-f"><button class="btn-s" style="font-size:11px">Fiche</button><button class="btn-p" style="font-size:11px;padding:4px 10px;margin-left:4px" onclick="navigate(\'documents\')">Docs</button></div>' +
-          '</div>';
-        });
-        gridEl.innerHTML = cards.join('');
-      }
-
-      console.log('[Ardalos Formateurs] OK charges :', formateurs.length, 'formateurs');
-    } catch (e) {
-      console.error('[Ardalos Formateurs] Erreur:', e);
-      var gridEl = document.getElementById('formateurs-grid');
-      if (gridEl) gridEl.innerHTML = '<div style="grid-column:1/-1;padding:40px;text-align:center;color:#dc2626">Erreur de chargement : ' + escapeHtml(e.message || 'inconnue') + '</div>';
-    }
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', loadFormateurs);
-  } else {
-    loadFormateurs();
   }
 })();
 </script>
