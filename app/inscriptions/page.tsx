@@ -21,39 +21,21 @@ const STATUT_MAP: Record<string,{label:string,color:string}> = Object.fromEntrie
 )
 
 type Inscription = {
-  id: string
-  session_id: string
-  contact_id: string
-  statut: string
-  date_inscription: string | null
-  date_confirmation: string | null
-  date_abandon: string | null
-  montant_total_ht: number | null
-  notes: string | null
-  date_naissance_stagiaire: string | null
-  lieu_naissance_stagiaire: string | null
-  nationalite_stagiaire: string | null
-  adresse_rue: string | null
-  adresse_cp: string | null
-  adresse_ville: string | null
-  raison_sociale_client: string | null
-  forme_juridique_client: string | null
-  adresse_client: string | null
-  siret_client: string | null
-  representant_client: string | null
-  fonction_representant_client: string | null
-  contacts?: any
-  formation_sessions?: any
+  id: string; session_id: string; contact_id: string; statut: string
+  date_inscription: string | null; date_confirmation: string | null; date_abandon: string | null
+  montant_total_ht: number | null; notes: string | null
+  date_naissance_stagiaire: string | null; lieu_naissance_stagiaire: string | null
+  nationalite_stagiaire: string | null; adresse_rue: string | null
+  adresse_cp: string | null; adresse_ville: string | null
+  raison_sociale_client: string | null; forme_juridique_client: string | null
+  adresse_client: string | null; siret_client: string | null
+  representant_client: string | null; fonction_representant_client: string | null
+  contacts?: any; formation_sessions?: any
 }
 
 type Financement = {
-  id?: string
-  inscription_id?: string
-  type: string
-  montant_ht: number
-  statut_dossier: string
-  reference_dossier: string
-  notes: string
+  id?: string; inscription_id?: string; type: string; montant_ht: number
+  statut_dossier: string; reference_dossier: string; notes: string
 }
 
 function fmtDate(d: string | null) {
@@ -103,8 +85,11 @@ function InscriptionsContent() {
   const [selectedTpls, setSelectedTpls] = useState<Set<string>>(new Set(ALL_TEMPLATE_FILENAMES))
   const [generatingDossier, setGeneratingDossier] = useState(false)
 
-  // ==== NEW P4 : envoi email ====
-  const [emailMode, setEmailMode] = useState(false) // false = download, true = envoyer par email
+  // ==== NEW P2 : format ZIP ou PDF ====
+  const [dossierFormat, setDossierFormat] = useState<'pdf' | 'zip'>('pdf')
+
+  // Mode envoi email
+  const [emailMode, setEmailMode] = useState(false)
   const [emailTo, setEmailTo] = useState('')
   const [emailSubject, setEmailSubject] = useState('')
   const [emailMessage, setEmailMessage] = useState('')
@@ -243,7 +228,6 @@ function InscriptionsContent() {
     await loadAll()
   }
 
-  // Creation rapide contact
   function openNewContactModal() {
     setNewContactPrenom(''); setNewContactNom('')
     setNewContactEmail(''); setNewContactTelephone('')
@@ -275,12 +259,11 @@ function InscriptionsContent() {
 
   const currentContact = contacts.find(c => c.id === contactId)
 
-  // Dossier modal — ouverture
   function openDossierModal(ins: Inscription) {
     setDossierIns(ins)
     setSelectedTpls(new Set(ALL_TEMPLATE_FILENAMES))
     setEmailMode(false)
-    // Pre-remplissage email
+    setDossierFormat('pdf')  // PDF par defaut
     const emailDest = ins.contacts?.email || ''
     const nomStagiaire = `${ins.contacts?.prenom || ''} ${ins.contacts?.nom || ''}`.trim() || 'Stagiaire'
     const titreFormation = ins.formation_sessions?.formations?.titre || 'Formation'
@@ -315,6 +298,7 @@ function InscriptionsContent() {
       const params = new URLSearchParams({
         inscriptionId: dossierIns.id,
         templates: Array.from(selectedTpls).join(','),
+        format: dossierFormat,
       })
       const res = await fetch(`/api/generate-dossier?${params}`, { credentials: 'include' })
       if (!res.ok) {
@@ -328,7 +312,7 @@ function InscriptionsContent() {
       a.href = url
       const cd = res.headers.get('Content-Disposition') || ''
       const m = cd.match(/filename="([^"]+)"/)
-      a.download = m ? m[1] : 'dossier.zip'
+      a.download = m ? m[1] : (dossierFormat === 'pdf' ? 'dossier.pdf' : 'dossier.zip')
       document.body.appendChild(a); a.click(); a.remove()
       URL.revokeObjectURL(url)
       setGeneratingDossier(false); setDossierIns(null); setEmailMode(false)
@@ -355,9 +339,7 @@ function InscriptionsContent() {
         body: JSON.stringify({
           inscriptionId: dossierIns.id,
           templates: Array.from(selectedTpls),
-          to: emailTo,
-          subject: emailSubject,
-          message: emailMessage,
+          to: emailTo, subject: emailSubject, message: emailMessage,
         }),
       })
       const data = await res.json()
@@ -589,7 +571,7 @@ function InscriptionsContent() {
         </div>
       )}
 
-      {/* DOSSIER MODAL (avec deux modes : Télécharger OU Envoyer par email) */}
+      {/* DOSSIER MODAL */}
       {dossierIns && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={closeDossierModal}>
           <div style={{ background: '#fff', borderRadius: '12px', padding: '24px', maxWidth: '620px', width: '92%', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 10px 40px rgba(0,0,0,0.2)' }} onClick={e => e.stopPropagation()}>
@@ -599,39 +581,65 @@ function InscriptionsContent() {
               {dossierIns.formation_sessions?.formations?.titre ? ` · ${dossierIns.formation_sessions.formations.titre}` : ''}
             </p>
 
-            {/* Onglets : Télécharger / Envoyer par email */}
+            {/* Onglets Télécharger / Email */}
             <div style={{ display: 'flex', gap: '4px', marginBottom: '16px', borderBottom: '1px solid #e5e7eb' }}>
-              <button
-                onClick={() => setEmailMode(false)}
-                disabled={isBusy}
-                style={{
-                  background: 'transparent', border: 'none',
-                  padding: '8px 16px', fontSize: '13px', cursor: isBusy ? 'not-allowed' : 'pointer',
+              <button onClick={() => setEmailMode(false)} disabled={isBusy}
+                style={{ background: 'transparent', border: 'none', padding: '8px 16px', fontSize: '13px',
+                  cursor: isBusy ? 'not-allowed' : 'pointer',
                   borderBottom: !emailMode ? '2px solid #1A2C6B' : '2px solid transparent',
-                  color: !emailMode ? '#1A2C6B' : '#9ca3af',
-                  fontWeight: !emailMode ? 600 : 400,
-                }}
-              >📥 Télécharger</button>
-              <button
-                onClick={() => setEmailMode(true)}
-                disabled={isBusy}
-                style={{
-                  background: 'transparent', border: 'none',
-                  padding: '8px 16px', fontSize: '13px', cursor: isBusy ? 'not-allowed' : 'pointer',
+                  color: !emailMode ? '#1A2C6B' : '#9ca3af', fontWeight: !emailMode ? 600 : 400 }}>
+                📥 Télécharger
+              </button>
+              <button onClick={() => setEmailMode(true)} disabled={isBusy}
+                style={{ background: 'transparent', border: 'none', padding: '8px 16px', fontSize: '13px',
+                  cursor: isBusy ? 'not-allowed' : 'pointer',
                   borderBottom: emailMode ? '2px solid #1A2C6B' : '2px solid transparent',
-                  color: emailMode ? '#1A2C6B' : '#9ca3af',
-                  fontWeight: emailMode ? 600 : 400,
-                }}
-              >✉️ Envoyer par email</button>
+                  color: emailMode ? '#1A2C6B' : '#9ca3af', fontWeight: emailMode ? 600 : 400 }}>
+                ✉️ Envoyer par email
+              </button>
             </div>
 
-            {/* Cases à cocher (communes aux 2 modes) */}
+            {/* Switch format PDF/ZIP (mode téléchargement uniquement pour l'instant en Phase 2A) */}
+            {!emailMode && (
+              <div style={{ background: '#f9fafb', padding: '12px', borderRadius: '8px', marginBottom: '12px', border: '1px solid #e5e7eb' }}>
+                <label style={{ ...labelStyle, marginBottom: '8px' }}>Format du fichier</label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button onClick={() => setDossierFormat('pdf')} disabled={isBusy}
+                    style={{
+                      flex: 1, padding: '10px', borderRadius: '6px', fontSize: '13px', cursor: isBusy ? 'not-allowed' : 'pointer',
+                      background: dossierFormat === 'pdf' ? '#1A2C6B' : '#fff',
+                      color: dossierFormat === 'pdf' ? '#fff' : '#1A2C6B',
+                      border: `1px solid ${dossierFormat === 'pdf' ? '#1A2C6B' : '#d1d5db'}`,
+                      fontWeight: dossierFormat === 'pdf' ? 600 : 400,
+                    }}>
+                    📄 PDF fusionné <span style={{ fontSize: '11px', opacity: 0.8 }}>(1 fichier, signature unique)</span>
+                  </button>
+                  <button onClick={() => setDossierFormat('zip')} disabled={isBusy}
+                    style={{
+                      flex: 1, padding: '10px', borderRadius: '6px', fontSize: '13px', cursor: isBusy ? 'not-allowed' : 'pointer',
+                      background: dossierFormat === 'zip' ? '#1A2C6B' : '#fff',
+                      color: dossierFormat === 'zip' ? '#fff' : '#1A2C6B',
+                      border: `1px solid ${dossierFormat === 'zip' ? '#1A2C6B' : '#d1d5db'}`,
+                      fontWeight: dossierFormat === 'zip' ? 600 : 400,
+                    }}>
+                    🗂️ ZIP docx <span style={{ fontSize: '11px', opacity: 0.8 }}>(fichiers éditables)</span>
+                  </button>
+                </div>
+                {dossierFormat === 'pdf' && (
+                  <p style={{ fontSize: '11px', color: '#6b7280', marginTop: '8px', marginBottom: 0 }}>
+                    ⏱️ La génération PDF prend ~30-60 secondes (conversion + fusion via CloudConvert).
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Cases à cocher */}
             <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', alignItems: 'center' }}>
               <button onClick={selectAllTpls} style={{ background: '#fff', color: '#1A2C6B', border: '1px solid #1A2C6B', borderRadius: '6px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>Tout cocher</button>
               <button onClick={deselectAllTpls} style={{ background: '#fff', color: '#6b7280', border: '1px solid #d1d5db', borderRadius: '6px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer' }}>Tout décocher</button>
               <span style={{ marginLeft: 'auto', fontSize: '12px', color: '#6b7280' }}>{selectedTpls.size} / {ALL_TEMPLATE_FILENAMES.length} sélectionnés</span>
             </div>
-            <div style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '6px', marginBottom: '16px', maxHeight: '220px', overflowY: 'auto' }}>
+            <div style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '6px', marginBottom: '16px', maxHeight: '200px', overflowY: 'auto' }}>
               {TEMPLATE_LIST.map(tpl => {
                 const checked = selectedTpls.has(tpl.filename)
                 return (
@@ -643,7 +651,7 @@ function InscriptionsContent() {
               })}
             </div>
 
-            {/* Mode EMAIL : champs supplémentaires */}
+            {/* Mode EMAIL : champs email */}
             {emailMode && (
               <div style={{ background: '#f9fafb', padding: '14px', borderRadius: '8px', marginBottom: '16px', border: '1px solid #e5e7eb' }}>
                 <div style={{ marginBottom: '10px' }}>
@@ -652,7 +660,8 @@ function InscriptionsContent() {
                 </div>
                 <div style={{ fontSize: '11px', color: '#6b7280', marginBottom: '10px' }}>
                   📧 Expéditeur : <strong>ardalosformation@gmail.com</strong><br />
-                  📋 CC automatique : David, Julien, Sylvain
+                  📋 CC automatique : David, Julien, Sylvain<br />
+                  📎 Format de la pièce jointe : ZIP de docx (PDF en email arrive en Phase 2B)
                 </div>
                 <div style={{ marginBottom: '10px' }}>
                   <label style={labelStyle}>Objet *</label>
@@ -665,12 +674,12 @@ function InscriptionsContent() {
               </div>
             )}
 
-            {/* Boutons d'action */}
+            {/* Boutons */}
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
               <button onClick={closeDossierModal} disabled={isBusy} style={{ background: '#fff', color: '#6b7280', border: '1px solid #d1d5db', borderRadius: '8px', padding: '10px 20px', cursor: isBusy ? 'not-allowed' : 'pointer', opacity: isBusy ? 0.5 : 1 }}>Annuler</button>
               {!emailMode ? (
                 <button onClick={runDossierDownload} disabled={isBusy || selectedTpls.size === 0} style={{ background: (isBusy || selectedTpls.size === 0) ? '#9ca3af' : '#C9A84C', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 20px', fontWeight: 500, cursor: (isBusy || selectedTpls.size === 0) ? 'not-allowed' : 'pointer' }}>
-                  {generatingDossier ? 'Génération…' : `📥 Télécharger (${selectedTpls.size})`}
+                  {generatingDossier ? (dossierFormat === 'pdf' ? 'Conversion PDF en cours…' : 'Génération…') : `📥 ${dossierFormat === 'pdf' ? 'Télécharger PDF' : 'Télécharger ZIP'} (${selectedTpls.size})`}
                 </button>
               ) : (
                 <button onClick={runDossierEmail} disabled={isBusy || selectedTpls.size === 0} style={{ background: (isBusy || selectedTpls.size === 0) ? '#9ca3af' : '#1A2C6B', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 20px', fontWeight: 500, cursor: (isBusy || selectedTpls.size === 0) ? 'not-allowed' : 'pointer' }}>
@@ -682,7 +691,6 @@ function InscriptionsContent() {
         </div>
       )}
 
-      {/* NEW CONTACT MODAL */}
       {showNewContactModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100 }} onClick={closeNewContactModal}>
           <div style={{ background: '#fff', borderRadius: '12px', padding: '24px', maxWidth: '460px', width: '92%', boxShadow: '0 10px 40px rgba(0,0,0,0.2)' }} onClick={e => e.stopPropagation()}>

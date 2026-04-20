@@ -1,12 +1,9 @@
-// lib/generateDossier.ts  —  V3 (sélection de templates)
+// lib/generateDossier.ts  —  V4 (support ZIP docx + PDF fusionne)
 // ============================================================================
-// Génère un dossier Qualiopi/AFDAS pour une inscription.
-// Permet de choisir quels templates inclure (par défaut : tous les 10).
-//
-// Diff V2 → V3 :
-//   - Import de ALL_TEMPLATE_FILENAMES depuis ./templatesList
-//   - generateDossier() accepte un 3e argument optionnel selectedTemplates?: string[]
-//     Si fourni, seuls les templates listés sont inclus dans le ZIP.
+// Diff V3 -> V4 :
+//   - generateDossier() accepte un 4e argument optionnel format: 'zip' | 'pdf'
+//   - Si 'pdf' : convertit tous les docx remplis en un seul PDF via CloudConvert
+//   - Si 'zip' (defaut) : comportement actuel inchange
 // ============================================================================
 
 import fs from 'fs'
@@ -16,8 +13,8 @@ import PizZip from 'pizzip'
 import JSZip from 'jszip'
 import { createClient } from '@supabase/supabase-js'
 import { ALL_TEMPLATE_FILENAMES } from './templatesList'
+import { convertDocxsToSinglePdf } from './generatePdf'
 
-// Client Supabase (clé publique)
 const supabaseUrl = 'https://cvxzdiutxonnsnwoicqt.supabase.co'
 const supabaseKey = 'sb_publishable_J8ta-7L05zgK9rBy2OS9Bg_CjXHwZVK'
 
@@ -40,9 +37,6 @@ function fmtPrice(n: number | null | undefined | string): string {
   return num.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'
 }
 
-// ============================================================================
-// Fetch des données — requêtes séparées (tolère FK non déclarées)
-// ============================================================================
 export async function fetchInscriptionData(inscriptionId: string, authToken?: string | null) {
   const supabase = createClient(supabaseUrl, supabaseKey, {
     global: authToken ? { headers: { Authorization: `Bearer ${authToken}` } } : {},
@@ -113,34 +107,21 @@ export async function fetchInscriptionData(inscriptionId: string, authToken?: st
   const formateurPrincipal = formateurNom ? { prenom: '', nom: formateurNom } : null
 
   return {
-    ins: insRaw,
-    contact,
-    session,
-    formation,
-    formateurPrincipal,
-    dirigeants,
-    president,
-    refHandicap,
-    financements,
+    ins: insRaw, contact, session, formation,
+    formateurPrincipal, dirigeants, president, refHandicap, financements,
   }
 }
 
-// ============================================================================
-// Construit l'objet de remplacement pour docxtemplater
-// ============================================================================
 export function buildVariables(data: any): Record<string, string> {
   const { ins, contact, session, formation, formateurPrincipal, president, financements } = data
 
   const modesFinancement = (financements || []).map((f: any) => f.type_financement).filter(Boolean).join(', ')
-
   const today = new Date()
   const dateGeneration = today.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
-
   const duree = formation?.duree
   const dureeJours = duree ? Math.ceil(Number(duree) / 7) : ''
 
   return {
-    // ==== Stagiaire ====
     NOM_STAGIAIRE: contact?.nom || '',
     PRENOM_STAGIAIRE: contact?.prenom || '',
     NOM_PRENOM_STAGIAIRE: `${contact?.prenom || ''} ${contact?.nom || ''}`.trim(),
@@ -151,16 +132,12 @@ export function buildVariables(data: any): Record<string, string> {
     EMAIL_STAGIAIRE: contact?.email || '',
     TEL_STAGIAIRE: contact?.telephone || '',
     QUALITE_SIGNATAIRE: 'Bénéficiaire',
-
-    // ==== Client entreprise (optionnel) ====
     RAISON_SOCIALE_CLIENT: ins?.raison_sociale_client || '',
     FORME_JURIDIQUE_CLIENT: ins?.forme_juridique_client || '',
     ADRESSE_CLIENT: ins?.adresse_client || '',
     SIRET_CLIENT: ins?.siret_client || '',
     REPRESENTANT_CLIENT: ins?.representant_client || '',
     FONCTION_REPRESENTANT: ins?.fonction_representant_client || '',
-
-    // ==== Formation ====
     TITRE_FORMATION: formation?.titre || '',
     REF_INTERNE: formation?.ref_interne || '',
     DUREE_HEURES: String(duree || ''),
@@ -201,46 +178,28 @@ export function buildVariables(data: any): Record<string, string> {
     INTITULE_EXERCICE_1: '', INTITULE_EXERCICE_2: '', INTITULE_EXERCICE_3: '',
     INTITULE_EXERCICE_4: '', INTITULE_EXERCICE_5: '', INTITULE_EXERCICE_6: '',
     INTITULE_EXERCICE_7: '', INTITULE_EXERCICE_8: '',
-
-    // ==== Formateur ====
-    NOM_PRENOM_FORMATEUR: formateurPrincipal
-      ? `${formateurPrincipal.prenom} ${formateurPrincipal.nom}`.trim()
-      : 'À désigner',
-    NOM_FORMATEUR_PRINCIPAL: formateurPrincipal
-      ? `${formateurPrincipal.prenom} ${formateurPrincipal.nom}`.trim()
-      : 'À désigner',
-    NOM_FORMATEUR: formateurPrincipal
-      ? `${formateurPrincipal.prenom} ${formateurPrincipal.nom}`.trim()
-      : 'À désigner',
+    NOM_PRENOM_FORMATEUR: formateurPrincipal ? `${formateurPrincipal.prenom} ${formateurPrincipal.nom}`.trim() : 'À désigner',
+    NOM_FORMATEUR_PRINCIPAL: formateurPrincipal ? `${formateurPrincipal.prenom} ${formateurPrincipal.nom}`.trim() : 'À désigner',
+    NOM_FORMATEUR: formateurPrincipal ? `${formateurPrincipal.prenom} ${formateurPrincipal.nom}`.trim() : 'À désigner',
     AUTRES_FORMATEURS: '',
-
-    // ==== Dirigeant ====
     NOM_PRENOM_DIRIGEANT: president ? `${president.prenom || ''} ${president.nom || ''}`.trim() : 'David CANDELIER',
     DATE_NAISSANCE_DIRIGEANT: fmtDate(president?.date_naissance),
     LIEU_NAISSANCE_DIRIGEANT: president?.lieu_naissance || '',
     NATIONALITE_DIRIGEANT: 'française',
-    ADRESSE_DIRIGEANT: [president?.adresse_rue, president?.adresse_cp, president?.adresse_ville]
-      .filter(Boolean).join(', '),
+    ADRESSE_DIRIGEANT: [president?.adresse_rue, president?.adresse_cp, president?.adresse_ville].filter(Boolean).join(', '),
     FONCTION_DIRIGEANT: 'Président',
     DIPLOMES_DIRIGEANT: president?.diplomes || '',
     EXPERIENCE_DIRIGEANT: president?.experience_synthetique || '',
     FORMATION_FORMATEUR: '', AUTRES_TITRES: '',
-
-    // ==== Signature ====
     DATE_SIGNATURE: dateGeneration,
     VILLE_SIGNATURE: 'Martigues',
-    NOM_PRENOM_SIGNATAIRE_ARDALOS: president
-      ? `${president.prenom || ''} ${president.nom || ''}`.trim()
-      : 'David CANDELIER',
+    NOM_PRENOM_SIGNATAIRE_ARDALOS: president ? `${president.prenom || ''} ${president.nom || ''}`.trim() : 'David CANDELIER',
     FONCTION_SIGNATAIRE: 'Président',
     DATE_GENERATION: dateGeneration,
     DATE_SIGNATURE_FORMATEUR: dateGeneration,
   }
 }
 
-// ============================================================================
-// Remplit un template docx et renvoie un Buffer
-// ============================================================================
 export function fillTemplate(templateName: string, vars: Record<string, string>): Buffer {
   const templatePath = path.join(TEMPLATES_DIR, templateName)
   const content = fs.readFileSync(templatePath, 'binary')
@@ -258,14 +217,14 @@ export function fillTemplate(templateName: string, vars: Record<string, string>)
 }
 
 // ============================================================================
-// Génère le dossier : renvoie un Buffer ZIP
-// Si selectedTemplates est fourni, ne garde que les templates listés.
+// Genere le dossier : renvoie un Buffer (ZIP ou PDF) + filename + contentType
 // ============================================================================
 export async function generateDossier(
   inscriptionId: string,
   authToken?: string | null,
   selectedTemplates?: string[],
-): Promise<{ buffer: Buffer; filename: string }> {
+  format: 'zip' | 'pdf' = 'zip',
+): Promise<{ buffer: Buffer; filename: string; contentType: string }> {
   const data = await fetchInscriptionData(inscriptionId, authToken)
   const vars = buildVariables(data)
 
@@ -274,35 +233,50 @@ export async function generateDossier(
     : ALL_TEMPLATE_FILENAMES
 
   if (validTemplates.length === 0) {
-    throw new Error('Aucun template valide sélectionné')
+    throw new Error('Aucun template valide selectionne')
   }
 
-  const zip = new JSZip()
   const stagiaireName = (vars.NOM_STAGIAIRE || 'STAGIAIRE').toUpperCase().replace(/[^A-Z0-9]/g, '_')
   const refInterne = vars.REF_INTERNE || 'FORMATION'
   const rootFolder = `DOSSIER_${stagiaireName}_${refInterne}`
 
-  let success = 0
+  // Remplit tous les templates en memoire (etape commune aux 2 formats)
+  const filledDocxs: { filename: string; buffer: Buffer }[] = []
   const errors: string[] = []
-
   for (const tplName of validTemplates) {
     try {
       const filled = fillTemplate(tplName, vars)
       const outName = tplName.replace('.docx', `_${stagiaireName}.docx`)
-      zip.file(`${rootFolder}/${outName}`, filled)
-      success++
+      filledDocxs.push({ filename: outName, buffer: filled })
     } catch (e: any) {
-      const msg = `${tplName}: ${e.message}`
-      console.error('[generateDossier]', msg)
-      errors.push(msg)
+      errors.push(`${tplName}: ${e.message}`)
+      console.error('[generateDossier]', tplName, e.message)
+    }
+  }
+  if (filledDocxs.length === 0) {
+    throw new Error(`Aucun template n'a pu etre rempli. Erreurs: ${errors.join(' | ')}`)
+  }
+
+  // ==== Format ZIP : comportement actuel ====
+  if (format === 'zip') {
+    const zip = new JSZip()
+    for (const d of filledDocxs) {
+      zip.file(`${rootFolder}/${d.filename}`, d.buffer)
+    }
+    const buffer = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' })
+    return {
+      buffer,
+      filename: `${rootFolder}.zip`,
+      contentType: 'application/zip',
     }
   }
 
-  if (success === 0) {
-    throw new Error(`Aucun template n'a pu être rempli. Erreurs: ${errors.join(' | ')}`)
+  // ==== Format PDF : conversion via CloudConvert + fusion ====
+  const pdfFilename = `${rootFolder}.pdf`
+  const pdfBuffer = await convertDocxsToSinglePdf(filledDocxs, pdfFilename)
+  return {
+    buffer: pdfBuffer,
+    filename: pdfFilename,
+    contentType: 'application/pdf',
   }
-
-  const buffer = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' })
-  const filename = `${rootFolder}.zip`
-  return { buffer, filename }
 }
