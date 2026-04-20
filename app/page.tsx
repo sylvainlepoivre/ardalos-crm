@@ -154,22 +154,7 @@ function HomeContent() {
         <Categorie emoji="💼" titre="Comptabilité" />
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
           <Tuile href="/export-compta" emoji="📊" titre="Export compta" desc="CSV pour Julien" />
-          {/* Emplacement réservé Factures auto (feature suivante) */}
-          <div style={{
-            background: 'transparent',
-            border: '1px dashed #d1d5db',
-            borderRadius: '12px',
-            padding: '20px 18px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#9ca3af',
-            fontSize: '11px',
-            fontStyle: 'italic',
-          }}>
-            Factures auto<br />
-            <span style={{ fontSize: '10px' }}>(à venir)</span>
-          </div>
+          <Tuile href="/factures" emoji="📄" titre="Factures" desc="Liste + téléchargement PDF" />
         </div>
 
         {/* FOOTER */}
