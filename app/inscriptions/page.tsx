@@ -30,14 +30,12 @@ type Inscription = {
   date_abandon: string | null
   montant_total_ht: number | null
   notes: string | null
-  // Infos stagiaire (P1)
   date_naissance_stagiaire: string | null
   lieu_naissance_stagiaire: string | null
   nationalite_stagiaire: string | null
   adresse_rue: string | null
   adresse_cp: string | null
   adresse_ville: string | null
-  // Entreprise cliente (P1)
   raison_sociale_client: string | null
   forme_juridique_client: string | null
   adresse_client: string | null
@@ -63,7 +61,6 @@ function fmtDate(d: string | null) {
   return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
-// Styles réutilisés
 const labelStyle: React.CSSProperties = { fontSize: '12px', color: '#6b7280', fontWeight: 500, display: 'block', marginBottom: '4px' }
 const inputStyle: React.CSSProperties = { width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box' }
 const sectionStyle: React.CSSProperties = { background: '#f9fafb', padding: '16px', borderRadius: '8px', marginBottom: '16px', border: '1px solid #e5e7eb' }
@@ -78,7 +75,6 @@ function InscriptionsContent() {
   const [statutFilter, setStatutFilter] = useState<string>('all')
   const [loading, setLoading] = useState(false)
 
-  // Champs de base
   const [sessionId, setSessionId] = useState('')
   const [contactId, setContactId] = useState('')
   const [statut, setStatut] = useState('prospect')
@@ -86,7 +82,6 @@ function InscriptionsContent() {
   const [notes, setNotes] = useState('')
   const [financements, setFinancements] = useState<Financement[]>([])
 
-  // Infos stagiaire (P1)
   const [dateNaissance, setDateNaissance] = useState('')
   const [lieuNaissance, setLieuNaissance] = useState('')
   const [nationalite, setNationalite] = useState('française')
@@ -95,7 +90,6 @@ function InscriptionsContent() {
   const [adresseVille, setAdresseVille] = useState('')
   const [showStagiaireDetails, setShowStagiaireDetails] = useState(false)
 
-  // Entreprise cliente (P1)
   const [hasClient, setHasClient] = useState(false)
   const [raisonSocialeClient, setRaisonSocialeClient] = useState('')
   const [formeJuridiqueClient, setFormeJuridiqueClient] = useState('')
@@ -104,10 +98,17 @@ function InscriptionsContent() {
   const [representantClient, setRepresentantClient] = useState('')
   const [fonctionRepresentantClient, setFonctionRepresentantClient] = useState('')
 
-  // Dossier modal
   const [dossierIns, setDossierIns] = useState<Inscription | null>(null)
   const [selectedTpls, setSelectedTpls] = useState<Set<string>>(new Set(ALL_TEMPLATE_FILENAMES))
   const [generatingDossier, setGeneratingDossier] = useState(false)
+
+  // ==== NEW : Modale création contact ====
+  const [showNewContactModal, setShowNewContactModal] = useState(false)
+  const [newContactPrenom, setNewContactPrenom] = useState('')
+  const [newContactNom, setNewContactNom] = useState('')
+  const [newContactEmail, setNewContactEmail] = useState('')
+  const [newContactTelephone, setNewContactTelephone] = useState('')
+  const [creatingContact, setCreatingContact] = useState(false)
 
   useEffect(() => { loadAll() }, [])
 
@@ -134,10 +135,7 @@ function InscriptionsContent() {
     setSiretClient(''); setRepresentantClient(''); setFonctionRepresentantClient('')
   }
 
-  function openNew() {
-    resetForm()
-    setShowForm(true)
-  }
+  function openNew() { resetForm(); setShowForm(true) }
 
   async function openEdit(ins: Inscription) {
     resetForm()
@@ -147,39 +145,26 @@ function InscriptionsContent() {
     setStatut(ins.statut)
     setMontantTotal(ins.montant_total_ht?.toString() || '')
     setNotes(ins.notes || '')
-
-    // Infos stagiaire
     setDateNaissance(ins.date_naissance_stagiaire || '')
     setLieuNaissance(ins.lieu_naissance_stagiaire || '')
     setNationalite(ins.nationalite_stagiaire || 'française')
     setAdresseRue(ins.adresse_rue || '')
     setAdresseCp(ins.adresse_cp || '')
     setAdresseVille(ins.adresse_ville || '')
-    const hasAnyStagiaireData = !!(ins.date_naissance_stagiaire || ins.lieu_naissance_stagiaire || ins.adresse_rue || ins.adresse_cp || ins.adresse_ville)
-    setShowStagiaireDetails(hasAnyStagiaireData)
-
-    // Entreprise cliente
-    const hasClientData = !!(ins.raison_sociale_client || ins.siret_client || ins.representant_client)
-    setHasClient(hasClientData)
+    setShowStagiaireDetails(!!(ins.date_naissance_stagiaire || ins.lieu_naissance_stagiaire || ins.adresse_rue || ins.adresse_cp || ins.adresse_ville))
+    setHasClient(!!(ins.raison_sociale_client || ins.siret_client || ins.representant_client))
     setRaisonSocialeClient(ins.raison_sociale_client || '')
     setFormeJuridiqueClient(ins.forme_juridique_client || '')
     setAdresseClient(ins.adresse_client || '')
     setSiretClient(ins.siret_client || '')
     setRepresentantClient(ins.representant_client || '')
     setFonctionRepresentantClient(ins.fonction_representant_client || '')
-
-    // Financements
     const { data } = await supabase.from('formation_financements').select('*').eq('inscription_id', ins.id)
     setFinancements((data || []).map(f => ({
-      id: f.id,
-      inscription_id: f.inscription_id,
-      type: f.type,
-      montant_ht: f.montant_ht || 0,
-      statut_dossier: f.statut_dossier,
-      reference_dossier: f.reference_dossier || '',
-      notes: f.notes || '',
+      id: f.id, inscription_id: f.inscription_id, type: f.type,
+      montant_ht: f.montant_ht || 0, statut_dossier: f.statut_dossier,
+      reference_dossier: f.reference_dossier || '', notes: f.notes || '',
     })))
-
     setShowForm(true)
   }
 
@@ -196,21 +181,16 @@ function InscriptionsContent() {
   async function save() {
     if (!sessionId || !contactId) { alert('Session et contact obligatoires'); return }
     setLoading(true)
-
     const payload: any = {
-      session_id: sessionId,
-      contact_id: contactId,
-      statut,
+      session_id: sessionId, contact_id: contactId, statut,
       montant_total_ht: montantTotal ? parseFloat(montantTotal) : null,
       notes: notes || null,
-      // Infos stagiaire
       date_naissance_stagiaire: dateNaissance || null,
       lieu_naissance_stagiaire: lieuNaissance || null,
       nationalite_stagiaire: nationalite || null,
       adresse_rue: adresseRue || null,
       adresse_cp: adresseCp || null,
       adresse_ville: adresseVille || null,
-      // Entreprise cliente (effacé si hasClient=false)
       raison_sociale_client: hasClient ? (raisonSocialeClient || null) : null,
       forme_juridique_client: hasClient ? (formeJuridiqueClient || null) : null,
       adresse_client: hasClient ? (adresseClient || null) : null,
@@ -235,12 +215,9 @@ function InscriptionsContent() {
     await supabase.from('formation_financements').delete().eq('inscription_id', inscriptionId)
     if (financements.length > 0) {
       const rows = financements.map(f => ({
-        inscription_id: inscriptionId,
-        type: f.type,
-        montant_ht: f.montant_ht || 0,
-        statut_dossier: f.statut_dossier,
-        reference_dossier: f.reference_dossier || null,
-        notes: f.notes || null,
+        inscription_id: inscriptionId, type: f.type,
+        montant_ht: f.montant_ht || 0, statut_dossier: f.statut_dossier,
+        reference_dossier: f.reference_dossier || null, notes: f.notes || null,
       }))
       const { error } = await supabase.from('formation_financements').insert(rows)
       if (error) { alert('Inscription sauvée mais erreur financements : ' + error.message) }
@@ -258,10 +235,40 @@ function InscriptionsContent() {
     await loadAll()
   }
 
-  // Dossier modal
+  // ==== NEW : Création rapide de contact ====
+  function openNewContactModal() {
+    setNewContactPrenom(''); setNewContactNom('')
+    setNewContactEmail(''); setNewContactTelephone('')
+    setShowNewContactModal(true)
+  }
+  function closeNewContactModal() { if (!creatingContact) setShowNewContactModal(false) }
+
+  async function createNewContact() {
+    if (!newContactPrenom.trim() || !newContactNom.trim()) {
+      alert('Prénom et nom obligatoires'); return
+    }
+    setCreatingContact(true)
+    const { data, error } = await supabase.from('contacts').insert({
+      prenom: newContactPrenom.trim(),
+      nom: newContactNom.trim(),
+      email: newContactEmail.trim() || null,
+      telephone: newContactTelephone.trim() || null,
+    }).select().single()
+    if (error) {
+      alert('Erreur création contact : ' + error.message)
+      setCreatingContact(false); return
+    }
+    const { data: refreshed } = await supabase.from('contacts').select('*').order('nom')
+    setContacts(refreshed || [])
+    setContactId(data.id)
+    setCreatingContact(false)
+    setShowNewContactModal(false)
+  }
+
+  const currentContact = contacts.find(c => c.id === contactId)
+
   function openDossierModal(ins: Inscription) {
-    setDossierIns(ins)
-    setSelectedTpls(new Set(ALL_TEMPLATE_FILENAMES))
+    setDossierIns(ins); setSelectedTpls(new Set(ALL_TEMPLATE_FILENAMES))
   }
   function closeDossierModal() { if (!generatingDossier) setDossierIns(null) }
   function toggleTpl(fn: string) {
@@ -284,8 +291,7 @@ function InscriptionsContent() {
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }))
         alert('Erreur génération : ' + (err.error || 'inconnue'))
-        setGeneratingDossier(false)
-        return
+        setGeneratingDossier(false); return
       }
       const blob = await res.blob()
       const url = URL.createObjectURL(blob)
@@ -294,12 +300,9 @@ function InscriptionsContent() {
       const cd = res.headers.get('Content-Disposition') || ''
       const m = cd.match(/filename="([^"]+)"/)
       a.download = m ? m[1] : 'dossier.zip'
-      document.body.appendChild(a)
-      a.click()
-      a.remove()
+      document.body.appendChild(a); a.click(); a.remove()
       URL.revokeObjectURL(url)
-      setGeneratingDossier(false)
-      setDossierIns(null)
+      setGeneratingDossier(false); setDossierIns(null)
     } catch (e: any) {
       alert('Erreur : ' + (e?.message || 'inconnue'))
       setGeneratingDossier(false)
@@ -344,11 +347,30 @@ function InscriptionsContent() {
               </select>
             </div>
             <div>
-              <label style={labelStyle}>Stagiaire *</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <label style={{ ...labelStyle, marginBottom: 0 }}>Stagiaire *</label>
+                <button
+                  type="button"
+                  onClick={openNewContactModal}
+                  style={{ background: 'transparent', color: '#C9A84C', border: 'none', fontSize: '11px', fontWeight: 500, cursor: 'pointer', padding: 0 }}
+                >
+                  + Nouveau contact
+                </button>
+              </div>
               <select value={contactId} onChange={e => setContactId(e.target.value)} style={inputStyle}>
                 <option value="">-- Choisir --</option>
                 {contacts.map(c => <option key={c.id} value={c.id}>{c.prenom} {c.nom}{c.email ? ` (${c.email})` : ''}</option>)}
               </select>
+              {currentContact && (
+                <div style={{ marginTop: '6px', fontSize: '11px', color: '#6b7280', lineHeight: 1.5 }}>
+                  {currentContact.email && <>📧 {currentContact.email}{currentContact.telephone ? ' · ' : ''}</>}
+                  {currentContact.telephone && <>📞 {currentContact.telephone}</>}
+                  {!currentContact.email && !currentContact.telephone && <span style={{ color: '#f97316' }}>⚠️ Pas d'email ni de téléphone · </span>}
+                  <a href={`/contacts`} target="_blank" rel="noopener noreferrer" style={{ color: '#1A2C6B', textDecoration: 'none', marginLeft: '4px' }}>
+                    Modifier la fiche →
+                  </a>
+                </div>
+              )}
             </div>
           </div>
 
@@ -370,7 +392,6 @@ function InscriptionsContent() {
             <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} style={{ ...inputStyle, fontFamily: 'inherit' }} />
           </div>
 
-          {/* ============ SECTION : Infos stagiaire (P1) ============ */}
           <div style={sectionStyle}>
             <div style={sectionHeaderStyle} onClick={() => setShowStagiaireDetails(v => !v)}>
               <strong style={{ color: '#1A2C6B', fontSize: '14px' }}>
@@ -414,15 +435,9 @@ function InscriptionsContent() {
             )}
           </div>
 
-          {/* ============ SECTION : Entreprise cliente (P1) ============ */}
           <div style={sectionStyle}>
             <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-              <input
-                type="checkbox"
-                checked={hasClient}
-                onChange={e => setHasClient(e.target.checked)}
-                style={{ accentColor: '#1A2C6B', width: '16px', height: '16px', cursor: 'pointer' }}
-              />
+              <input type="checkbox" checked={hasClient} onChange={e => setHasClient(e.target.checked)} style={{ accentColor: '#1A2C6B', width: '16px', height: '16px', cursor: 'pointer' }} />
               <strong style={{ color: '#1A2C6B', fontSize: '14px' }}>🏢 La formation est payée par une entreprise cliente</strong>
             </label>
             {hasClient && (
@@ -461,7 +476,6 @@ function InscriptionsContent() {
             )}
           </div>
 
-          {/* ============ SECTION : Financements ============ */}
           <div style={sectionStyle}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
               <strong style={{ color: '#1A2C6B', fontSize: '14px' }}>💰 Financements ({financements.length})</strong>
@@ -497,7 +511,6 @@ function InscriptionsContent() {
         </div>
       )}
 
-      {/* LISTE */}
       {filtered.length === 0 ? (
         <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '60px', textAlign: 'center', color: '#9ca3af' }}>
           <div style={{ fontSize: '40px', marginBottom: '12px' }}>👥</div>
@@ -548,7 +561,6 @@ function InscriptionsContent() {
         </div>
       )}
 
-      {/* DOSSIER MODAL */}
       {dossierIns && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={closeDossierModal}>
           <div style={{ background: '#fff', borderRadius: '12px', padding: '24px', maxWidth: '560px', width: '92%', maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 10px 40px rgba(0,0,0,0.2)' }} onClick={e => e.stopPropagation()}>
@@ -577,6 +589,41 @@ function InscriptionsContent() {
               <button onClick={closeDossierModal} disabled={generatingDossier} style={{ background: '#fff', color: '#6b7280', border: '1px solid #d1d5db', borderRadius: '8px', padding: '10px 20px', cursor: generatingDossier ? 'not-allowed' : 'pointer', opacity: generatingDossier ? 0.5 : 1 }}>Annuler</button>
               <button onClick={runDossierGeneration} disabled={generatingDossier || selectedTpls.size === 0} style={{ background: (generatingDossier || selectedTpls.size === 0) ? '#9ca3af' : '#C9A84C', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 20px', fontWeight: 500, cursor: (generatingDossier || selectedTpls.size === 0) ? 'not-allowed' : 'pointer' }}>
                 {generatingDossier ? 'Génération…' : `📥 Générer (${selectedTpls.size})`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showNewContactModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100 }} onClick={closeNewContactModal}>
+          <div style={{ background: '#fff', borderRadius: '12px', padding: '24px', maxWidth: '460px', width: '92%', boxShadow: '0 10px 40px rgba(0,0,0,0.2)' }} onClick={e => e.stopPropagation()}>
+            <h2 style={{ color: '#1A2C6B', fontSize: '1.2rem', margin: 0, marginBottom: '4px' }}>+ Nouveau contact</h2>
+            <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '16px', marginTop: 0 }}>Crée une nouvelle fiche contact. Elle sera automatiquement sélectionnée dans le formulaire.</p>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+              <div>
+                <label style={labelStyle}>Prénom *</label>
+                <input type="text" value={newContactPrenom} onChange={e => setNewContactPrenom(e.target.value)} style={inputStyle} autoFocus />
+              </div>
+              <div>
+                <label style={labelStyle}>Nom *</label>
+                <input type="text" value={newContactNom} onChange={e => setNewContactNom(e.target.value)} style={inputStyle} />
+              </div>
+            </div>
+            <div style={{ marginBottom: '12px' }}>
+              <label style={labelStyle}>Email</label>
+              <input type="email" value={newContactEmail} onChange={e => setNewContactEmail(e.target.value)} placeholder="ex: jean.dupont@exemple.fr" style={inputStyle} />
+            </div>
+            <div style={{ marginBottom: '16px' }}>
+              <label style={labelStyle}>Téléphone</label>
+              <input type="tel" value={newContactTelephone} onChange={e => setNewContactTelephone(e.target.value)} placeholder="ex: 06 12 34 56 78" style={inputStyle} />
+            </div>
+
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+              <button onClick={closeNewContactModal} disabled={creatingContact} style={{ background: '#fff', color: '#6b7280', border: '1px solid #d1d5db', borderRadius: '8px', padding: '10px 20px', cursor: creatingContact ? 'not-allowed' : 'pointer', opacity: creatingContact ? 0.5 : 1 }}>Annuler</button>
+              <button onClick={createNewContact} disabled={creatingContact || !newContactPrenom.trim() || !newContactNom.trim()} style={{ background: (creatingContact || !newContactPrenom.trim() || !newContactNom.trim()) ? '#9ca3af' : '#1A2C6B', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 20px', fontWeight: 500, cursor: (creatingContact || !newContactPrenom.trim() || !newContactNom.trim()) ? 'not-allowed' : 'pointer' }}>
+                {creatingContact ? 'Création…' : 'Créer le contact'}
               </button>
             </div>
           </div>
