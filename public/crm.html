@@ -541,7 +541,9 @@ input,select,textarea,button{font-family:'DM Sans',sans-serif}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.co","sb_publishable_J8ta-7L05zgK9rBy2OS9Bg_CjXHwZVK")
-</script></head>
+</script>  <!-- === SUPABASE CDN (ajoute pour connexion aux donnees reelles) === -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
 <body>
 <div id="app">
 
@@ -710,28 +712,28 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
   <div class="kpi-grid anim-kpi">
     <div class="kpi" onclick="navigate('contacts')">
       <div class="kpi-label">Leads actifs</div>
-      <div class="kpi-value">247</div>
-      <div class="kpi-sub up">↑ 18% vs M-1</div>
+      <div class="kpi-value" id="kpi-leads">...</div>
+      <div class="kpi-sub" id="kpi-leads-sub">Chargement...</div>
     </div>
     <div class="kpi gold" onclick="navigate('pipeline')">
       <div class="kpi-label">CA prévisionnel</div>
-      <div class="kpi-value">87k€</div>
-      <div class="kpi-sub up">↑ 12% objectif</div>
+      <div class="kpi-value" id="kpi-ca">...</div>
+      <div class="kpi-sub" id="kpi-ca-sub">Chargement...</div>
     </div>
     <div class="kpi green" onclick="navigate('pipeline')">
       <div class="kpi-label">Deals pipeline</div>
-      <div class="kpi-value">43</div>
-      <div class="kpi-sub">8 étapes actives</div>
+      <div class="kpi-value" id="kpi-deals">...</div>
+      <div class="kpi-sub" id="kpi-deals-sub">Chargement...</div>
     </div>
     <div class="kpi teal" onclick="navigate('apprenants')">
       <div class="kpi-label">Apprenants</div>
-      <div class="kpi-value">38</div>
-      <div class="kpi-sub">4 cohortes en cours</div>
+      <div class="kpi-value" id="kpi-apprenants">...</div>
+      <div class="kpi-sub" id="kpi-apprenants-sub">Chargement...</div>
     </div>
     <div class="kpi" onclick="navigate('funding')">
       <div class="kpi-label">Dossiers AFDAS</div>
-      <div class="kpi-value">12</div>
-      <div class="kpi-sub down">3 urgences actives</div>
+      <div class="kpi-value" id="kpi-afdas">...</div>
+      <div class="kpi-sub" id="kpi-afdas-sub">Chargement...</div>
     </div>
     <div class="kpi green" onclick="navigate('qualiopi')">
       <div class="kpi-label">Score Qualiopi</div>
@@ -2060,6 +2062,76 @@ document.getElementById('global-search').addEventListener('keyup', function(e) {
     this.value = '';
   }
 });
+</script>
+
+
+<!-- === CONNEXION SUPABASE POUR KPI DASHBOARD (ajoute pour donnees reelles) === -->
+<script>
+(function() {
+  // Configuration Supabase
+  var SUPABASE_URL = 'https://cvxzdiutxonnsnwoicqt.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_J8ta-7L05zgK9rBy2OS9Bg_CjXHwZVK';
+
+  // Verifier que la lib Supabase est chargee
+  if (typeof window.supabase === 'undefined' || !window.supabase.createClient) {
+    console.warn('[Ardalos KPI] Lib Supabase non chargee, KPI non mis a jour');
+    return;
+  }
+
+  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  function fmtEuro(n) {
+    if (n >= 1000) return (n / 1000).toFixed(1).replace('.0', '') + 'k€';
+    return Math.round(n) + '€';
+  }
+
+  function setKpi(id, value, sub) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = value;
+    if (sub !== undefined) {
+      var subEl = document.getElementById(id + '-sub');
+      if (subEl) subEl.textContent = sub;
+    }
+  }
+
+  async function loadKpis() {
+    try {
+      // --- 1. Leads actifs = nombre total de contacts ---
+      var contactsR = await sb.from('contacts').select('id', { count: 'exact', head: true });
+      setKpi('kpi-leads', contactsR.count || 0, 'Total contacts');
+
+      // --- 2/3/4. Inscriptions + CA previsionnel + Apprenants confirmes ---
+      var insR = await sb.from('formation_inscriptions').select('id, statut, montant_total_ht');
+      var ins = insR.data || [];
+      var actives = ins.filter(function(i) { return i.statut !== 'abandon'; });
+      var confirmes = ins.filter(function(i) { return i.statut === 'confirme' || i.statut === 'present'; });
+      var caTotal = actives.reduce(function(s, i) { return s + (Number(i.montant_total_ht) || 0); }, 0);
+
+      setKpi('kpi-ca', fmtEuro(caTotal), 'HT · ' + actives.length + ' dossier' + (actives.length > 1 ? 's' : '') + ' actif' + (actives.length > 1 ? 's' : ''));
+      setKpi('kpi-deals', actives.length, 'inscriptions actives');
+      setKpi('kpi-apprenants', confirmes.length, confirmes.length + ' confirme' + (confirmes.length > 1 ? 's' : '') + ' / present' + (confirmes.length > 1 ? 's' : ''));
+
+      // --- 5. Dossiers AFDAS ---
+      var finR = await sb.from('formation_financements').select('id').eq('type_financement', 'AFDAS');
+      var nbAfdas = (finR.data || []).length;
+      setKpi('kpi-afdas', nbAfdas, nbAfdas === 0 ? 'Aucun' : 'dossiers AFDAS');
+
+      console.log('[Ardalos KPI] OK charges');
+    } catch (e) {
+      console.error('[Ardalos KPI] Erreur:', e);
+      ['kpi-leads', 'kpi-ca', 'kpi-deals', 'kpi-apprenants', 'kpi-afdas'].forEach(function(id) {
+        setKpi(id, 'N/A', 'Erreur');
+      });
+    }
+  }
+
+  // Attendre que le DOM soit pret
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadKpis);
+  } else {
+    loadKpis();
+  }
+})();
 </script>
 
 </body>
