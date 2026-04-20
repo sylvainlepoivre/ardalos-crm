@@ -1,76 +1,181 @@
 'use client'
 import { useAuth } from '@/lib/useAuth'
 
+// ============================================================================
+// DESIGN SYSTEM ARDALOS
+// ============================================================================
+const BLEU = '#1A2C6B'
+const DORE = '#C9A84C'
+const BG = '#F3F4F8'
+
+// ============================================================================
+// COMPOSANTS
+// ============================================================================
+
+// Tuile standard (blanche)
+function Tuile({ href, emoji, titre, desc }: { href: string; emoji: string; titre: string; desc: string }) {
+  return (
+    <a href={href} style={{
+      background: '#fff',
+      border: '1px solid #e5e7eb',
+      borderRadius: '12px',
+      padding: '20px 18px',
+      textDecoration: 'none',
+      display: 'block',
+      transition: 'all 0.2s',
+    }}>
+      <div style={{ fontSize: '26px', marginBottom: '6px' }}>{emoji}</div>
+      <div style={{ fontSize: '14px', fontWeight: 600, color: BLEU }}>{titre}</div>
+      <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '3px' }}>{desc}</div>
+    </a>
+  )
+}
+
+// Tuile "feature" (gradient doré) pour mettre en avant
+function TuileDoree({ href, emoji, titre, desc }: { href: string; emoji: string; titre: string; desc: string }) {
+  return (
+    <a href={href} style={{
+      background: 'linear-gradient(135deg, #C9A84C 0%, #d4b95e 100%)',
+      border: '1px solid #C9A84C',
+      borderRadius: '12px',
+      padding: '20px 18px',
+      textDecoration: 'none',
+      display: 'block',
+      boxShadow: '0 4px 12px rgba(201,168,76,0.2)',
+    }}>
+      <div style={{ fontSize: '26px', marginBottom: '6px' }}>{emoji}</div>
+      <div style={{ fontSize: '14px', fontWeight: 700, color: BLEU }}>{titre}</div>
+      <div style={{ fontSize: '11px', color: 'rgba(26,44,107,0.8)', marginTop: '3px' }}>{desc}</div>
+    </a>
+  )
+}
+
+// Tuile "premium" (gradient bleu) pour mettre en avant le dashboard
+function TuileBleue({ href, emoji, titre, desc }: { href: string; emoji: string; titre: string; desc: string }) {
+  return (
+    <a href={href} style={{
+      background: 'linear-gradient(135deg, #1A2C6B 0%, #2d4491 100%)',
+      border: '1px solid #1A2C6B',
+      borderRadius: '12px',
+      padding: '20px 18px',
+      textDecoration: 'none',
+      display: 'block',
+      boxShadow: '0 4px 12px rgba(26,44,107,0.15)',
+    }}>
+      <div style={{ fontSize: '26px', marginBottom: '6px' }}>{emoji}</div>
+      <div style={{ fontSize: '14px', fontWeight: 700, color: DORE }}>{titre}</div>
+      <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.75)', marginTop: '3px' }}>{desc}</div>
+    </a>
+  )
+}
+
+// Section title (petit titre catégorie)
+function Categorie({ emoji, titre }: { emoji: string; titre: string }) {
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: '10px',
+      margin: '28px 0 12px 0',
+    }}>
+      <div style={{
+        fontSize: '11px',
+        fontWeight: 700,
+        color: BLEU,
+        letterSpacing: '0.08em',
+        textTransform: 'uppercase',
+      }}>
+        {emoji} {titre}
+      </div>
+      <div style={{ flex: 1, height: '1px', background: '#e5e7eb' }} />
+    </div>
+  )
+}
+
+// ============================================================================
+// CONTENU
+// ============================================================================
 function HomeContent() {
   return (
-    <div style={{fontFamily:'sans-serif',minHeight:'100vh',background:'#F3F4F8',display:'flex',alignItems:'center',justifyContent:'center'}}>
-      <div style={{textAlign:'center',maxWidth:'640px',padding:'40px'}}>
-        <div style={{width:'64px',height:'64px',background:'#1A2C6B',borderRadius:'16px',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'28px',fontWeight:'700',color:'#C9A84C',margin:'0 auto 20px',fontFamily:'serif'}}>A</div>
-        <h1 style={{fontSize:'2rem',color:'#1A2C6B',marginBottom:'8px'}}>Ardalos CRM</h1>
-        <p style={{color:'#6b7280',marginBottom:'24px'}}>Votre CRM connecté à Supabase</p>
-        <a href="/dashboard" style={{background:'linear-gradient(135deg, #1A2C6B 0%, #2d4491 100%)',border:'1px solid #1A2C6B',borderRadius:'12px',padding:'20px',textDecoration:'none',display:'block',marginBottom:'16px',boxShadow:'0 4px 12px rgba(26,44,107,0.15)'}}>
-            <div style={{fontSize:'28px',marginBottom:'6px'}}>📊</div>
-            <div style={{fontSize:'16px',fontWeight:'700',color:'#C9A84C'}}>Dashboard</div>
-            <div style={{fontSize:'12px',color:'rgba(255,255,255,0.75)',marginTop:'4px'}}>Vue d'ensemble · Métriques · Alertes</div>
-          </a>
-          
-        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'16px',marginBottom:'16px'}}>
-          <a href="/contacts" style={{background:'#fff',border:'1px solid #e5e7eb',borderRadius:'12px',padding:'24px',textDecoration:'none',display:'block'}}>
-            <div style={{fontSize:'28px',marginBottom:'8px'}}>👥</div>
-            <div style={{fontSize:'15px',fontWeight:'600',color:'#1A2C6B'}}>Contacts</div>
-            <div style={{fontSize:'12px',color:'#9ca3af',marginTop:'4px'}}>Gérer vos contacts</div>
-          </a>
-          <a href="/deals" style={{background:'#fff',border:'1px solid #e5e7eb',borderRadius:'12px',padding:'24px',textDecoration:'none',display:'block'}}>
-            <div style={{fontSize:'28px',marginBottom:'8px'}}>💼</div>
-            <div style={{fontSize:'15px',fontWeight:'600',color:'#1A2C6B'}}>Pipeline</div>
-            <div style={{fontSize:'12px',color:'#9ca3af',marginTop:'4px'}}>Deals & opportunités</div>
-          </a>
-          <a href="/taches" style={{background:'#fff',border:'1px solid #e5e7eb',borderRadius:'12px',padding:'24px',textDecoration:'none',display:'block'}}>
-            <div style={{fontSize:'28px',marginBottom:'8px'}}>✅</div>
-            <div style={{fontSize:'15px',fontWeight:'600',color:'#1A2C6B'}}>Tâches</div>
-            <div style={{fontSize:'12px',color:'#9ca3af',marginTop:'4px'}}>Actions à faire</div>
-          </a>
-          <a href="/afdas" style={{background:'#fff',border:'1px solid #e5e7eb',borderRadius:'12px',padding:'24px',textDecoration:'none',display:'block'}}>
-            <div style={{fontSize:'28px',marginBottom:'8px'}}>⏱</div>
-            <div style={{fontSize:'15px',fontWeight:'600',color:'#1A2C6B'}}>AFDAS</div>
-            <div style={{fontSize:'12px',color:'#9ca3af',marginTop:'4px'}}>Moteur éligibilité</div>
-          </a>
-          <a href="/sessions" style={{background:'#fff',border:'1px solid #e5e7eb',borderRadius:'12px',padding:'24px',textDecoration:'none',display:'block'}}>
-            <div style={{fontSize:'28px',marginBottom:'8px'}}>📅</div>
-            <div style={{fontSize:'15px',fontWeight:'600',color:'#1A2C6B'}}>Sessions</div>
-            <div style={{fontSize:'12px',color:'#9ca3af',marginTop:'4px'}}>Planning des formations</div>
-          </a>
-          <a href="/formations" style={{background:'#fff',border:'1px solid #e5e7eb',borderRadius:'12px',padding:'24px',textDecoration:'none',display:'block'}}>
-            <div style={{fontSize:'28px',marginBottom:'8px'}}>🎓</div>
-            <div style={{fontSize:'15px',fontWeight:'600',color:'#1A2C6B'}}>Formations</div>
-            <div style={{fontSize:'12px',color:'#9ca3af',marginTop:'4px'}}>Catalogue des formations</div>
-          </a>
-          <a href="/formateurs" style={{background:'#fff',border:'1px solid #e5e7eb',borderRadius:'12px',padding:'24px',textDecoration:'none',display:'block'}}>
-            <div style={{fontSize:'28px',marginBottom:'8px'}}>👥</div>
-            <div style={{fontSize:'15px',fontWeight:'600',color:'#1A2C6B'}}>Formateurs</div>
-            <div style={{fontSize:'12px',color:'#9ca3af',marginTop:'4px'}}>Equipe pedagogique</div>
-          </a>
-          <a href="/inscriptions" style={{background:'#fff',border:'1px solid #e5e7eb',borderRadius:'12px',padding:'24px',textDecoration:'none',display:'block'}}>
-            <div style={{fontSize:'28px',marginBottom:'8px'}}>📝</div>
-            <div style={{fontSize:'15px',fontWeight:'600',color:'#1A2C6B'}}>Inscriptions</div>
-            <div style={{fontSize:'12px',color:'#9ca3af',marginTop:'4px'}}>Stagiaires & financements</div>
-          </a>
-          <a href="/pipeline" style={{background:'linear-gradient(135deg, #C9A84C 0%, #d4b95e 100%)',border:'1px solid #C9A84C',borderRadius:'12px',padding:'24px',textDecoration:'none',display:'block',boxShadow:'0 4px 12px rgba(201,168,76,0.2)'}}>
-            <div style={{fontSize:'28px',marginBottom:'8px'}}>🎯</div>
-            <div style={{fontSize:'15px',fontWeight:'700',color:'#1A2C6B'}}>Pipeline</div>
-            <div style={{fontSize:'12px',color:'rgba(26,44,107,0.8)',marginTop:'4px'}}>Suivi commercial Kanban</div>
-          </a>
-          <a href="/export-compta" style={{background:'#fff',border:'1px solid #e5e7eb',borderRadius:'12px',padding:'24px',textDecoration:'none',display:'block'}}>
-            <div style={{fontSize:'28px',marginBottom:'8px'}}>📊</div>
-            <div style={{fontSize:'15px',fontWeight:'600',color:'#1A2C6B'}}>Export compta</div>
-            <div style={{fontSize:'12px',color:'#9ca3af',marginTop:'4px'}}>CSV pour Julien</div>
-          </a>
+    <div style={{
+      fontFamily: 'sans-serif',
+      minHeight: '100vh',
+      background: BG,
+      padding: '32px 20px',
+    }}>
+      <div style={{ maxWidth: '720px', margin: '0 auto' }}>
+
+        {/* HEADER */}
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+          <div style={{
+            width: '56px',
+            height: '56px',
+            background: BLEU,
+            borderRadius: '14px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '24px',
+            fontWeight: 700,
+            color: DORE,
+            margin: '0 auto 14px',
+            fontFamily: 'serif',
+          }}>A</div>
+          <h1 style={{ fontSize: '1.6rem', color: BLEU, margin: 0, fontWeight: 700 }}>Ardalos CRM</h1>
+          <p style={{ color: '#6b7280', margin: '4px 0 0 0', fontSize: '13px' }}>Gestion complète Qualiopi / AFDAS</p>
         </div>
-        <a href="/crm.html" style={{background:'#1A2C6B',border:'1px solid #1A2C6B',borderRadius:'12px',padding:'20px',textDecoration:'none',display:'block'}}>
-          <div style={{fontSize:'24px',marginBottom:'6px'}}>🚀</div>
-          <div style={{fontSize:'15px',fontWeight:'600',color:'#C9A84C'}}>CRM Complet</div>
-          <div style={{fontSize:'12px',color:'rgba(255,255,255,0.6)',marginTop:'4px'}}>Interface complète Ardalos</div>
-        </a>
+
+        {/* ═══ 📊 PILOTAGE ═══ */}
+        <Categorie emoji="📊" titre="Pilotage" />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <TuileBleue href="/dashboard" emoji="📊" titre="Dashboard" desc="KPI · Alertes · Métriques" />
+          <TuileDoree href="/pipeline" emoji="🎯" titre="Pipeline" desc="Kanban suivi commercial" />
+        </div>
+
+        {/* ═══ 👥 DONNÉES CRM ═══ */}
+        <Categorie emoji="👥" titre="Données CRM" />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <Tuile href="/contacts" emoji="👥" titre="Contacts" desc="Stagiaires & prospects" />
+          <Tuile href="/formateurs" emoji="🎤" titre="Formateurs" desc="Équipe pédagogique" />
+          <Tuile href="/deals" emoji="💼" titre="Deals" desc="Opportunités" />
+          <Tuile href="/taches" emoji="✅" titre="Tâches" desc="Actions à faire" />
+        </div>
+
+        {/* ═══ 🎓 FORMATION ═══ */}
+        <Categorie emoji="🎓" titre="Formation" />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <Tuile href="/formations" emoji="🎓" titre="Formations" desc="Catalogue des formations" />
+          <Tuile href="/sessions" emoji="📅" titre="Sessions" desc="Planning" />
+          <Tuile href="/inscriptions" emoji="📝" titre="Inscriptions" desc="Dossiers & financements" />
+          <Tuile href="/afdas" emoji="⏱" titre="AFDAS" desc="Moteur éligibilité" />
+        </div>
+
+        {/* ═══ 💼 COMPTABILITÉ ═══ */}
+        <Categorie emoji="💼" titre="Comptabilité" />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <Tuile href="/export-compta" emoji="📊" titre="Export compta" desc="CSV pour Julien" />
+          {/* Emplacement réservé Factures auto (feature suivante) */}
+          <div style={{
+            background: 'transparent',
+            border: '1px dashed #d1d5db',
+            borderRadius: '12px',
+            padding: '20px 18px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#9ca3af',
+            fontSize: '11px',
+            fontStyle: 'italic',
+          }}>
+            Factures auto<br />
+            <span style={{ fontSize: '10px' }}>(à venir)</span>
+          </div>
+        </div>
+
+        {/* FOOTER */}
+        <div style={{ textAlign: 'center', marginTop: '40px', color: '#9ca3af', fontSize: '11px' }}>
+          Ardalos Formation SAS · NDA 93132464513 · Qualiopi en cours
+        </div>
       </div>
     </div>
   )
@@ -78,6 +183,6 @@ function HomeContent() {
 
 export default function Home() {
   const { loading } = useAuth()
-  if (loading) return <div style={{fontFamily:'sans-serif',padding:'40px',color:'#9ca3af'}}>Chargement...</div>
+  if (loading) return <div style={{ fontFamily: 'sans-serif', padding: '40px', color: '#9ca3af' }}>Chargement...</div>
   return <HomeContent />
 }
