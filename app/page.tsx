@@ -60,6 +60,11 @@ function HomeContent() {
             <div style={{fontSize:'15px',fontWeight:'700',color:'#1A2C6B'}}>Pipeline</div>
             <div style={{fontSize:'12px',color:'rgba(26,44,107,0.8)',marginTop:'4px'}}>Suivi commercial Kanban</div>
           </a>
+          <a href="/export-compta" style={{background:'#fff',border:'1px solid #e5e7eb',borderRadius:'12px',padding:'24px',textDecoration:'none',display:'block'}}>
+            <div style={{fontSize:'28px',marginBottom:'8px'}}>📊</div>
+            <div style={{fontSize:'15px',fontWeight:'600',color:'#1A2C6B'}}>Export compta</div>
+            <div style={{fontSize:'12px',color:'#9ca3af',marginTop:'4px'}}>CSV pour Julien</div>
+          </a>
         </div>
         <a href="/crm.html" style={{background:'#1A2C6B',border:'1px solid #1A2C6B',borderRadius:'12px',padding:'20px',textDecoration:'none',display:'block'}}>
           <div style={{fontSize:'24px',marginBottom:'6px'}}>🚀</div>
