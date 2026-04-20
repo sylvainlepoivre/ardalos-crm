@@ -127,10 +127,23 @@ function HomeContent() {
 
         {/* ═══ 📊 PILOTAGE ═══ */}
         <Categorie emoji="📊" titre="Pilotage" />
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
           <TuileBleue href="/dashboard" emoji="📊" titre="Dashboard" desc="KPI · Alertes · Métriques" />
           <TuileDoree href="/pipeline" emoji="🎯" titre="Pipeline" desc="Kanban suivi commercial" />
         </div>
+        <a href="/crm.html" style={{
+          background: 'linear-gradient(135deg, #0f1a42 0%, #1A2C6B 100%)',
+          border: '1px solid #1A2C6B',
+          borderRadius: '12px',
+          padding: '20px 18px',
+          textDecoration: 'none',
+          display: 'block',
+          boxShadow: '0 4px 12px rgba(26,44,107,0.25)',
+        }}>
+          <div style={{ fontSize: '26px', marginBottom: '6px' }}>🚀</div>
+          <div style={{ fontSize: '14px', fontWeight: 700, color: '#C9A84C' }}>CRM Complet</div>
+          <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.75)', marginTop: '3px' }}>Interface complète Ardalos · En cours de connexion aux données réelles</div>
+        </a>
 
         {/* ═══ 👥 DONNÉES CRM ═══ */}
         <Categorie emoji="👥" titre="Données CRM" />
