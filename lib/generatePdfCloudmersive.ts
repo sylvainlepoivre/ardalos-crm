@@ -16,7 +16,9 @@ async function convertDocxToPdf(docxBuffer: Buffer, apiKey: string, filename: st
   // Cloudmersive attend multipart/form-data avec le fichier en champ "inputFile"
   const formData = new FormData()
   // Blob necessaire pour FormData cote Node
-  const blob = new Blob([docxBuffer], {
+  // On convertit Buffer -> Uint8Array pour eviter l'incompatibilite TS Buffer/BlobPart
+  const uint8 = new Uint8Array(docxBuffer)
+  const blob = new Blob([uint8], {
     type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   })
   formData.append('inputFile', blob, filename)

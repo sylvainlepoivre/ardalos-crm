@@ -273,7 +273,7 @@ export async function generateDossier(
 
   // ==== Format PDF : conversion via CloudConvert + fusion ====
   const pdfFilename = `${rootFolder}.pdf`
-  const pdfBuffer = await convertDocxsToSinglePdf(filledDocxs, pdfFilename)
+  const pdfBuffer = await convertDocxsToSinglePdf(filledDocxs)
   return {
     buffer: pdfBuffer,
     filename: pdfFilename,

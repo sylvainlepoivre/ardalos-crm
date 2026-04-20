@@ -40,6 +40,18 @@ type Ins = {
   date_inscription: string | null
   date_confirmation: string | null
   created_at: string
+  commercial_responsable?: string | null
+  statut_prospection?: string | null
+  date_dernier_contact?: string | null
+  date_rappel_prevu?: string | null
+  devis_envoye_at?: string | null
+  programme_envoye_at?: string | null
+  convention_envoyee_at?: string | null
+  convention_signee_at?: string | null
+  autres_docs_signes_at?: string | null
+  demande_financement_envoyee_at?: string | null
+  date_decision_financement?: string | null
+  notes_commerciales?: string | null
   contacts?: { prenom: string; nom: string; email: string | null; telephone: string | null }
   formation_sessions?: { date_debut: string; date_fin: string; formations?: { titre: string } | null } | null
 }
@@ -555,8 +567,8 @@ function DashboardContent() {
           const avecConv = confirmes.filter(i => i.date_confirmation && i.created_at)
           const tempsMoy = avecConv.length > 0
             ? Math.round(avecConv.reduce((s, i) => {
-                const d1 = new Date(i.created_at).getTime()
-                const d2 = new Date(i.date_confirmation).getTime()
+                const d1 = new Date(i.created_at as string).getTime()
+                const d2 = new Date(i.date_confirmation as string).getTime()
                 return s + (d2 - d1) / (1000 * 60 * 60 * 24)
               }, 0) / avecConv.length)
             : null
