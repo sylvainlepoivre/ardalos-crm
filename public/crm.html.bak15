@@ -552,7 +552,7 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
 ════════════════════════════════════════════ -->
 <nav id="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-mark" style="background:transparent !important;padding:2px"><img src="/img/ardalos-logo-icon.png" alt="Ardalos" style="width:100%;height:100%;object-fit:contain;display:block" /></div>
+    <div class="sb-logo-mark">A</div>
     <div class="sb-logo-text">
       <div class="t1">Ardalos</div>
       <div class="t2">Groupe CRM</div>
