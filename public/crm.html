@@ -1332,7 +1332,7 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
 <div id="page-apprenants" class="page">
   <div class="page-hdr">
     <div class="page-hdr-left"><h1 class="page-title">Apprenants</h1><p class="page-sub" id="apprenants-subtitle">Chargement...</p></div>
-    <div class="page-hdr-right"><button class="btn-p">+ Ajouter apprenant</button></div>
+    <div class="page-hdr-right"><button class="btn-p" onclick="window.location.href='/inscriptions'">+ Ajouter apprenant</button></div>
   </div>
   <div class="card">
     <table class="dt">
@@ -1416,7 +1416,7 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
 
 <!-- Modale universelle Ardalos (Formation / Apprenant / Formateur) -->
 <div class="modal-ov" id="modal-detail">
-  <div class="modal" style="max-width:640px">
+  <div class="modal" style="max-width:820px">
     <div class="modal-h">
       <span class="modal-title" id="detail-modal-title">Fiche</span>
       <button class="modal-close" onclick="closeModal('detail')">✕</button>
@@ -2619,7 +2619,7 @@ document.getElementById('global-search').addEventListener('keyup', function(e) {
             '<td><span class="text-muted text-xs">—</span></td>' +
             '<td>' + finBadge + '</td>' +
             '<td><span class="text-muted text-xs">—</span></td>' +
-            '<td><button class="btn-s" style="font-size:11px;padding:3px 8px">Voir</button></td>' +
+            '<td><button class="btn-s" style="font-size:11px;padding:3px 8px" data-contact-id="' + escapeHtml(a.contact_id || '') + '" onclick="event.stopPropagation(); window.ardalosOpenApprenant && window.ardalosOpenApprenant(this.dataset.contactId)">Voir</button></td>' +
           '</tr>';
         });
         tbodyEl.innerHTML = rows.join('');
@@ -3045,12 +3045,12 @@ document.getElementById('global-search').addEventListener('keyup', function(e) {
       var contact = cache.contacts.find(function(c) { return c.id === contactId; });
       if (!contact) { alert('Apprenant introuvable'); return; }
 
-      titleEl.textContent = ((contact.prenom || '') + ' ' + (contact.nom || '')).trim() || 'Apprenant';
+      var nomComplet = ((contact.prenom || '') + ' ' + (contact.nom || '')).trim() || 'Apprenant';
+      titleEl.textContent = nomComplet;
 
-      var inscriptions = cache.inscriptions.filter(function(i) { return i.contact_id === contactId; });
-      inscriptions.sort(function(a, b) {
-        return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
-      });
+      // Re-requete pour avoir TOUTES les colonnes d'inscription (cache.inscriptions peut etre un subset)
+      var insR = await sb.from('formation_inscriptions').select('*').eq('contact_id', contactId).order('created_at', { ascending: false });
+      var inscriptions = insR.data || [];
 
       var sessionsById = {};
       cache.sessions.forEach(function(s) { sessionsById[s.id] = s; });
@@ -3064,41 +3064,208 @@ document.getElementById('global-search').addEventListener('keyup', function(e) {
         finByIns[f.inscription_id].push(f);
       });
 
-      var inscriptionsHtml = inscriptions.length === 0
-        ? '<div style="padding:14px;text-align:center;color:#9ca3af;font-style:italic;border:1px dashed #e5e7eb;border-radius:8px">Aucune inscription</div>'
-        : inscriptions.map(function(i) {
-            var s = sessionsById[i.session_id] || {};
-            var f = formationsById[s.formation_id] || {};
-            var fins = finByIns[i.id] || [];
-            var finsText = fins.length > 0
-              ? fins.map(function(ff) { return ff.type_financement + (ff.montant_ht ? ' (' + fmtEuro(Number(ff.montant_ht)) + ')' : ''); }).join(' · ')
-              : '—';
-            var statutCls = 'b-gray';
-            if (i.statut === 'confirme' || i.statut === 'present') statutCls = 'b-green';
-            else if (i.statut === 'abandon') statutCls = 'b-red';
-            else if (i.statut === 'prospect') statutCls = 'b-amber';
-            return '<div style="padding:10px;border:1px solid #e5e7eb;border-radius:8px;margin-bottom:8px;font-size:12px">' +
-              '<div class="flex items-c justify-b" style="margin-bottom:6px">' +
-                '<span class="font-sb">' + escapeHtml(f.titre || 'Formation') + '</span>' +
-                '<span class="badge ' + statutCls + '">' + escapeHtml(i.statut || 'inconnu') + '</span>' +
-              '</div>' +
-              '<div class="text-xs text-muted">Cohorte : ' + escapeHtml(fmtCohorte(s.date_debut, s.date_fin)) + ' · ' + escapeHtml(s.lieu || 'Lieu à préciser') + '</div>' +
-              '<div class="text-xs" style="margin-top:4px">Montant : <strong>' + (i.montant_total_ht ? fmtEuro(Number(i.montant_total_ht)) : '—') + '</strong> · Financement : ' + escapeHtml(finsText) + '</div>' +
-              (i.commercial_responsable ? '<div class="text-xs text-muted">Commercial : ' + escapeHtml(i.commercial_responsable) + '</div>' : '') +
-            '</div>';
-          }).join('');
+      // Donnees "maitresses" : premiere inscription qui a l'info
+      function pickFirst(key) {
+        for (var i = 0; i < inscriptions.length; i++) {
+          if (inscriptions[i][key]) return inscriptions[i][key];
+        }
+        return null;
+      }
+      var dateNaissance = pickFirst('date_naissance_stagiaire');
+      var lieuNaissance = pickFirst('lieu_naissance_stagiaire');
+      var nationalite = pickFirst('nationalite_stagiaire');
+      var adresseRue = pickFirst('adresse_rue');
+      var adresseCp = pickFirst('adresse_cp');
+      var adresseVille = pickFirst('adresse_ville');
 
-      bodyEl.innerHTML =
-        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">' +
-          '<div class="si"><span class="si-l">Email</span><span class="si-r">' + escapeHtml(contact.email || '—') + '</span></div>' +
-          '<div class="si"><span class="si-l">Téléphone</span><span class="si-r">' + escapeHtml(contact.telephone || '—') + '</span></div>' +
-          '<div class="si"><span class="si-l">Créé le</span><span class="si-r">' + fmtDate(contact.created_at) + '</span></div>' +
-          '<div class="si"><span class="si-l">Inscriptions</span><span class="si-r">' + inscriptions.length + '</span></div>' +
-        '</div>' +
-        '<div style="margin-top:14px;padding-top:14px;border-top:1px solid #e5e7eb">' +
-          '<div class="font-sb" style="font-size:13px;color:var(--ard-dark);margin-bottom:10px">Parcours de formation</div>' +
-          inscriptionsHtml +
+      // Entreprise client : premiere inscription qui a une raison sociale
+      var entrepriseIns = null;
+      for (var ii = 0; ii < inscriptions.length; ii++) {
+        if (inscriptions[ii].raison_sociale_client) { entrepriseIns = inscriptions[ii]; break; }
+      }
+
+      // Totaux
+      var caTotal = inscriptions.reduce(function(sum, i) {
+        return sum + (Number(i.montant_total_ht) || 0);
+      }, 0);
+
+      // Avatar header (inline : ces helpers ne sont pas dans le scope de ce script)
+      var _p = (contact.prenom || '').charAt(0).toUpperCase();
+      var _n = (contact.nom || '').charAt(0).toUpperCase();
+      var initials = (_p + _n) || '?';
+      var _palette = [
+        { bg: '#e0e7ff', fg: '#1A2C6B' },
+        { bg: '#fef3c7', fg: '#92400e' },
+        { bg: '#d1fae5', fg: '#065f46' },
+        { bg: '#fce7f3', fg: '#9f1239' },
+        { bg: '#e0f2fe', fg: '#075985' },
+        { bg: '#ede9fe', fg: '#5b21b6' }
+      ];
+      var _hash = 0;
+      for (var _k = 0; _k < nomComplet.length; _k++) { _hash = (_hash + nomComplet.charCodeAt(_k)) % _palette.length; }
+      var color = _palette[_hash];
+      var lastIns = inscriptions[0];
+      var commercial = lastIns && lastIns.commercial_responsable ? lastIns.commercial_responsable : null;
+
+      // Actions rapides
+      var actionsHtml = '<div class="flex items-c gap-2" style="flex-wrap:wrap;margin-top:10px">';
+      if (contact.email) {
+        actionsHtml += '<a href="mailto:' + escapeHtml(contact.email) + '" class="btn-s" style="font-size:12px;padding:6px 12px;text-decoration:none;display:inline-flex;align-items:center;gap:4px">&#128231; Email</a>';
+      }
+      if (contact.telephone) {
+        var tel = String(contact.telephone).replace(/\s/g, '');
+        actionsHtml += '<a href="tel:' + escapeHtml(tel) + '" class="btn-s" style="font-size:12px;padding:6px 12px;text-decoration:none;display:inline-flex;align-items:center;gap:4px">&#128222; T&eacute;l</a>';
+      }
+      if (lastIns && lastIns.id) {
+        actionsHtml += '<a href="/api/generate-dossier?inscription_id=' + encodeURIComponent(lastIns.id) + '&format=pdf" target="_blank" class="btn-s" style="font-size:12px;padding:6px 12px;text-decoration:none;display:inline-flex;align-items:center;gap:4px">&#128196; Dossier</a>';
+        actionsHtml += '<a href="/api/generate-facture?inscription_id=' + encodeURIComponent(lastIns.id) + '" target="_blank" class="btn-s" style="font-size:12px;padding:6px 12px;text-decoration:none;display:inline-flex;align-items:center;gap:4px">&#128179; Facture</a>';
+      }
+      actionsHtml += '<a href="/factures" class="btn-s" style="font-size:12px;padding:6px 12px;text-decoration:none;display:inline-flex;align-items:center;gap:4px">&#128196; Toutes factures</a>';
+      actionsHtml += '</div>';
+
+      // Header (avatar + nom + sous-titre + actions)
+      var subtitle = inscriptions.length + ' inscription' + (inscriptions.length > 1 ? 's' : '');
+      if (caTotal > 0) subtitle += ' &middot; ' + fmtEuro(caTotal) + ' HT';
+      if (commercial) subtitle += ' &middot; Commercial : ' + escapeHtml(commercial);
+
+      var headerHtml =
+        '<div class="flex items-c gap-2" style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #e5e7eb">' +
+          '<div class="av" style="background:' + color.bg + ';color:' + color.fg + ';width:52px;height:52px;font-size:18px;flex-shrink:0">' + initials + '</div>' +
+          '<div style="flex:1;min-width:0">' +
+            '<div class="font-sb" style="font-size:17px;color:var(--ard-dark)">' + escapeHtml(nomComplet) + '</div>' +
+            '<div class="text-xs text-muted" style="margin-top:2px">' + subtitle + '</div>' +
+            actionsHtml +
+          '</div>' +
         '</div>';
+
+      // Helper pour une ligne info
+      function ligneInfo(label, value) {
+        return '<div class="si"><span class="si-l">' + escapeHtml(label) + '</span><span class="si-r">' + (value ? escapeHtml(String(value)) : '<span class="text-muted">&mdash;</span>') + '</span></div>';
+      }
+
+      // Section Identite
+      var identiteHtml =
+        '<div class="font-sb" style="font-size:12px;color:var(--ard-dark);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">&#128100; Identit&eacute;</div>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;margin-bottom:14px">' +
+          ligneInfo('Email', contact.email) +
+          ligneInfo('Telephone', contact.telephone) +
+          ligneInfo('Date naissance', dateNaissance ? fmtDate(dateNaissance) : null) +
+          ligneInfo('Lieu naissance', lieuNaissance) +
+          ligneInfo('Nationalite', nationalite) +
+          ligneInfo('Cree le', fmtDate(contact.created_at)) +
+        '</div>';
+
+      // Section Adresse
+      var adresseHtml = '';
+      if (adresseRue || adresseVille) {
+        var ligneAdresse = [adresseRue, ((adresseCp || '') + ' ' + (adresseVille || '')).trim()].filter(function(s) { return s && s.trim(); }).join(', ');
+        adresseHtml =
+          '<div class="font-sb" style="font-size:12px;color:var(--ard-dark);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">&#128205; Adresse postale</div>' +
+          '<div style="padding:10px 12px;background:#f9fafb;border-radius:6px;font-size:13px;margin-bottom:14px">' + escapeHtml(ligneAdresse) + '</div>';
+      }
+
+      // Section Entreprise
+      var entrepriseHtml = '';
+      if (entrepriseIns && entrepriseIns.raison_sociale_client) {
+        var entLignes = [
+          ligneInfo('Raison sociale', entrepriseIns.raison_sociale_client),
+          ligneInfo('SIRET', entrepriseIns.siret_client),
+          ligneInfo('Forme juridique', entrepriseIns.forme_juridique_client),
+          ligneInfo('Representant', entrepriseIns.representant_client)
+        ];
+        if (entrepriseIns.fonction_representant_client) entLignes.push(ligneInfo('Fonction', entrepriseIns.fonction_representant_client));
+        if (entrepriseIns.adresse_client) entLignes.push(ligneInfo('Adresse', entrepriseIns.adresse_client));
+        entrepriseHtml =
+          '<div class="font-sb" style="font-size:12px;color:var(--ard-dark);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">&#127970; Entreprise cliente</div>' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;margin-bottom:14px">' +
+            entLignes.join('') +
+          '</div>';
+      }
+
+      // Section Parcours
+      var parcoursCards = '';
+      if (inscriptions.length === 0) {
+        parcoursCards = '<div style="padding:14px;text-align:center;color:#9ca3af;font-style:italic;border:1px dashed #e5e7eb;border-radius:8px">Aucune inscription</div>';
+      } else {
+        parcoursCards = inscriptions.map(function(i) {
+          var s = sessionsById[i.session_id] || {};
+          var f = formationsById[s.formation_id] || {};
+          var fins = finByIns[i.id] || [];
+          var finsText = fins.length > 0
+            ? fins.map(function(ff) {
+                var label = ff.type_financement || 'Type non defini';
+                if (ff.montant_ht) label += ' (' + fmtEuro(Number(ff.montant_ht)) + ')';
+                return label;
+              }).join(' &middot; ')
+            : 'Non renseigne';
+          var statutCls = 'b-gray';
+          if (i.statut === 'confirme' || i.statut === 'present') statutCls = 'b-green';
+          else if (i.statut === 'abandon') statutCls = 'b-red';
+          else if (i.statut === 'prospect') statutCls = 'b-amber';
+          else if (i.statut === 'inscrit') statutCls = 'b-teal';
+
+          // Checklist documents
+          var docsList = [
+            { key: 'devis_envoye_at', label: 'Devis' },
+            { key: 'programme_envoye_at', label: 'Programme' },
+            { key: 'demande_financement_envoyee_at', label: 'Dem. financement' },
+            { key: 'convention_envoyee_at', label: 'Conv. env.' },
+            { key: 'convention_signee_at', label: 'Conv. sign.' }
+          ];
+          var docsChips = docsList.map(function(d) {
+            var ok = !!i[d.key];
+            var ico = ok ? '&#9989;' : '&#9675;';
+            var cls = ok ? '' : 'text-muted';
+            return '<span class="' + cls + '" style="font-size:11px;white-space:nowrap">' + ico + ' ' + d.label + '</span>';
+          }).join(' ');
+
+          return '<div style="padding:12px;border:1px solid #e5e7eb;border-radius:8px;margin-bottom:8px;font-size:12px">' +
+            '<div class="flex items-c justify-b" style="margin-bottom:6px;gap:8px">' +
+              '<span class="font-sb" style="font-size:13px">' + escapeHtml(f.titre || 'Formation') + '</span>' +
+              '<span class="badge ' + statutCls + '">' + escapeHtml(i.statut || 'inconnu') + '</span>' +
+            '</div>' +
+            '<div class="text-xs text-muted" style="margin-bottom:4px">Cohorte : ' + escapeHtml(fmtCohorte(s.date_debut, s.date_fin)) + (s.lieu ? ' &middot; ' + escapeHtml(s.lieu) : '') + '</div>' +
+            '<div class="text-xs" style="margin-bottom:4px">Montant : <strong>' + (i.montant_total_ht ? fmtEuro(Number(i.montant_total_ht)) : '&mdash;') + '</strong> &middot; Financement : ' + finsText + '</div>' +
+            (i.commercial_responsable ? '<div class="text-xs text-muted" style="margin-bottom:6px">Commercial : ' + escapeHtml(i.commercial_responsable) + '</div>' : '') +
+            '<div style="margin-top:6px;padding-top:6px;border-top:1px dashed #e5e7eb;display:flex;gap:10px;flex-wrap:wrap">' + docsChips + '</div>' +
+          '</div>';
+        }).join('');
+      }
+      var parcoursHtml =
+        '<div class="font-sb" style="font-size:12px;color:var(--ard-dark);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">&#127891; Parcours de formation (' + inscriptions.length + ')</div>' +
+        parcoursCards;
+
+      // Section Commercial / Pipeline
+      var pipelineHtml = '';
+      if (lastIns) {
+        var pipelineLignes = [];
+        if (lastIns.commercial_responsable) pipelineLignes.push(ligneInfo('Commercial', lastIns.commercial_responsable));
+        if (lastIns.statut_prospection) pipelineLignes.push(ligneInfo('Statut prospection', lastIns.statut_prospection));
+        if (lastIns.date_dernier_contact) pipelineLignes.push(ligneInfo('Dernier contact', fmtDate(lastIns.date_dernier_contact)));
+        if (lastIns.date_rappel_prevu) pipelineLignes.push(ligneInfo('Prochaine relance', fmtDate(lastIns.date_rappel_prevu)));
+        if (lastIns.date_confirmation) pipelineLignes.push(ligneInfo('Confirmation', fmtDate(lastIns.date_confirmation)));
+        if (pipelineLignes.length > 0) {
+          pipelineHtml =
+            '<div style="margin-top:14px">' +
+              '<div class="font-sb" style="font-size:12px;color:var(--ard-dark);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">&#128203; Commercial &amp; pipeline</div>' +
+              '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;margin-bottom:14px">' +
+                pipelineLignes.join('') +
+              '</div>' +
+            '</div>';
+        }
+      }
+
+      // Section Notes
+      var notesHtml = '';
+      if (lastIns && lastIns.notes_commerciales) {
+        notesHtml =
+          '<div style="margin-top:14px">' +
+            '<div class="font-sb" style="font-size:12px;color:var(--ard-dark);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">&#128221; Notes commerciales</div>' +
+            '<div style="padding:10px 12px;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;font-size:13px;white-space:pre-wrap">' + escapeHtml(lastIns.notes_commerciales) + '</div>' +
+          '</div>';
+      }
+
+      bodyEl.innerHTML = headerHtml + identiteHtml + adresseHtml + entrepriseHtml + parcoursHtml + pipelineHtml + notesHtml;
 
       openModal('detail');
     } catch (e) {
