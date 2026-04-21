@@ -8290,7 +8290,7 @@ document.getElementById('global-search').addEventListener('keyup', function(e) {
     if (t.fichier_url) {
       actionBtn = '<a class="btn-p" href="' + esc(t.fichier_url) + '" target="_blank" rel="noopener" style="font-size:11px;padding:4px 10px;text-decoration:none;display:inline-block">↓ Télécharger</a>';
     } else if (isHardcoded) {
-      actionBtn = '<button class="btn-p" style="font-size:11px;padding:4px 10px" onclick="window.ardalosGenererDoc && window.ardalosGenererDoc()">Générer</button>';
+      actionBtn = '<button class="btn-p" style="font-size:11px;padding:4px 10px" data-doc-name="' + esc(t.nom || '') + '" onclick="window.ardalosGenererDoc && window.ardalosGenererDoc(this.dataset.docName)">Générer</button>';
     } else {
       actionBtn = '<span class="text-muted text-xs">—</span>';
     }
@@ -8445,6 +8445,1486 @@ document.getElementById('global-search').addEventListener('keyup', function(e) {
   }
 
   console.log('[Docs v3] init OK - import contextuel par pole');
+})();
+</script>
+
+
+<!-- === FIX v2 : Generer document specifique (param 'templates' = nom fichier) === -->
+<script>
+(function() {
+  var SUPABASE_URL = 'https://cvxzdiutxonnsnwoicqt.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_J8ta-7L05zgK9rBy2OS9Bg_CjXHwZVK';
+  var sb;
+  try {
+    if (window.supabase && typeof window.supabase.createClient === 'function') {
+      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    }
+  } catch(e) { sb = null; }
+  if (!sb) { console.warn('[Gen Doc v2] Supabase non dispo'); return; }
+
+  function esc(s) {
+    if (s == null) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+  function openM(n) { var el = document.getElementById('modal-' + n); if (el) el.classList.add('open'); }
+  function closeM(n) { var el = document.getElementById('modal-' + n); if (el) el.classList.remove('open'); }
+
+  // Mapping : Nom affiche -> Nom du fichier template (casse exacte attendue par l'API)
+  // NB : si un nom ne matche pas, on envoie le dossier complet (fallback)
+  var DOC_NAME_TO_TEMPLATE = {
+    'Convention de formation professionnelle':        '01_CONVENTION_DE_FORMATION_PROFESSIONNELLE.docx',
+    'Programme de formation':                         '02_PROGRAMME_DE_FORMATION.docx',
+    'Grille d\'evaluation':                          '03_ANNEXE_1_GRILLE_EVALUATION.docx',
+    'Grille d\'évaluation':                          '03_ANNEXE_1_GRILLE_EVALUATION.docx',
+    'Feuille d\'emargement':                          '04_ANNEXE_2_FEUILLE_EMARGEMENT.docx',
+    'Feuille d\'émargement':                          '04_ANNEXE_2_FEUILLE_EMARGEMENT.docx',
+    'Attestation de fin de formation':                '05_ANNEXE_3_ATTESTATION_FIN_DE_FORMATION.docx',
+    'Certificat de realisation':                      '06_ANNEXE_4_CERTIFICAT_DE_REALISATION.docx',
+    'Certificat de réalisation':                      '06_ANNEXE_4_CERTIFICAT_DE_REALISATION.docx',
+    'Reglement interieur':                            '07_ANNEXE_5_REGLEMENT_INTERIEUR.docx',
+    'Règlement intérieur':                            '07_ANNEXE_5_REGLEMENT_INTERIEUR.docx',
+    'Attestation lecture RI':                         '08_ANNEXE_5_BIS_ATTESTATION_LECTURE_RI.docx',
+    'Questionnaire satisfaction':                     '09_ANNEXE_6_QUESTIONNAIRE_SATISFACTION.docx',
+    'Questionnaire satisfaction a chaud':             '09_ANNEXE_6_QUESTIONNAIRE_SATISFACTION.docx',
+    'Questionnaire satisfaction à chaud':             '09_ANNEXE_6_QUESTIONNAIRE_SATISFACTION.docx',
+    'Questionnaire satisfaction a froid':             '09_ANNEXE_6_QUESTIONNAIRE_SATISFACTION.docx',
+    'Questionnaire satisfaction à froid':             '09_ANNEXE_6_QUESTIONNAIRE_SATISFACTION.docx',
+    'Attestation fonction dirigeant':                 '10_ATTESTATION_FONCTION_DIRIGEANT.docx'
+  };
+
+  // Liste TOUS les templates pour debug / cas non mappes
+  var ALL_TEMPLATES = Object.values(DOC_NAME_TO_TEMPLATE).filter(function(v, i, a) { return a.indexOf(v) === i; });
+
+  window.ardalosGenererDoc = async function(documentName) {
+    try {
+      var r = await sb.from('formation_inscriptions')
+        .select('id, contact:contacts(prenom, nom), session:formation_sessions(date_debut, formation:formations(titre))')
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (r.error) throw r.error;
+      var inscriptions = r.data || [];
+      if (inscriptions.length === 0) {
+        alert('Aucune inscription en base. Crée-en une depuis /inscriptions.');
+        return;
+      }
+
+      var titleEl = document.getElementById('detail-modal-title');
+      var bodyEl = document.getElementById('detail-modal-body');
+      if (!titleEl || !bodyEl) { alert('Modale generique indisponible'); return; }
+
+      var docLabel = documentName || 'Dossier pédagogique complet';
+      var templateFile = documentName ? DOC_NAME_TO_TEMPLATE[documentName] : null;
+
+      var opts = inscriptions.map(function(i) {
+        var c = i.contact || {};
+        var s = i.session || {};
+        var f = s.formation || {};
+        var label = (c.prenom || '?') + ' ' + (c.nom || '?') +
+          ' — ' + (f.titre || 'Formation').slice(0, 40) +
+          (s.date_debut ? ' (' + new Date(s.date_debut).toLocaleDateString('fr-FR') + ')' : '');
+        return '<option value="' + i.id + '">' + esc(label) + '</option>';
+      }).join('');
+
+      titleEl.textContent = 'Générer : ' + docLabel;
+      bodyEl.innerHTML =
+        '<div style="padding:12px 14px;background:#1A2C6B;color:#fff;border-radius:8px;margin-bottom:14px">' +
+          '<div style="font-size:11px;opacity:0.8;text-transform:uppercase;letter-spacing:0.5px">Document demandé</div>' +
+          '<div style="font-weight:600;font-size:15px;margin-top:2px">📄 ' + esc(docLabel) + '</div>' +
+          (templateFile ?
+            '<div style="font-size:11px;opacity:0.9;margin-top:6px">✓ Filtre ciblé : <code style="background:rgba(255,255,255,0.15);padding:1px 6px;border-radius:4px">' + esc(templateFile) + '</code></div>' +
+            '<div style="font-size:11px;opacity:0.85;margin-top:2px">⚡ Génération rapide (1 document au lieu de 10)</div>' :
+            (documentName ?
+              '<div style="font-size:11px;opacity:0.9;margin-top:6px;color:#fde047">⚠ Template non mappé, le dossier complet sera généré</div>' :
+              '<div style="font-size:11px;opacity:0.9;margin-top:6px">📦 Dossier pédagogique complet (10 documents)</div>'
+            )
+          ) +
+        '</div>' +
+        '<div class="fg"><label class="flabel">Apprenant / Inscription <span class="req">*</span></label>' +
+          '<select class="fselect" id="gd-inscription">' + opts + '</select></div>' +
+        '<div class="fg"><label class="flabel">Format</label>' +
+          '<div style="display:flex;gap:16px">' +
+            '<label style="cursor:pointer"><input type="radio" name="gd-fmt" value="pdf" checked> PDF</label>' +
+            '<label style="cursor:pointer"><input type="radio" name="gd-fmt" value="zip"> ZIP (.docx)</label>' +
+          '</div>' +
+        '</div>' +
+        (templateFile ?
+          '' :
+          '<div style="background:#fef3c7;border:1px solid #fde68a;padding:10px 12px;border-radius:6px;font-size:11px;color:#92400e">' +
+            '<strong>Durée estimée :</strong> 40 à 65 secondes (10 documents converts puis fusionnés).' +
+          '</div>'
+        ) +
+        '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid #e5e7eb">' +
+          '<button class="btn-s" onclick="document.getElementById(\'modal-detail\').classList.remove(\'open\')">Annuler</button>' +
+          '<button class="btn-p" id="gd-go">Télécharger</button>' +
+        '</div>' +
+        '<div id="gd-err" style="margin-top:10px;color:#dc2626;font-size:12px;display:none"></div>';
+
+      var goBtn = document.getElementById('gd-go');
+      goBtn.onclick = function() {
+        var inscriptionId = document.getElementById('gd-inscription').value;
+        var fmt = document.querySelector('input[name="gd-fmt"]:checked').value;
+        if (!inscriptionId) return;
+        var url = '/api/generate-dossier?inscriptionId=' + encodeURIComponent(inscriptionId) +
+                  '&format=' + fmt;
+        if (templateFile) {
+          url += '&templates=' + encodeURIComponent(templateFile);
+        }
+        console.log('[Gen Doc v2] URL:', url);
+        window.open(url, '_blank');
+        closeM('detail');
+      };
+
+      openM('detail');
+    } catch(e) {
+      alert('Erreur : ' + (e.message || 'inconnue'));
+      console.error('[Gen Doc v2]', e);
+    }
+  };
+
+  console.log('[Gen Doc v2] init OK - mapping ' + Object.keys(DOC_NAME_TO_TEMPLATE).length + ' noms -> templates');
+})();
+</script>
+
+
+<!-- === PRO FORMA AFDAS v3 : data hardcodée, generation dynamique DOCX/PDF === -->
+<script src="/proforma-data.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/docx/9.0.2/docx.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+(function() {
+  'use strict';
+
+  // Logo Ardalos base64 (embarqué)
+  var LOGO_B64 = '';
+
+  // ---------- Helpers ----------
+  function esc(s) {
+    if (s == null) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+  function b64ToUint8Array(b64) {
+    var binary = atob(b64);
+    var len = binary.length;
+    var bytes = new Uint8Array(len);
+    for (var i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+    return bytes;
+  }
+  function runsToHtml(textOrRuns) {
+    if (typeof textOrRuns === 'string') return esc(textOrRuns);
+    if (!Array.isArray(textOrRuns)) return '';
+    return textOrRuns.map(function(r) {
+      var html = esc(r.t || '');
+      if (r.b) html = '<strong>' + html + '</strong>';
+      if (r.i) html = '<em>' + html + '</em>';
+      return html;
+    }).join('');
+  }
+  function runsToPlain(textOrRuns) {
+    if (typeof textOrRuns === 'string') return textOrRuns;
+    if (!Array.isArray(textOrRuns)) return '';
+    return textOrRuns.map(function(r) { return r.t || ''; }).join('');
+  }
+
+  // ---------- Toast premium ----------
+  function toast(msg, kind) {
+    var el = document.createElement('div');
+    el.textContent = msg;
+    var bg = kind === 'err' ? '#dc2626' : kind === 'ok' ? '#059669' : '#1A2C6B';
+    el.style.cssText = 'position:fixed;bottom:24px;right:24px;background:' + bg + ';color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,0.15);z-index:10001;opacity:0;transform:translateY(8px);transition:all 0.2s;max-width:360px';
+    document.body.appendChild(el);
+    setTimeout(function() { el.style.opacity = '1'; el.style.transform = 'translateY(0)'; }, 10);
+    setTimeout(function() {
+      el.style.opacity = '0'; el.style.transform = 'translateY(8px)';
+      setTimeout(function() { el.remove(); }, 300);
+    }, kind === 'err' ? 4000 : 2500);
+  }
+
+  // ---------- Renderer HTML (pour Aperçu & source PDF) ----------
+  function renderHtml(doc) {
+    var css = [
+      '<style>',
+      '.ard-doc{font-family:Arial,Helvetica,sans-serif;color:#1F2937;font-size:12pt;line-height:1.4;max-width:780px;margin:0 auto;padding:20px;background:#fff}',
+      '.ard-header{display:flex;align-items:center;gap:14px;padding-bottom:10px;border-bottom:2px solid #C9A84C;margin-bottom:24px}',
+      '.ard-header img{width:62px;height:62px;flex-shrink:0;object-fit:contain}',
+      '.ard-header-text{flex:1;text-align:center}',
+      '.ard-org{color:#1A2C6B;font-weight:700;font-size:13pt;margin:0}',
+      '.ard-sub{color:#6B7280;font-style:italic;font-size:10pt;margin:2px 0}',
+      '.ard-coord{color:#1F2937;font-size:9pt;margin:2px 0}',
+      '.ard-title{color:#1A2C6B;font-weight:700;font-size:18pt;text-align:center;margin:16px 0 6px;text-transform:uppercase;letter-spacing:0.3px}',
+      '.ard-subtitle{color:#6B7280;font-style:italic;font-size:10pt;text-align:center;margin:0 0 20px}',
+      '.ard-section{color:#1A2C6B;font-weight:700;font-size:14pt;margin:22px 0 10px;padding-bottom:4px;border-bottom:1px solid #E5E7EB}',
+      '.ard-subsection{color:#1F2937;font-weight:700;font-size:12pt;margin:16px 0 6px}',
+      '.ard-para{margin:6px 0;text-align:justify}',
+      '.ard-para.ard-center{text-align:center}',
+      '.ard-filler{margin:6px 0}',
+      '.ard-filler-line{color:#9CA3AF;font-family:monospace;letter-spacing:0}',
+      '.ard-check{margin:4px 0;padding-left:4px}',
+      '.ard-bullet{margin:4px 0;padding-left:18px;position:relative}',
+      '.ard-bullet::before{content:"•";color:#1A2C6B;position:absolute;left:6px;font-weight:bold}',
+      '.ard-num{margin:8px 0;padding-left:24px;position:relative}',
+      '.ard-num-badge{position:absolute;left:0;top:0;color:#1A2C6B;font-weight:700}',
+      '.ard-tbl{width:100%;border-collapse:collapse;margin:10px 0;font-size:10.5pt}',
+      '.ard-tbl th{background:#1A2C6B;color:#fff;padding:8px 10px;text-align:center;border:1px solid #1A2C6B;font-weight:600;font-size:10pt}',
+      '.ard-tbl td{border:1px solid #CCCCCC;padding:8px 10px;vertical-align:middle}',
+      '.ard-tbl tr:nth-child(even) td{background:#FAFAFA}',
+      '.ard-lv{width:100%;border-collapse:collapse;margin:10px 0;font-size:10.5pt}',
+      '.ard-lv td{border:1px solid #CCCCCC;padding:8px 10px;vertical-align:middle}',
+      '.ard-lv td:first-child{background:#E5E7EB;font-weight:600;width:30%}',
+      '.ard-lv td:last-child{background:#F3F4F6}',
+      '.ard-sig{display:flex;gap:16px;margin:30px 0 10px}',
+      '.ard-sig-col{flex:1;border-top:1px solid #CCCCCC;padding-top:60px;text-align:center}',
+      '.ard-sig-title{color:#1A2C6B;font-weight:700;font-size:10pt;margin:0 0 4px}',
+      '.ard-sig-sub{color:#6B7280;font-style:italic;font-size:9pt;margin:0}',
+      '.ard-end{text-align:center;color:#6B7280;font-style:italic;font-size:10pt;margin:30px 0 10px}',
+      '.ard-footer{margin-top:24px;padding-top:10px;border-top:2px solid #C9A84C;text-align:center;color:#6B7280;font-style:italic;font-size:9pt}',
+      '</style>'
+    ].join('');
+
+    var header = '<div class="ard-header">' +
+      (LOGO_B64 ? '<img src="data:image/jpeg;base64,' + LOGO_B64 + '" alt="Ardalos">' : '') +
+      '<div class="ard-header-text">' +
+        '<div class="ard-org">ARDALOS Formation SAS</div>' +
+        '<div class="ard-sub">Organisme de formation professionnelle</div>' +
+        '<div class="ard-coord">9 Chemin du Sémaphore, 13500 Martigues · ardalosformation@gmail.com · 06 20 74 52 89</div>' +
+        '<div class="ard-coord">SIRET : 993 094 085 00017 · RCS Aix-en-Provence 993 094 085 · NDA : 93132464513</div>' +
+      '</div>' +
+    '</div>';
+
+    var body = doc.blocks.map(function(blk) {
+      switch(blk.type) {
+        case 'title':
+          return '<h1 class="ard-title">' + esc(blk.text) + '</h1>';
+        case 'subtitle':
+          return '<div class="ard-subtitle">' + esc(blk.text) + '</div>';
+        case 'section':
+          return '<h2 class="ard-section">' + esc(blk.text) + '</h2>';
+        case 'subsection':
+          return '<h3 class="ard-subsection">' + esc(blk.text) + '</h3>';
+        case 'para':
+          var cls = 'ard-para' + (blk.align === 'center' ? ' ard-center' : '');
+          return '<p class="' + cls + '">' + runsToHtml(blk.text) + '</p>';
+        case 'checkbox':
+          return '<div class="ard-check">☐ ' + esc(blk.text) + '</div>';
+        case 'bullet':
+          return '<div class="ard-bullet">' + runsToHtml(blk.text) + '</div>';
+        case 'numbered':
+          return '<div class="ard-num"><span class="ard-num-badge">' + blk.num + '.</span>' + esc(blk.text) + '</div>';
+        case 'filler':
+          var line = '_'.repeat(blk.len || 40);
+          return '<div class="ard-filler">' + esc(blk.label || '') + (blk.label ? ' : ' : '') + '<span class="ard-filler-line">' + line + '</span></div>';
+        case 'labelValue':
+          return '<table class="ard-lv">' + blk.rows.map(function(r) {
+            return '<tr><td>' + esc(r[0]) + '</td><td>' + esc(r[1] || '') + '</td></tr>';
+          }).join('') + '</table>';
+        case 'headerTable':
+          var ths = blk.headers.map(function(h) { return '<th>' + esc(h) + '</th>'; }).join('');
+          var trs = blk.rows.map(function(row) {
+            return '<tr>' + row.map(function(cell) { return '<td style="text-align:center">' + esc(cell || '') + '</td>'; }).join('') + '</tr>';
+          }).join('');
+          return '<table class="ard-tbl"><thead><tr>' + ths + '</tr></thead><tbody>' + trs + '</tbody></table>';
+        case 'signatures':
+          return '<div class="ard-sig">' +
+            '<div class="ard-sig-col"><div class="ard-sig-title">' + esc(blk.leftTitle) + '</div><div class="ard-sig-sub">' + esc(blk.leftSub || '') + '</div></div>' +
+            '<div class="ard-sig-col"><div class="ard-sig-title">' + esc(blk.rightTitle) + '</div><div class="ard-sig-sub">' + esc(blk.rightSub || '') + '</div></div>' +
+          '</div>';
+        case 'endmark':
+          return '<div class="ard-end">— ' + esc(blk.text) + ' —</div>';
+        case 'space':
+          return '<div style="height:12px"></div>';
+        default:
+          return '';
+      }
+    }).join('');
+
+    var footer = '<div class="ard-footer">' +
+      'Ardalos Formation · 9 Chemin du Sémaphore, 13500 Martigues · SIRET 993 094 085 00017 · NDA 93132464513' +
+    '</div>';
+
+    return '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>' + esc(doc.title) + '</title>' + css + '</head><body><div class="ard-doc">' + header + body + footer + '</div></body></html>';
+  }
+
+  // ---------- Renderer DOCX (docx-js côté browser) ----------
+  async function renderDocx(doc) {
+    if (!window.docx) throw new Error('Librairie docx non chargée');
+    var D = window.docx;
+    var FONT = 'Arial';
+    var BLUE = '1A2C6B', GOLD = 'C9A84C', TEXT = '1F2937', GRAY = '6B7280';
+    var GRAY_BG = 'F3F4F6', GRAY_LABEL = 'E5E7EB', BORDER = 'CCCCCC';
+
+    function runs(textOrRuns, baseOpts) {
+      var base = baseOpts || {};
+      var src = typeof textOrRuns === 'string' ? [{ t: textOrRuns }] : textOrRuns;
+      return src.map(function(r) {
+        return new D.TextRun(Object.assign({
+          text: r.t || '',
+          bold: r.b || base.bold || false,
+          italics: r.i || base.italics || false,
+          color: r.c || base.color || TEXT,
+          size: base.size || 22,
+          font: FONT,
+        }));
+      });
+    }
+
+    // Header
+    var logoImg = LOGO_B64 ? new D.ImageRun({
+      data: b64ToUint8Array(LOGO_B64),
+      transformation: { width: 55, height: 55 },
+      type: 'jpg',
+    }) : null;
+
+    var noBorder = { style: D.BorderStyle.NONE, size: 0, color: 'FFFFFF' };
+    var noBorders = { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder };
+    var tblBorder = { style: D.BorderStyle.SINGLE, size: 4, color: BORDER };
+    var tblBorders = { top: tblBorder, bottom: tblBorder, left: tblBorder, right: tblBorder,
+      insideHorizontal: tblBorder, insideVertical: tblBorder };
+    var cellBorders = { top: tblBorder, bottom: tblBorder, left: tblBorder, right: tblBorder };
+
+    var headerChildren = [];
+    if (logoImg) {
+      headerChildren.push(new D.Table({
+        width: { size: 9026, type: D.WidthType.DXA },
+        columnWidths: [1200, 7826],
+        borders: { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder,
+          insideHorizontal: noBorder, insideVertical: noBorder },
+        rows: [new D.TableRow({ children: [
+          new D.TableCell({ borders: noBorders, width: { size: 1200, type: D.WidthType.DXA },
+            verticalAlign: D.VerticalAlign.CENTER,
+            children: [new D.Paragraph({ alignment: D.AlignmentType.CENTER, children: [logoImg] })]
+          }),
+          new D.TableCell({ borders: noBorders, width: { size: 7826, type: D.WidthType.DXA },
+            verticalAlign: D.VerticalAlign.CENTER,
+            children: [
+              new D.Paragraph({ alignment: D.AlignmentType.CENTER, spacing: { after: 20 },
+                children: [new D.TextRun({ text: 'ARDALOS Formation SAS', bold: true, size: 24, color: BLUE, font: FONT })] }),
+              new D.Paragraph({ alignment: D.AlignmentType.CENTER, spacing: { after: 20 },
+                children: [new D.TextRun({ text: 'Organisme de formation professionnelle', italics: true, size: 18, color: GRAY, font: FONT })] }),
+              new D.Paragraph({ alignment: D.AlignmentType.CENTER, spacing: { after: 20 },
+                children: [new D.TextRun({ text: '9 Chemin du Sémaphore, 13500 Martigues · ardalosformation@gmail.com · 06 20 74 52 89', size: 16, color: TEXT, font: FONT })] }),
+              new D.Paragraph({ alignment: D.AlignmentType.CENTER,
+                children: [new D.TextRun({ text: 'SIRET : 993 094 085 00017 · RCS Aix-en-Provence 993 094 085 · NDA : 93132464513', size: 16, color: TEXT, font: FONT })] }),
+            ]
+          })
+        ]})]
+      }));
+    }
+    headerChildren.push(new D.Paragraph({
+      border: { bottom: { style: D.BorderStyle.SINGLE, size: 12, color: GOLD, space: 1 } },
+      children: [new D.TextRun({ text: '' })]
+    }));
+
+    var header = new D.Header({ children: headerChildren });
+
+    // Footer
+    var footer = new D.Footer({
+      children: [
+        new D.Paragraph({
+          border: { top: { style: D.BorderStyle.SINGLE, size: 8, color: GOLD, space: 1 } },
+          spacing: { after: 80 }, children: [new D.TextRun({ text: '' })]
+        }),
+        new D.Paragraph({
+          alignment: D.AlignmentType.CENTER, spacing: { after: 40 },
+          children: [new D.TextRun({
+            text: 'Ardalos Formation · 9 Chemin du Sémaphore, 13500 Martigues · SIRET 993 094 085 00017 · NDA 93132464513',
+            size: 16, italics: true, color: GRAY, font: FONT
+          })]
+        }),
+        new D.Paragraph({
+          alignment: D.AlignmentType.CENTER,
+          children: [
+            new D.TextRun({ text: 'Page ', size: 16, color: GRAY, font: FONT }),
+            new D.TextRun({ children: [D.PageNumber.CURRENT], size: 16, color: GRAY, font: FONT }),
+            new D.TextRun({ text: ' / ', size: 16, color: GRAY, font: FONT }),
+            new D.TextRun({ children: [D.PageNumber.TOTAL_PAGES], size: 16, color: GRAY, font: FONT }),
+          ]
+        })
+      ]
+    });
+
+    // Body blocks → paragraphs/tables
+    var children = [];
+    doc.blocks.forEach(function(blk) {
+      switch(blk.type) {
+        case 'title':
+          children.push(new D.Paragraph({
+            alignment: D.AlignmentType.CENTER, spacing: { before: 240, after: 120 },
+            children: [new D.TextRun({ text: blk.text, bold: true, size: 32, color: BLUE, font: FONT })]
+          }));
+          break;
+        case 'subtitle':
+          children.push(new D.Paragraph({
+            alignment: D.AlignmentType.CENTER, spacing: { after: 240 },
+            children: [new D.TextRun({ text: blk.text, italics: true, size: 18, color: GRAY, font: FONT })]
+          }));
+          break;
+        case 'section':
+          children.push(new D.Paragraph({
+            spacing: { before: 240, after: 120 },
+            children: [new D.TextRun({ text: blk.text, bold: true, size: 24, color: BLUE, font: FONT })]
+          }));
+          break;
+        case 'subsection':
+          children.push(new D.Paragraph({
+            spacing: { before: 180, after: 80 },
+            children: [new D.TextRun({ text: blk.text, bold: true, size: 22, color: TEXT, font: FONT })]
+          }));
+          break;
+        case 'para':
+          children.push(new D.Paragraph({
+            spacing: { before: 60, after: 60 },
+            alignment: blk.align === 'center' ? D.AlignmentType.CENTER : D.AlignmentType.LEFT,
+            children: runs(blk.text)
+          }));
+          break;
+        case 'checkbox':
+          children.push(new D.Paragraph({
+            spacing: { before: 40, after: 40 },
+            children: [
+              new D.TextRun({ text: '☐ ', size: 22, color: TEXT, font: FONT }),
+              new D.TextRun({ text: blk.text, size: 22, color: TEXT, font: FONT }),
+            ]
+          }));
+          break;
+        case 'bullet':
+          children.push(new D.Paragraph({
+            spacing: { before: 40, after: 40 },
+            numbering: { reference: 'bullets', level: 0 },
+            children: runs(blk.text)
+          }));
+          break;
+        case 'numbered':
+          children.push(new D.Paragraph({
+            spacing: { before: 80, after: 80 },
+            indent: { left: 360, hanging: 360 },
+            children: [
+              new D.TextRun({ text: blk.num + '. ', size: 22, color: TEXT, font: FONT }),
+              new D.TextRun({ text: blk.text, size: 22, color: TEXT, font: FONT }),
+            ]
+          }));
+          break;
+        case 'filler':
+          var line = '_'.repeat(blk.len || 40);
+          children.push(new D.Paragraph({
+            spacing: { before: 40, after: 40 },
+            children: [
+              new D.TextRun({ text: blk.label ? blk.label + ' : ' : '', size: 22, color: TEXT, font: FONT }),
+              new D.TextRun({ text: line, size: 22, color: GRAY, font: FONT }),
+            ]
+          }));
+          break;
+        case 'labelValue':
+          children.push(new D.Table({
+            width: { size: 9026, type: D.WidthType.DXA },
+            columnWidths: [3000, 6026],
+            borders: tblBorders,
+            rows: blk.rows.map(function(r) {
+              return new D.TableRow({
+                children: [
+                  new D.TableCell({
+                    borders: cellBorders,
+                    width: { size: 3000, type: D.WidthType.DXA },
+                    shading: { fill: GRAY_LABEL, type: D.ShadingType.CLEAR },
+                    margins: { top: 100, bottom: 100, left: 140, right: 140 },
+                    verticalAlign: D.VerticalAlign.CENTER,
+                    children: [new D.Paragraph({ children: [new D.TextRun({ text: r[0], bold: true, size: 20, color: TEXT, font: FONT })] })]
+                  }),
+                  new D.TableCell({
+                    borders: cellBorders,
+                    width: { size: 6026, type: D.WidthType.DXA },
+                    shading: { fill: GRAY_BG, type: D.ShadingType.CLEAR },
+                    margins: { top: 100, bottom: 100, left: 140, right: 140 },
+                    verticalAlign: D.VerticalAlign.CENTER,
+                    children: [new D.Paragraph({ children: [new D.TextRun({ text: r[1] || '', size: 20, color: TEXT, font: FONT })] })]
+                  })
+                ]
+              });
+            })
+          }));
+          break;
+        case 'headerTable':
+          var nCols = blk.headers.length;
+          var totalW = 9026;
+          var colW = Math.floor(totalW / nCols);
+          var widths = new Array(nCols).fill(colW);
+          widths[0] = totalW - colW * (nCols - 1);
+          children.push(new D.Table({
+            width: { size: totalW, type: D.WidthType.DXA },
+            columnWidths: widths,
+            borders: tblBorders,
+            rows: [
+              new D.TableRow({
+                tableHeader: true,
+                children: blk.headers.map(function(h, idx) {
+                  return new D.TableCell({
+                    borders: cellBorders,
+                    width: { size: widths[idx], type: D.WidthType.DXA },
+                    shading: { fill: BLUE, type: D.ShadingType.CLEAR },
+                    margins: { top: 100, bottom: 100, left: 120, right: 120 },
+                    verticalAlign: D.VerticalAlign.CENTER,
+                    children: [new D.Paragraph({
+                      alignment: D.AlignmentType.CENTER,
+                      children: [new D.TextRun({ text: h, bold: true, color: 'FFFFFF', size: 20, font: FONT })]
+                    })]
+                  });
+                })
+              })
+            ].concat(blk.rows.map(function(row) {
+              return new D.TableRow({
+                children: row.map(function(cell, idx) {
+                  return new D.TableCell({
+                    borders: cellBorders,
+                    width: { size: widths[idx], type: D.WidthType.DXA },
+                    margins: { top: 100, bottom: 100, left: 120, right: 120 },
+                    verticalAlign: D.VerticalAlign.CENTER,
+                    children: [new D.Paragraph({
+                      alignment: D.AlignmentType.CENTER,
+                      children: [new D.TextRun({ text: cell || '', size: 20, color: TEXT, font: FONT })]
+                    })]
+                  });
+                })
+              });
+            }))
+          }));
+          break;
+        case 'signatures':
+          var topBorder = { style: D.BorderStyle.SINGLE, size: 4, color: BORDER };
+          var sigCell = { top: topBorder, bottom: noBorder, left: noBorder, right: noBorder };
+          children.push(new D.Table({
+            width: { size: 9026, type: D.WidthType.DXA },
+            columnWidths: [4513, 4513],
+            borders: { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder,
+              insideHorizontal: noBorder, insideVertical: noBorder },
+            rows: [
+              new D.TableRow({
+                height: { value: 1800, rule: D.HeightRule.ATLEAST },
+                children: [
+                  new D.TableCell({ borders: noBorders, width: { size: 4513, type: D.WidthType.DXA },
+                    children: [new D.Paragraph({ children: [new D.TextRun('')] })] }),
+                  new D.TableCell({ borders: noBorders, width: { size: 4513, type: D.WidthType.DXA },
+                    children: [new D.Paragraph({ children: [new D.TextRun('')] })] }),
+                ]
+              }),
+              new D.TableRow({
+                children: [
+                  new D.TableCell({
+                    borders: sigCell, width: { size: 4513, type: D.WidthType.DXA },
+                    margins: { top: 80, bottom: 80, left: 120, right: 120 },
+                    children: [
+                      new D.Paragraph({ alignment: D.AlignmentType.CENTER, spacing: { after: 40 },
+                        children: [new D.TextRun({ text: blk.leftTitle, bold: true, size: 20, color: BLUE, font: FONT })] }),
+                      new D.Paragraph({ alignment: D.AlignmentType.CENTER,
+                        children: [new D.TextRun({ text: blk.leftSub || '', size: 18, italics: true, color: GRAY, font: FONT })] }),
+                    ]
+                  }),
+                  new D.TableCell({
+                    borders: sigCell, width: { size: 4513, type: D.WidthType.DXA },
+                    margins: { top: 80, bottom: 80, left: 120, right: 120 },
+                    children: [
+                      new D.Paragraph({ alignment: D.AlignmentType.CENTER, spacing: { after: 40 },
+                        children: [new D.TextRun({ text: blk.rightTitle, bold: true, size: 20, color: BLUE, font: FONT })] }),
+                      new D.Paragraph({ alignment: D.AlignmentType.CENTER,
+                        children: [new D.TextRun({ text: blk.rightSub || '', size: 18, italics: true, color: GRAY, font: FONT })] }),
+                    ]
+                  }),
+                ]
+              }),
+            ]
+          }));
+          break;
+        case 'endmark':
+          children.push(new D.Paragraph({
+            alignment: D.AlignmentType.CENTER, spacing: { before: 360, after: 120 },
+            children: [new D.TextRun({ text: '— ' + blk.text + ' —', italics: true, size: 18, color: GRAY, font: FONT })]
+          }));
+          break;
+        case 'space':
+          children.push(new D.Paragraph({ spacing: { after: 120 }, children: [new D.TextRun('')] }));
+          break;
+      }
+    });
+
+    var document = new D.Document({
+      creator: 'ARDALOS Formation SAS',
+      title: doc.title,
+      description: doc.description,
+      styles: { default: { document: { run: { font: FONT, size: 22 } } } },
+      numbering: {
+        config: [
+          { reference: 'bullets', levels: [{
+            level: 0, format: D.LevelFormat.BULLET, text: '•', alignment: D.AlignmentType.LEFT,
+            style: { paragraph: { indent: { left: 720, hanging: 360 } } }
+          }]}
+        ]
+      },
+      sections: [{
+        properties: {
+          page: {
+            size: { width: 11906, height: 16838 },
+            margin: { top: 2500, right: 1440, bottom: 1800, left: 1440, header: 500, footer: 500 }
+          }
+        },
+        headers: { default: header },
+        footers: { default: footer },
+        children: children
+      }]
+    });
+
+    return await D.Packer.toBlob(document);
+  }
+
+  // ---------- UI ----------
+  var DOCS_DATA = null;
+
+  function ensureData() {
+    if (window.ARDALOS_PROFORMA_DATA && window.ARDALOS_PROFORMA_DATA.length) {
+      DOCS_DATA = window.ARDALOS_PROFORMA_DATA;
+      return true;
+    }
+    return false;
+  }
+
+  // CSS
+  var style = document.createElement('style');
+  style.textContent = [
+    '#pfafdas-section { margin: 16px 0 24px 0; }',
+    '#pfafdas-banner { background: linear-gradient(135deg, #1A2C6B 0%, #2C3F8A 100%); color: #fff;',
+    '  padding: 18px 22px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between;',
+    '  gap: 16px; flex-wrap: wrap; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(26,44,107,0.15); }',
+    '#pfafdas-banner h3 { margin: 0 0 4px 0; font-size: 18px; font-weight: 700; letter-spacing: -0.2px; }',
+    '#pfafdas-banner p { margin: 0; font-size: 13px; opacity: 0.9; }',
+    '#pfafdas-banner .pf-chip { display:inline-block; background: rgba(255,255,255,0.18); padding: 4px 10px;',
+    '  border-radius: 12px; font-size: 11px; font-weight: 600; margin-top: 6px; }',
+    '#pfafdas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px; }',
+    '.pf-card { background: #fff; border: 1px solid #E5E7EB; border-radius: 10px; padding: 14px; transition: all 0.15s;',
+    '  display: flex; flex-direction: column; gap: 10px; }',
+    '.pf-card:hover { border-color: #C9A84C; box-shadow: 0 4px 12px rgba(201,168,76,0.18); transform: translateY(-1px); }',
+    '.pf-card-head { display: flex; gap: 12px; align-items: flex-start; }',
+    '.pf-icon { font-size: 26px; flex-shrink: 0; width: 44px; height: 44px; display: flex; align-items: center;',
+    '  justify-content: center; background: linear-gradient(135deg, #EEF2FF, #F3F4F6); border-radius: 8px; }',
+    '.pf-body { flex: 1; min-width: 0; }',
+    '.pf-num { font-size: 10px; color: #6B7280; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }',
+    '.pf-title { font-size: 14px; font-weight: 600; color: #1A2C6B; margin: 2px 0; line-height: 1.3; }',
+    '.pf-desc { font-size: 12px; color: #6B7280; line-height: 1.4; }',
+    '.pf-meta { display:flex; gap:6px; flex-wrap: wrap; margin-top: 6px; }',
+    '.pf-cat { display: inline-block; font-size: 10px; background: #EEF2FF; color: #1A2C6B; padding: 2px 8px; border-radius: 10px; font-weight: 500; }',
+    '.pf-ver { display: inline-block; font-size: 10px; background: #F3F4F6; color: #6B7280; padding: 2px 8px; border-radius: 10px; font-weight: 500; }',
+    '.pf-actions { display: flex; gap: 6px; padding-top: 10px; border-top: 1px solid #F3F4F6; }',
+    '.pf-btn { flex: 1; font-size: 11px; padding: 7px 10px; border-radius: 6px; cursor: pointer; text-align: center;',
+    '  font-weight: 600; border: 1px solid transparent; transition: all 0.1s; user-select: none; }',
+    '.pf-btn:active { transform: scale(0.97); }',
+    '.pf-btn-view { background: #1A2C6B; color: #fff; }',
+    '.pf-btn-view:hover { background: #2C3F8A; }',
+    '.pf-btn-docx { background: #EEF2FF; color: #1A2C6B; border-color: #C7D2FE; }',
+    '.pf-btn-docx:hover { background: #E0E7FF; }',
+    '.pf-btn-pdf { background: #FEF3C7; color: #92400E; border-color: #FDE68A; }',
+    '.pf-btn-pdf:hover { background: #FDE68A; }',
+    '.pf-btn.loading { pointer-events:none; opacity:0.7; position: relative; }',
+    '.pf-btn.loading::after { content: ""; display: inline-block; width: 10px; height: 10px; margin-left: 6px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: pfspin 0.6s linear infinite; vertical-align: middle; }',
+    '@keyframes pfspin { to { transform: rotate(360deg); } }',
+    '#pf-preview-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index:9999; display:none; align-items:center; justify-content:center; padding:24px; }',
+    '#pf-preview-modal.open { display:flex; }',
+    '#pf-preview-box { background:#fff; border-radius:12px; width: 100%; max-width: 900px; height: 90vh; display:flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }',
+    '#pf-preview-head { padding: 14px 18px; background: #F9FAFB; border-bottom: 1px solid #E5E7EB; display:flex; justify-content:space-between; align-items:center; gap:12px; }',
+    '#pf-preview-head h3 { margin:0; font-size: 14px; color: #1A2C6B; font-weight: 600; }',
+    '#pf-preview-head-actions { display:flex; gap:6px; align-items:center; }',
+    '#pf-preview-body { flex: 1; overflow: auto; background: #F3F4F6; padding: 20px; }',
+    '#pf-preview-body iframe { width: 100%; height: 100%; border: none; background:#fff; border-radius:6px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }',
+    '@media (max-width: 640px) { #pfafdas-grid { grid-template-columns: 1fr; } }',
+  ].join('\n');
+  document.head.appendChild(style);
+
+  // Modale preview
+  var previewModal = document.createElement('div');
+  previewModal.id = 'pf-preview-modal';
+  previewModal.innerHTML = [
+    '<div id="pf-preview-box">',
+      '<div id="pf-preview-head">',
+        '<h3 id="pf-preview-title">Aperçu</h3>',
+        '<div id="pf-preview-head-actions">',
+          '<button class="pf-btn pf-btn-docx" style="flex:none" id="pf-preview-docx-btn">⬇ DOCX</button>',
+          '<button class="pf-btn pf-btn-pdf" style="flex:none" id="pf-preview-pdf-btn">⬇ PDF</button>',
+          '<button class="pf-btn" style="flex:none;background:#F3F4F6;color:#6B7280" id="pf-preview-close">Fermer</button>',
+        '</div>',
+      '</div>',
+      '<div id="pf-preview-body"><iframe id="pf-preview-iframe"></iframe></div>',
+    '</div>'
+  ].join('');
+  document.body.appendChild(previewModal);
+  previewModal.addEventListener('click', function(e) {
+    if (e.target === previewModal) closePreview();
+  });
+  document.getElementById('pf-preview-close').onclick = closePreview;
+
+  function openPreview(doc) {
+    if (!DOCS_DATA && !ensureData()) { toast('Data non chargée', 'err'); return; }
+    var html = renderHtml(doc);
+    var iframe = document.getElementById('pf-preview-iframe');
+    iframe.srcdoc = html;
+    document.getElementById('pf-preview-title').textContent = '👁 ' + doc.title;
+    document.getElementById('pf-preview-docx-btn').onclick = function() { triggerDocx(doc, this); };
+    document.getElementById('pf-preview-pdf-btn').onclick = function() { triggerPdf(doc, this); };
+    previewModal.classList.add('open');
+  }
+  function closePreview() { previewModal.classList.remove('open'); }
+
+  async function triggerDocx(doc, btnEl) {
+    if (btnEl) btnEl.classList.add('loading');
+    try {
+      if (!window.docx) throw new Error('Librairie docx non chargée');
+      var blob = await renderDocx(doc);
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = doc.code + '.docx';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function() { URL.revokeObjectURL(url); }, 500);
+      toast('DOCX téléchargé : ' + doc.title, 'ok');
+    } catch(e) {
+      console.error('[Pro Forma DOCX]', e);
+      toast('Erreur DOCX : ' + e.message, 'err');
+    } finally {
+      if (btnEl) btnEl.classList.remove('loading');
+    }
+  }
+
+  async function triggerPdf(doc, btnEl) {
+    if (btnEl) btnEl.classList.add('loading');
+    try {
+      if (!window.html2pdf) throw new Error('Librairie html2pdf non chargée');
+      var html = renderHtml(doc);
+      // Créer un container off-screen
+      var container = document.createElement('div');
+      container.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;background:#fff';
+      container.innerHTML = html;
+      // On ne prend que le .ard-doc interne pour éviter les doublons de head
+      var inner = container.querySelector('.ard-doc') || container;
+      document.body.appendChild(inner);
+      // Retirer le container parent (inner déjà déplacé dans body)
+      if (container.parentNode) container.remove();
+
+      var opt = {
+        margin: [10, 10, 10, 10],
+        filename: doc.code + '.pdf',
+        image: { type: 'jpeg', quality: 0.95 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+      };
+      await window.html2pdf().set(opt).from(inner).save();
+      inner.remove();
+      toast('PDF téléchargé : ' + doc.title, 'ok');
+    } catch(e) {
+      console.error('[Pro Forma PDF]', e);
+      toast('Erreur PDF : ' + e.message, 'err');
+    } finally {
+      if (btnEl) btnEl.classList.remove('loading');
+    }
+  }
+
+  window.ardalosProFormaPreview = function(id) {
+    if (!DOCS_DATA && !ensureData()) { toast('Data non chargée', 'err'); return; }
+    var doc = DOCS_DATA.find(function(d) { return d.id === id; });
+    if (doc) openPreview(doc);
+  };
+  window.ardalosProFormaDocx = function(id, btn) {
+    if (!DOCS_DATA && !ensureData()) { toast('Data non chargée', 'err'); return; }
+    var doc = DOCS_DATA.find(function(d) { return d.id === id; });
+    if (doc) triggerDocx(doc, btn);
+  };
+  window.ardalosProFormaPdf = function(id, btn) {
+    if (!DOCS_DATA && !ensureData()) { toast('Data non chargée', 'err'); return; }
+    var doc = DOCS_DATA.find(function(d) { return d.id === id; });
+    if (doc) triggerPdf(doc, btn);
+  };
+
+  // Render section
+  function renderSection() {
+    if (!ensureData()) { setTimeout(renderSection, 300); return; }
+    var page = document.getElementById('page-documents');
+    if (!page) return;
+
+    var host = document.getElementById('pfafdas-section');
+    if (!host) {
+      host = document.createElement('div');
+      host.id = 'pfafdas-section';
+      var hdr = page.querySelector('.page-hdr');
+      if (hdr && hdr.nextSibling) hdr.parentNode.insertBefore(host, hdr.nextSibling);
+      else page.insertBefore(host, page.firstChild);
+    }
+
+    var cardsHtml = DOCS_DATA.map(function(d) {
+      return '<div class="pf-card">' +
+        '<div class="pf-card-head">' +
+          '<div class="pf-icon">' + d.icon + '</div>' +
+          '<div class="pf-body">' +
+            '<div class="pf-num">Document n° ' + d.id + '</div>' +
+            '<div class="pf-title">' + esc(d.title) + '</div>' +
+            '<div class="pf-desc">' + esc(d.description) + '</div>' +
+            '<div class="pf-meta"><span class="pf-cat">' + esc(d.category) + '</span><span class="pf-ver">V' + esc(d.version) + '</span></div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="pf-actions">' +
+          '<button class="pf-btn pf-btn-view" onclick="window.ardalosProFormaPreview(\'' + d.id + '\')">👁 Aperçu</button>' +
+          '<button class="pf-btn pf-btn-docx" onclick="window.ardalosProFormaDocx(\'' + d.id + '\', this)">⬇ DOCX</button>' +
+          '<button class="pf-btn pf-btn-pdf" onclick="window.ardalosProFormaPdf(\'' + d.id + '\', this)">⬇ PDF</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    host.innerHTML =
+      '<div id="pfafdas-banner">' +
+        '<div>' +
+          '<h3>📋 Documents Pro Forma AFDAS</h3>' +
+          '<p>' + DOCS_DATA.length + ' templates officiels Ardalos · Génération dynamique DOCX + PDF · Aucune dépendance externe</p>' +
+          '<span class="pf-chip">✓ 100% intégré · ✓ Génération à la volée · ✓ Prêt Qualiopi / AFDAS</span>' +
+        '</div>' +
+      '</div>' +
+      '<div id="pfafdas-grid">' + cardsHtml + '</div>';
+  }
+
+  function tryRender() {
+    var page = document.getElementById('page-documents');
+    if (page && (page.classList.contains('active') || page.style.display !== 'none')) {
+      renderSection();
+    } else {
+      // Retente quand la page Documents est activée
+      var obs = new MutationObserver(function() {
+        var p = document.getElementById('page-documents');
+        if (p && p.classList.contains('active') && !document.getElementById('pfafdas-section')) {
+          renderSection();
+        }
+      });
+      if (document.body) obs.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class'] });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() { setTimeout(tryRender, 400); });
+  } else {
+    setTimeout(tryRender, 400);
+  }
+
+  console.log('[Pro Forma AFDAS v3] init OK · génération dynamique DOCX + PDF');
+})();
+</script>
+
+
+
+<!-- === SPRINT 1.1 v2 : selecteur pole global en position fixed === -->
+<script>
+(function() {
+  'use strict';
+
+  var POLES = {
+    group:       { id: 'group',       label: 'Groupe',      icon: '🌐', color: '#6366F1', desc: 'Vision consolidée Ardalos' },
+    formation:   { id: 'formation',   label: 'Formation',   icon: '🎓', color: '#1A2C6B', desc: 'Organisme de formation Qualiopi' },
+    development: { id: 'development', label: 'Development', icon: '🏭', color: '#B45309', desc: 'Holding · Agronomie · Minier' },
+  };
+
+  var LS_KEY = 'ardalos_pole_actif';
+  var current = localStorage.getItem(LS_KEY) || 'group';
+  if (!POLES[current]) current = 'group';
+
+  // --- Détection largeur sidebar (pour que le bandeau commence APRES la sidebar) ---
+  function getSidebarWidth() {
+    // Cherche la sidebar Ardalos par différents sélecteurs probables
+    var candidates = [
+      '.sidebar', '.nav-sidebar', 'nav[role="navigation"]',
+      'aside', '#sidebar', '[data-sidebar]'
+    ];
+    for (var i = 0; i < candidates.length; i++) {
+      var el = document.querySelector(candidates[i]);
+      if (el) {
+        var rect = el.getBoundingClientRect();
+        if (rect.width > 100 && rect.width < 400 && rect.left < 20) {
+          return Math.round(rect.width);
+        }
+      }
+    }
+    // Fallback : chercher un élément qui ressemble à une sidebar verticale
+    var allDivs = document.querySelectorAll('body > div, body > div > div');
+    for (var j = 0; j < allDivs.length; j++) {
+      var d = allDivs[j];
+      var r = d.getBoundingClientRect();
+      if (r.left < 20 && r.top < 100 && r.height > 400 && r.width > 100 && r.width < 400) {
+        return Math.round(r.width);
+      }
+    }
+    return 0; // Pas de sidebar détectée
+  }
+
+  // CSS
+  var style = document.createElement('style');
+  style.textContent = [
+    '#pole-switcher {',
+    '  position: fixed;',
+    '  top: 0;',
+    '  right: 0;',
+    '  z-index: 9998;',  /* au-dessus du contenu, en-dessous des modales */
+    '  background: rgba(255,255,255,0.96);',
+    '  backdrop-filter: blur(6px);',
+    '  -webkit-backdrop-filter: blur(6px);',
+    '  border-bottom: 1px solid #E5E7EB;',
+    '  border-left: 1px solid #E5E7EB;',
+    '  border-bottom-left-radius: 10px;',
+    '  padding: 8px 14px;',
+    '  display: flex;',
+    '  align-items: center;',
+    '  gap: 10px;',
+    '  box-shadow: 0 2px 8px rgba(0,0,0,0.06);',
+    '  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;',
+    '}',
+    '#pole-switcher-label {',
+    '  font-size: 10px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.5px;',
+    '  font-weight: 600; flex-shrink: 0;',
+    '}',
+    '#pole-switcher-tabs {',
+    '  display: flex; gap: 3px; background: #F3F4F6; padding: 3px; border-radius: 7px;',
+    '}',
+    '.pole-tab {',
+    '  padding: 5px 12px; border-radius: 5px; font-size: 12px; font-weight: 600;',
+    '  cursor: pointer; transition: all 0.15s; color: #6B7280; border: none; background: transparent;',
+    '  display: flex; align-items: center; gap: 5px; user-select: none; font-family: inherit;',
+    '}',
+    '.pole-tab:hover { color: #1F2937; background: rgba(255,255,255,0.7); }',
+    '.pole-tab.active { background: #fff; color: #1A2C6B; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }',
+    '.pole-tab.active.pole-development { color: #B45309; }',
+    '.pole-tab.active.pole-group { color: #6366F1; }',
+    /* Mode pleine largeur (option alternative) : la barre prend toute la largeur */
+    '#pole-switcher.full-width {',
+    '  left: 0; right: 0; border-bottom-left-radius: 0; border-left: none;',
+    '  justify-content: flex-end;',
+    '}',
+    /* Pastille pole sur éléments */
+    '.pole-chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px;',
+    '  border-radius: 10px; font-size: 10px; font-weight: 600; letter-spacing: 0.2px; }',
+    '.pole-chip-formation { background: #E0E7FF; color: #1A2C6B; }',
+    '.pole-chip-development { background: #FEF3C7; color: #B45309; }',
+    '.pole-chip-both { background: #F3E8FF; color: #7C3AED; }',
+    /* Filtrage auto : data-pole */
+    'body[data-current-pole="formation"] [data-pole="development"]:not([data-pole-both]) { display: none !important; }',
+    'body[data-current-pole="development"] [data-pole="formation"]:not([data-pole-both]) { display: none !important; }',
+    'body[data-current-pole="formation"] [data-pole-only-group] { display: none !important; }',
+    'body[data-current-pole="development"] [data-pole-only-group] { display: none !important; }',
+    /* Responsive */
+    '@media (max-width: 760px) {',
+    '  #pole-switcher { right: 8px; top: 8px; padding: 6px 10px; }',
+    '  #pole-switcher-label { display: none; }',
+    '  .pole-tab { padding: 4px 9px; font-size: 11px; }',
+    '}',
+  ].join('\n');
+  document.head.appendChild(style);
+
+  function buildSwitcher() {
+    // Retire si déjà présent
+    var existing = document.getElementById('pole-switcher');
+    if (existing) existing.remove();
+
+    var bar = document.createElement('div');
+    bar.id = 'pole-switcher';
+    bar.innerHTML =
+      '<div id="pole-switcher-label">Vue :</div>' +
+      '<div id="pole-switcher-tabs">' +
+        Object.keys(POLES).map(function(k) {
+          var p = POLES[k];
+          return '<button class="pole-tab pole-' + k + (k === current ? ' active' : '') + '" data-pole="' + k + '" title="' + p.desc + '">' +
+            '<span>' + p.icon + '</span>' +
+            '<span>' + p.label + '</span>' +
+          '</button>';
+        }).join('') +
+      '</div>';
+
+    // Injecter en tout fin de body (fixed le sort du flow)
+    document.body.appendChild(bar);
+
+    // Ajuster le padding-top du body pour qu'aucun contenu ne soit caché
+    // (on ne touche pas si déjà un header en fixed au même endroit)
+    setTimeout(function() {
+      var h = bar.getBoundingClientRect().height;
+      // Seulement si on n'empiète pas sur des éléments importants existants
+      // On laisse tel quel, le bandeau vient par-dessus en coin haut-droit
+    }, 50);
+
+    // Handlers
+    bar.querySelectorAll('.pole-tab').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setPole(btn.dataset.pole);
+      });
+    });
+  }
+
+  function setPole(pole) {
+    if (!POLES[pole]) return;
+    current = pole;
+    localStorage.setItem(LS_KEY, pole);
+    document.body.setAttribute('data-current-pole', pole);
+    window.__ardalosPoleActif = pole;
+
+    var bar = document.getElementById('pole-switcher');
+    if (bar) {
+      bar.querySelectorAll('.pole-tab').forEach(function(b) {
+        b.classList.toggle('active', b.dataset.pole === pole);
+      });
+    }
+
+    window.dispatchEvent(new CustomEvent('ardalos:pole-changed', {
+      detail: { pole: pole, config: POLES[pole] }
+    }));
+    console.log('[Ardalos Pole] changement vers:', pole);
+  }
+
+  // API publique
+  window.ardalosPole = {
+    get: function() { return current; },
+    set: setPole,
+    isFormation: function() { return current === 'formation' || current === 'group'; },
+    isDevelopment: function() { return current === 'development' || current === 'group'; },
+    isGroup: function() { return current === 'group'; },
+    config: POLES,
+    chip: function(pole) {
+      var key = pole === 'both' ? 'both' : (pole || 'formation');
+      var cfg = POLES[key] || POLES.formation;
+      return '<span class="pole-chip pole-chip-' + key + '">' + cfg.icon + ' ' + cfg.label + '</span>';
+    }
+  };
+
+  function init() {
+    document.body.setAttribute('data-current-pole', current);
+    window.__ardalosPoleActif = current;
+    buildSwitcher();
+    console.log('[Ardalos Pole v2] init · vue active = ' + current);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+  // Re-build si le DOM est complètement re-rendu (ex: après navigation)
+  setTimeout(function() {
+    if (!document.getElementById('pole-switcher')) buildSwitcher();
+  }, 2000);
+})();
+</script>
+
+
+
+<!-- === SPRINT 1.3 v2 : renommage Pipeline -> Apporteurs d'affaires (ciblage data-page) === -->
+<script>
+(function() {
+  'use strict';
+
+  var NEW_LABEL = "Apporteurs d'affaires";
+
+  // CSS
+  var css = document.createElement('style');
+  css.textContent = [
+    '.ap-new-badge {',
+    '  display: inline-block; background: linear-gradient(135deg,#C9A84C,#E5C46B);',
+    '  color: #1A2C6B; font-size: 8px; font-weight: 700; padding: 1px 5px;',
+    '  border-radius: 3px; margin-left: 4px; letter-spacing: 0.3px; vertical-align: middle;',
+    '  line-height: 1.4; text-transform: uppercase;',
+    '}',
+    '.ap-chevron {',
+    '  display: inline-block; margin-left: auto; padding-left: 6px; font-size: 9px;',
+    '  color: inherit; opacity: 0.5; transition: transform 0.15s; cursor: pointer;',
+    '  user-select: none;',
+    '}',
+    '.ap-chevron:hover { opacity: 1; }',
+    '.ap-chevron.open { transform: rotate(90deg); }',
+    '.ap-sub-menu {',
+    '  display: none; margin: 2px 0 6px 0; padding: 4px 0;',
+    '  background: rgba(26,44,107,0.04); border-left: 2px solid #C9A84C;',
+    '  border-radius: 0 6px 6px 0;',
+    '}',
+    '.ap-sub-menu.open { display: block; }',
+    '.ap-sub-item {',
+    '  display: flex; align-items: center; gap: 8px;',
+    '  padding: 6px 14px 6px 32px; font-size: 12px; color: inherit; opacity: 0.75;',
+    '  cursor: pointer; transition: all 0.12s; text-decoration: none;',
+    '  border-left: 2px solid transparent; margin-left: -2px;',
+    '}',
+    '.ap-sub-item:hover { opacity: 1; background: rgba(26,44,107,0.08); border-left-color: #1A2C6B; }',
+    '.ap-sub-item.active { opacity: 1; font-weight: 600; border-left-color: #1A2C6B; }',
+    '.ap-sub-lock { margin-left: auto; font-size: 9px; opacity: 0.5; font-weight: 500; }',
+    '@keyframes ap-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.65; } }',
+    '.ap-new-badge { animation: ap-pulse 2s ease-in-out infinite; }',
+  ].join('\n');
+  document.head.appendChild(css);
+
+  // Toast
+  function toast(msg) {
+    var t = document.createElement('div');
+    t.textContent = msg;
+    t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#1A2C6B;color:#fff;' +
+      'padding:10px 18px;border-radius:8px;z-index:10001;font-size:13px;font-weight:500;' +
+      'box-shadow:0 4px 16px rgba(0,0,0,0.2);opacity:0;transition:opacity 0.2s;';
+    document.body.appendChild(t);
+    setTimeout(function(){ t.style.opacity = '1'; }, 10);
+    setTimeout(function(){
+      t.style.opacity = '0';
+      setTimeout(function(){ t.remove(); }, 200);
+    }, 2800);
+  }
+
+  // Trouve le nav-item Pipeline via l'attribut data-page (fiable)
+  function findNavItem() {
+    return document.querySelector('[data-page="pipeline"]');
+  }
+
+  // Remplace le node texte "Pipeline" par "Apporteurs d'affaires"
+  function renameTextNode(navItem) {
+    var found = false;
+    navItem.childNodes.forEach(function(node) {
+      if (node.nodeType === 3) { // TEXT_NODE
+        var t = node.nodeValue;
+        if (/Pipeline/i.test(t)) {
+          node.nodeValue = t.replace(/Pipeline/i, NEW_LABEL);
+          found = true;
+        }
+      }
+    });
+    return found;
+  }
+
+  function applyRenameAndMenu() {
+    var navItem = findNavItem();
+    if (!navItem) return false;
+
+    // Si deja traite, ne rien refaire
+    if (navItem.dataset.apRenamed === '1') return true;
+
+    // 1. Renommer le texte "Pipeline" -> "Apporteurs d'affaires"
+    var renamed = renameTextNode(navItem);
+    if (!renamed) {
+      console.warn('[Sprint 1.3 v2] Text node "Pipeline" introuvable, cible differente ?');
+    }
+
+    // 2. Ajouter le badge NOUVEAU juste avant le nav-badge amber [43]
+    if (!navItem.querySelector('.ap-new-badge')) {
+      var newBadge = document.createElement('span');
+      newBadge.className = 'ap-new-badge';
+      newBadge.textContent = 'NEW';
+      var existingBadge = navItem.querySelector('.nav-badge');
+      if (existingBadge) {
+        navItem.insertBefore(newBadge, existingBadge);
+      } else {
+        navItem.appendChild(newBadge);
+      }
+    }
+
+    // 3. Ajouter le chevron apres le badge
+    if (!navItem.querySelector('.ap-chevron')) {
+      var chev = document.createElement('span');
+      chev.className = 'ap-chevron';
+      chev.textContent = '▶';
+      chev.title = 'Voir / masquer les sous-entrees';
+      navItem.appendChild(chev);
+    }
+
+    // 4. Creer le sous-menu juste apres le nav-item
+    if (!navItem.nextElementSibling || !navItem.nextElementSibling.classList.contains('ap-sub-menu')) {
+      var sub = document.createElement('div');
+      sub.className = 'ap-sub-menu';
+      sub.innerHTML = [
+        '<a class="ap-sub-item active" data-ap-action="kanban">📋 Kanban</a>',
+        '<a class="ap-sub-item" data-ap-action="reseau">👥 Réseau apporteurs <span class="ap-sub-lock">🔒 1.6</span></a>',
+        '<a class="ap-sub-item" data-ap-action="commissions">💶 Commissions <span class="ap-sub-lock">🔒 1.7</span></a>',
+      ].join('');
+      navItem.parentNode.insertBefore(sub, navItem.nextSibling);
+
+      sub.querySelectorAll('.ap-sub-item').forEach(function(item) {
+        item.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          var action = item.dataset.apAction;
+          if (action === 'kanban') {
+            // Clic sur le nav-item d'origine -> ouvre la page pipeline existante
+            navItem.click();
+          } else if (action === 'reseau') {
+            toast("🚧 Écran Réseau apporteurs — Sprint 1.6 à venir");
+          } else if (action === 'commissions') {
+            toast("🚧 Écran Commissions — Sprint 1.7 à venir");
+          }
+        });
+      });
+    }
+
+    // 5. Toggle sous-menu au clic sur le chevron UNIQUEMENT
+    var chevEl = navItem.querySelector('.ap-chevron');
+    if (chevEl && !chevEl.dataset.apBound) {
+      chevEl.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var submenu = navItem.nextElementSibling;
+        if (submenu && submenu.classList.contains('ap-sub-menu')) {
+          chevEl.classList.toggle('open');
+          submenu.classList.toggle('open');
+        }
+      }, true);
+      chevEl.dataset.apBound = '1';
+    }
+
+    navItem.dataset.apRenamed = '1';
+    console.log('[Sprint 1.3 v2] ✅ Pipeline renomme en "' + NEW_LABEL + '" + sous-menu ajoute');
+    return true;
+  }
+
+  function init() {
+    if (applyRenameAndMenu()) return;
+    // Retry si la sidebar tarde
+    var tries = 0;
+    var iv = setInterval(function() {
+      tries++;
+      if (applyRenameAndMenu() || tries >= 30) clearInterval(iv);
+    }, 200);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+  // Re-appliquer si le DOM est re-rendu
+  var obs = new MutationObserver(function() {
+    var item = findNavItem();
+    if (item && item.dataset.apRenamed !== '1') {
+      applyRenameAndMenu();
+    }
+  });
+  if (document.body) obs.observe(document.body, { childList: true, subtree: true });
+
+  console.log('[Sprint 1.3 v2] Init · selecteur = [data-page="pipeline"]');
+})();
+</script>
+
+
+
+<!-- === SPRINT 1.5 v4 : kanban apporteurs (HARDCODE seed - bypass fetch) === -->
+<script>
+// DATA SEED - Apporteurs connus depuis Supabase (injection Python, pas de fetch client)
+window.ARDALOS_APPORTEURS_SEED = [
+  { id: 'shaun-seed-001',  prenom: 'Shaun',  nom: 'Formateur-Ambassadeur', canaux_prospection: ['organique','reseaux_sociaux'], statut: 'actif' },
+  { id: 'goku-seed-002',   prenom: 'Goku',   nom: 'Formateur-Ambassadeur', canaux_prospection: ['organique','phoning'],          statut: 'actif' },
+  { id: 'marie-seed-003',  prenom: 'Marie',  nom: 'Roussel',               canaux_prospection: ['reseaux_sociaux','evenementiel'], statut: 'actif' },
+];
+</script>
+<script>
+(function() {
+  'use strict';
+
+  var CANAUX = {
+    organique:       { label: 'Organique',       color: '#059669', bg: '#D1FAE5', icon: '🌱' },
+    phoning:         { label: 'Phoning',         color: '#DC2626', bg: '#FEE2E2', icon: '📞' },
+    reseaux_sociaux: { label: 'Réseaux sociaux', color: '#7C3AED', bg: '#EDE9FE', icon: '📱' },
+    evenementiel:    { label: 'Événementiel',    color: '#D97706', bg: '#FEF3C7', icon: '🎪' },
+    seo:             { label: 'SEO',             color: '#0891B2', bg: '#CFFAFE', icon: '🔍' },
+    autre:           { label: 'Autre',           color: '#6B7280', bg: '#F3F4F6', icon: '◦'  },
+  };
+
+  // LIRE DIRECTEMENT depuis le seed - AUCUN fetch
+  var APPORTEURS = window.ARDALOS_APPORTEURS_SEED || [];
+  var SELECTED_FILTER = 'all';
+
+  // === CSS ===
+  var style = document.createElement('style');
+  style.textContent = [
+    '#ap-toolbar {',
+    '  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;',
+    '  padding: 12px 16px; background: linear-gradient(135deg,#FAFAFA,#F3F4F6);',
+    '  border: 1px solid #E5E7EB; border-radius: 10px; margin: 0 0 16px 0;',
+    '}',
+    '#ap-toolbar .ap-lbl {',
+    '  font-size: 10px; font-weight: 700; color: #6B7280; text-transform: uppercase; letter-spacing: 0.5px;',
+    '}',
+    '#ap-toolbar select {',
+    '  font-size: 13px; padding: 6px 28px 6px 10px; border: 1px solid #D1D5DB;',
+    '  border-radius: 6px; background: #fff; color: #1F2937; cursor: pointer; min-width: 240px; font-family: inherit;',
+    '}',
+    '#ap-toolbar button {',
+    '  font-size: 12px; padding: 6px 12px; border: 1px solid #D1D5DB; border-radius: 6px;',
+    '  background: #fff; cursor: pointer; font-weight: 500; color: #1F2937; font-family: inherit;',
+    '}',
+    '#ap-toolbar button:hover { border-color: #1A2C6B; background: #EEF2FF; }',
+    '.ap-stats {',
+    '  margin-left: auto; font-size: 12px; color: #6B7280;',
+    '  padding: 5px 12px; background: #fff; border-radius: 6px; border: 1px solid #E5E7EB;',
+    '}',
+    '.ap-stats strong { color: #1A2C6B; }',
+    '#ap-leaderboard {',
+    '  position: fixed; right: 18px; bottom: 18px; width: 280px;',
+    '  background: #fff; border: 1px solid #E5E7EB; border-radius: 12px;',
+    '  padding: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); z-index: 45;',
+    '}',
+    '#ap-leaderboard h4 {',
+    '  margin: 0 0 10px 0; font-size: 11px; color: #1A2C6B;',
+    '  text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;',
+    '}',
+    '.ap-lb-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #F3F4F6; }',
+    '.ap-lb-item:last-child { border-bottom: none; }',
+    '.ap-lb-rank { font-size: 18px; width: 28px; text-align: center; }',
+    '.ap-lb-info { flex: 1; min-width: 0; }',
+    '.ap-lb-name { font-size: 13px; font-weight: 600; color: #1F2937; }',
+    '.ap-lb-stats { font-size: 11px; color: #6B7280; margin-top: 2px; }',
+    '.ap-lb-canaux { font-size: 10px; color: #9CA3AF; margin-top: 2px; }',
+    '#ap-leaderboard-close {',
+    '  position: absolute; top: 4px; right: 8px; border: none; background: none;',
+    '  cursor: pointer; color: #9CA3AF; font-size: 18px;',
+    '}',
+    '.ap-card-noapp { display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px; border-radius: 10px; font-size: 10px; background: #F3F4F6; color: #9CA3AF; margin-top: 6px; }',
+    '.ap-card-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 3px; }',
+    '@media (max-width: 1200px) { #ap-leaderboard { display: none; } }',
+  ].join('\n');
+  document.head.appendChild(style);
+
+  function countDeals() {
+    var page = document.getElementById('page-pipeline');
+    if (!page) return 0;
+    var cards = page.querySelectorAll('.kb-card');
+    return cards.length;
+  }
+
+  function buildToolbar() {
+    var page = document.getElementById('page-pipeline');
+    if (!page) return false;
+
+    var existing = document.getElementById('ap-toolbar');
+    if (existing) existing.remove();
+
+    var nbDeals = countDeals();
+
+    var tb = document.createElement('div');
+    tb.id = 'ap-toolbar';
+    tb.innerHTML =
+      '<span class="ap-lbl">Apporteur :</span>' +
+      '<select id="ap-filter">' +
+        '<option value="all">Tous les apporteurs</option>' +
+        '<option value="none">🔘 Leads directs (sans apporteur)</option>' +
+        APPORTEURS.map(function(a) {
+          var canaux = (a.canaux_prospection || []).map(function(c){ return (CANAUX[c] || CANAUX.autre).icon; }).join('');
+          return '<option value="' + a.id + '">' + canaux + ' ' + a.prenom + ' ' + a.nom + '</option>';
+        }).join('') +
+      '</select>' +
+      '<button id="ap-bulk-attribuer">👥 Attribuer à un apporteur</button>' +
+      '<div class="ap-stats">' +
+        '<strong>' + APPORTEURS.length + '</strong> apporteur' + (APPORTEURS.length>1?'s':'') + ' actif' + (APPORTEURS.length>1?'s':'') + ' · ' +
+        '<strong>' + nbDeals + '</strong> deal' + (nbDeals>1?'s':'') +
+      '</div>';
+
+    var pageHdr = page.querySelector('.page-hdr');
+    if (pageHdr && pageHdr.nextSibling) {
+      page.insertBefore(tb, pageHdr.nextSibling);
+    } else {
+      page.insertBefore(tb, page.firstChild);
+    }
+
+    document.getElementById('ap-bulk-attribuer').addEventListener('click', function() {
+      toast("🚧 Attribution d'apporteur — disponible au Sprint 1.6");
+    });
+
+    return true;
+  }
+
+  function addLeadDirectBadges() {
+    var page = document.getElementById('page-pipeline');
+    if (!page) return;
+    var cards = page.querySelectorAll('.kb-card');
+    cards.forEach(function(c) {
+      if (c.querySelector('.ap-card-noapp')) return; // deja fait
+      var noapp = document.createElement('div');
+      noapp.className = 'ap-card-noapp';
+      noapp.innerHTML = '<span class="ap-card-dot" style="background:#9CA3AF"></span>Lead direct';
+      c.appendChild(noapp);
+    });
+  }
+
+  function buildLeaderboard() {
+    var existing = document.getElementById('ap-leaderboard');
+    if (existing) existing.remove();
+
+    var lb = document.createElement('div');
+    lb.id = 'ap-leaderboard';
+
+    var medals = ['🥇', '🥈', '🥉'];
+    var body = APPORTEURS.slice(0, 3).map(function(a, i) {
+      var canauxIcons = (a.canaux_prospection || []).map(function(c) {
+        var cfg = CANAUX[c] || CANAUX.autre;
+        return cfg.icon + ' ' + cfg.label;
+      }).join(' · ');
+      return '<div class="ap-lb-item">' +
+        '<span class="ap-lb-rank">' + (medals[i] || (i+1)) + '</span>' +
+        '<div class="ap-lb-info">' +
+          '<div class="ap-lb-name">' + a.prenom + ' ' + a.nom + '</div>' +
+          '<div class="ap-lb-stats">En attente de 1ère conversion</div>' +
+          '<div class="ap-lb-canaux">' + canauxIcons + '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    lb.innerHTML =
+      '<button id="ap-leaderboard-close" title="Masquer">×</button>' +
+      '<h4>🏆 Top 3 apporteurs (30 j)</h4>' + body;
+
+    document.body.appendChild(lb);
+
+    document.getElementById('ap-leaderboard-close').onclick = function() {
+      lb.style.display = 'none';
+    };
+  }
+
+  function toast(msg) {
+    var t = document.createElement('div');
+    t.textContent = msg;
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1A2C6B;color:#fff;padding:11px 20px;border-radius:8px;z-index:10000;font-size:13px;box-shadow:0 4px 16px rgba(0,0,0,0.2);opacity:0;transition:opacity 0.2s;';
+    document.body.appendChild(t);
+    setTimeout(function(){ t.style.opacity='1'; }, 10);
+    setTimeout(function(){ t.style.opacity='0'; setTimeout(function(){ t.remove(); }, 200); }, 3000);
+  }
+
+  function isPipelineVisible() {
+    var p = document.getElementById('page-pipeline');
+    if (!p) return false;
+    if (p.classList.contains('active')) return true;
+    var cs = getComputedStyle(p);
+    return cs.display !== 'none';
+  }
+
+  function render() {
+    buildLeaderboard();
+    if (isPipelineVisible()) {
+      buildToolbar();
+      addLeadDirectBadges();
+    }
+  }
+
+  function bootstrap() {
+    render();
+    // Re-render quand on navigue
+    var obs = new MutationObserver(function() {
+      if (isPipelineVisible() && !document.getElementById('ap-toolbar')) {
+        render();
+      }
+    });
+    if (document.body) {
+      obs.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['class','style'] });
+    }
+    setTimeout(render, 500);
+    setTimeout(render, 1500);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootstrap);
+  } else {
+    bootstrap();
+  }
+
+  window.ardalosApporteurs = {
+    data: function() { return APPORTEURS; },
+    render: render,
+  };
 })();
 </script>
 </body>
