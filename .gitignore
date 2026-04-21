@@ -47,3 +47,4 @@ next-env.d.ts
 
 # Variables d'environnement locales (ne jamais committer)
 .env.local
+*.bak*
