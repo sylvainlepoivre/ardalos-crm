@@ -686,7 +686,7 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
     <button class="tb-btn" onclick="toggleNotifs()" title="Notifications">
       🔔<span class="notif-dot"></span>
     </button>
-    <button class="tb-btn" title="Aide">?</button>
+    <button class="tb-btn" title="Aide" onclick="window.ardalosOpenAide && window.ardalosOpenAide()">?</button>
     <button class="btn-p" onclick="openModal('quick-add')">+ Créer</button>
   </div>
 </header>
@@ -705,7 +705,7 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
     </div>
     <div class="page-hdr-right">
       <select class="fselect" style="width:auto;font-size:12px"><option>30 derniers jours</option><option>Ce trimestre</option><option>Cette année</option></select>
-      <button class="btn-s">↓ Rapport</button>
+      <button class="btn-s" onclick="window.ardalosExportDashboard && window.ardalosExportDashboard()">↓ Rapport</button>
     </div>
   </div>
 
@@ -836,8 +836,8 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
   <div class="page-hdr">
     <div class="page-hdr-left"><h1 class="page-title">Contacts</h1><p class="page-sub" id="contacts-subtitle">Chargement...</p></div>
     <div class="page-hdr-right">
-      <button class="btn-s">↑ Import CSV</button>
-      <button class="btn-s">↓ Export</button>
+      <button class="btn-s" onclick="window.ardalosImportCSV && window.ardalosImportCSV()">↑ Import CSV</button>
+      <button class="btn-s" onclick="window.ardalosExportContacts && window.ardalosExportContacts()">↓ Export</button>
       <button class="btn-p" onclick="openModal('new-contact')">+ Nouveau contact</button>
     </div>
   </div>
@@ -859,7 +859,7 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
         <tr><td colspan="9" style="text-align:center;padding:20px;color:#9ca3af;font-style:italic">Chargement...</td></tr>
       </tbody>
     </table>
-    <div class="card-f"><span class="text-sm text-muted" id="contacts-pagination">Chargement...</span><div style="margin-left:auto;display:flex;gap:4px"><button class="btn-s" style="padding:4px 10px;font-size:12px">‹</button><button class="btn-s" style="padding:4px 10px;font-size:12px">›</button></div></div>
+    <div class="card-f"><span class="text-sm text-muted" id="contacts-pagination">Chargement...</span><div style="margin-left:auto;display:flex;gap:4px"><button class="btn-s" id="contacts-pg-prev" style="padding:4px 10px;font-size:12px" onclick="window.ardalosContactsPrev && window.ardalosContactsPrev()">‹</button><button class="btn-s" id="contacts-pg-next" style="padding:4px 10px;font-size:12px" onclick="window.ardalosContactsNext && window.ardalosContactsNext()">›</button></div></div>
   </div>
 </div>
 
@@ -869,7 +869,7 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
     <div class="page-hdr-left"><h1 class="page-title">Pipeline commercial</h1><p class="page-sub" id="pipe-subtitle">Chargement du pipeline...</p></div>
     <div class="page-hdr-right">
       <select class="fselect" style="width:auto;font-size:12px"><option>Formation Ardalos</option><option>Commercial Groupe</option></select>
-      <button class="btn-s">Filtres</button>
+      <button class="btn-s" onclick="window.ardalosFilterPipeline && window.ardalosFilterPipeline()">Filtres</button>
       <button class="btn-p" onclick="window.ardalosNewDeal && window.ardalosNewDeal()">+ Nouveau deal</button>
     </div>
   </div>
@@ -1108,7 +1108,7 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
 <div id="page-funding" class="page">
   <div class="page-hdr">
     <div class="page-hdr-left"><h1 class="page-title">Dossiers de financement</h1><p class="page-sub" id="funding-subtitle">Chargement...</p></div>
-    <div class="page-hdr-right"><button class="btn-s">Filtres avancés</button><button class="btn-p" onclick="window.location.href='/inscriptions'">+ Nouveau dossier</button></div>
+    <div class="page-hdr-right"><button class="btn-s" onclick="window.ardalosFilterFunding && window.ardalosFilterFunding()">Filtres avancés</button><button class="btn-p" onclick="window.location.href='/inscriptions'">+ Nouveau dossier</button></div>
   </div>
   <div class="alert alert-r">
     <span class="alert-ic">⚠</span>
@@ -1569,22 +1569,23 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
   <div class="modal">
     <div class="modal-h"><span class="modal-title">Nouveau contact</span><button class="modal-close" onclick="closeModal('new-contact')">✕</button></div>
     <div class="modal-b">
-      <div class="frow"><div class="fg"><label class="flabel">Prénom <span class="req">*</span></label><input class="finput" type="text" placeholder="Marie"></div><div class="fg"><label class="flabel">Nom <span class="req">*</span></label><input class="finput" type="text" placeholder="Dupont"></div></div>
-      <div class="fg"><label class="flabel">Email <span class="req">*</span></label><input class="finput" type="email" placeholder="marie.dupont@mail.fr"></div>
-      <div class="frow"><div class="fg"><label class="flabel">Téléphone</label><input class="finput" type="tel" placeholder="06 12 34 56 78"></div><div class="fg"><label class="flabel">Type</label><select class="fselect"><option>Intermittent du spectacle</option><option>Salarié</option><option>Auto-entrepreneur</option><option>Artiste</option><option>Technicien</option><option>Réalisateur</option></select></div></div>
-      <div class="frow"><div class="fg"><label class="flabel">Source</label><select class="fselect"><option>Site web</option><option>Calendly</option><option>Recommandation</option><option>AFDAS</option><option>Partenaire</option></select></div><div class="fg"><label class="flabel">Commercial assigné</label><select class="fselect"><option>Jean Martin</option><option>Lucie Renard</option></select></div></div>
+      <div class="frow"><div class="fg"><label class="flabel">Prénom <span class="req">*</span></label><input class="finput" type="text" id="nc-prenom" placeholder="Marie" autofocus></div><div class="fg"><label class="flabel">Nom <span class="req">*</span></label><input class="finput" type="text" id="nc-nom" placeholder="Dupont"></div></div>
+      <div class="fg"><label class="flabel">Email <span class="req">*</span></label><input class="finput" type="email" id="nc-email" placeholder="marie.dupont@mail.fr"></div>
+      <div class="frow"><div class="fg"><label class="flabel">Téléphone</label><input class="finput" type="tel" id="nc-tel" placeholder="06 12 34 56 78"></div><div class="fg"><label class="flabel">Type</label><select class="fselect" id="nc-type"><option>Intermittent du spectacle</option><option>Salarié</option><option>Auto-entrepreneur</option><option>Artiste</option><option>Technicien</option><option>Réalisateur</option></select></div></div>
+      <div class="frow"><div class="fg"><label class="flabel">Source</label><select class="fselect" id="nc-source"><option>Site web</option><option>Calendly</option><option>Recommandation</option><option>AFDAS</option><option>Partenaire</option></select></div><div class="fg"><label class="flabel">Commercial assigné</label><select class="fselect" id="nc-commercial"><option value="">— Non assigné —</option><option>Sylvain</option><option>David</option><option>Shaun</option><option>Jérôme</option><option>Julien</option></select></div></div>
       <div class="fg"><label class="flabel">Catégorie AFDAS</label>
-        <select class="fselect">
-          <option>— Non applicable —</option>
+        <select class="fselect" id="nc-afdas">
+          <option value="">— Non applicable —</option>
           <option>Artiste interprète (≥48 cachets)</option>
           <option>Technicien spectacle vivant (≥88j)</option>
           <option>Technicien cinéma/audiovisuel (≥130j)</option>
           <option>Réalisateur (≥48 cachets)</option>
         </select>
       </div>
-      <div class="fg"><label class="flabel">Notes</label><textarea class="ftextarea" placeholder="Informations complémentaires…"></textarea></div>
+      <div class="fg"><label class="flabel">Statut</label><select class="fselect" id="nc-statut"><option>Lead</option><option>Prospect</option><option>Client</option><option>Alumni</option></select></div>
+      <div class="fg"><label class="flabel">Notes</label><textarea class="ftextarea" id="nc-notes" placeholder="Informations complémentaires…"></textarea></div>
     </div>
-    <div class="modal-f"><button class="btn-s" onclick="closeModal('new-contact')">Annuler</button><button class="btn-p" onclick="closeModal('new-contact')">Créer le contact</button></div>
+    <div class="modal-f"><button class="btn-s" onclick="closeModal('new-contact')">Annuler</button><button class="btn-p" onclick="window.ardalosSaveContact && window.ardalosSaveContact()">Créer le contact</button></div>
   </div>
 </div>
 
@@ -1702,7 +1703,7 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
           <div style="margin-top:14px;display:flex;flex-direction:column;gap:6px">
             <button class="btn-p w-full" style="font-size:11px;padding:7px" onclick="closeModal('contact-detail');navigate('funding')">Créer dossier AFDAS →</button>
             <button class="btn-s w-full" style="font-size:11px;padding:7px" onclick="closeModal('contact-detail');navigate('afdas')">Stratégie financement →</button>
-            <button class="btn-s w-full" style="font-size:11px;padding:7px">Envoyer un email</button>
+            <button class="btn-s w-full" style="font-size:11px;padding:7px" onclick="window.ardalosEnvoyerEmailContact && window.ardalosEnvoyerEmailContact()">Envoyer un email</button>
           </div>
         </div>
       </div>
@@ -1722,7 +1723,7 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
         <strong>Variables auto-remplies :</strong> Nom organisme, NDA, dates, formateur, apprenants, signatures Qualiopi
       </div>
     </div>
-    <div class="modal-f"><button class="btn-s" onclick="closeModal('gen-doc')">Annuler</button><button class="btn-p" onclick="closeModal('gen-doc')">Générer le document</button></div>
+    <div class="modal-f"><button class="btn-s" onclick="closeModal('gen-doc')">Annuler</button><button class="btn-p" onclick="window.ardalosGenererDoc && window.ardalosGenererDoc()">Générer le document</button></div>
   </div>
 </div>
 
@@ -1753,7 +1754,7 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
         <div><div class="alert-title">Action immédiate requise</div>Relancer Sophie Martin par email ET téléphone pour : Attestation employeur + CV. Dépôt dans 6 jours sur MyA.</div>
       </div>
     </div>
-    <div class="modal-f"><button class="btn-s" onclick="closeModal('dossier-detail')">Fermer</button><button class="btn-danger">Marquer à risque</button><button class="btn-p">Envoyer relance email</button></div>
+    <div class="modal-f"><button class="btn-s" onclick="closeModal('dossier-detail')">Fermer</button><button class="btn-danger" onclick="window.ardalosMarquerRisque && window.ardalosMarquerRisque()">Marquer à risque</button><button class="btn-p" onclick="window.ardalosEnvoyerRelance && window.ardalosEnvoyerRelance()">Envoyer relance email</button></div>
   </div>
 </div>
 
@@ -6837,6 +6838,1083 @@ document.getElementById('global-search').addEventListener('keyup', function(e) {
   };
 
   console.log('[Sprint 1+2 CRUD] init autonome OK');
+})();
+</script>
+
+<!-- === LIVRAISON 1a : Filtres + Pagination + Imports + Aide === -->
+<script>
+(function() {
+  var SUPABASE_URL = 'https://cvxzdiutxonnsnwoicqt.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_J8ta-7L05zgK9rBy2OS9Bg_CjXHwZVK';
+  var sb;
+  try {
+    if (window.supabase && typeof window.supabase.createClient === 'function') {
+      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    }
+  } catch(e) { sb = null; }
+  if (!sb) {
+    console.warn('[Livraison 1a] Supabase JS non dispo');
+    return;
+  }
+
+  function escHtml(s) {
+    if (s == null) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+  function openM(n) { var el = document.getElementById('modal-' + n); if (el) el.classList.add('open'); }
+  function closeM(n) { var el = document.getElementById('modal-' + n); if (el) el.classList.remove('open'); }
+
+  function showForm(title, formHtml, opts) {
+    opts = opts || {};
+    var titleEl = document.getElementById('detail-modal-title');
+    var bodyEl = document.getElementById('detail-modal-body');
+    if (!titleEl || !bodyEl) { alert('Modale indisponible'); return; }
+    titleEl.textContent = title;
+    var footer = '';
+    if (opts.showFooter !== false) {
+      var primaryLabel = opts.primaryLabel || 'OK';
+      footer =
+        '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid #e5e7eb">' +
+          '<button class="btn-s" onclick="document.getElementById(\'modal-detail\').classList.remove(\'open\')">Fermer</button>' +
+          (opts.onPrimary ? '<button class="btn-p" id="ard-generic-primary">' + escHtml(primaryLabel) + '</button>' : '') +
+        '</div>';
+    }
+    bodyEl.innerHTML = formHtml + footer +
+      '<div id="ard-generic-error" style="margin-top:10px;color:#dc2626;font-size:12px;display:none"></div>';
+    if (opts.onPrimary) {
+      var btn = document.getElementById('ard-generic-primary');
+      btn.onclick = async function() {
+        var errEl = document.getElementById('ard-generic-error');
+        errEl.style.display = 'none';
+        btn.disabled = true;
+        btn.textContent = '...';
+        try {
+          await opts.onPrimary();
+        } catch(e) {
+          errEl.textContent = 'Erreur : ' + (e.message || 'inconnue');
+          errEl.style.display = 'block';
+          btn.disabled = false;
+          btn.textContent = escHtml(opts.primaryLabel || 'OK');
+        }
+      };
+    }
+    openM('detail');
+  }
+
+  // ====================================================================
+  // 1. FILTRES PIPELINE (filtre client-side sur les cards existantes)
+  // ====================================================================
+  window.__ardalosFiltersPipe = {};
+
+  window.ardalosFilterPipeline = function() {
+    var cur = window.__ardalosFiltersPipe;
+    var formHtml =
+      '<div class="fg"><label class="flabel">Filtrer par mot-clé (nom, formation...)</label>' +
+        '<input class="finput" type="text" id="fp-kw" value="' + escHtml(cur.keyword || '') + '" placeholder="Ex: Sophie, AFDAS..."></div>' +
+      '<div class="fg"><label class="flabel">Afficher uniquement les cartes avec badge</label>' +
+        '<select class="fselect" id="fp-badge">' +
+          '<option value="">— Tous —</option>' +
+          '<option value="afdas">AFDAS</option>' +
+          '<option value="cpf">CPF</option>' +
+          '<option value="opco">OPCO</option>' +
+          '<option value="urgent">Urgent / J-</option>' +
+        '</select></div>' +
+      '<div style="padding:10px 12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;font-size:12px;color:#1e40af;margin-top:10px">' +
+        'Les filtres cachent les cartes qui ne correspondent pas (cote client). Reset = bouton ci-dessous.' +
+      '</div>';
+
+    showForm('Filtres Pipeline', formHtml, {
+      primaryLabel: 'Appliquer',
+      onPrimary: async function() {
+        var kw = (document.getElementById('fp-kw').value || '').trim().toLowerCase();
+        var badgeSel = document.getElementById('fp-badge').value;
+        window.__ardalosFiltersPipe = { keyword: kw, badge: badgeSel };
+        applyPipeFilters();
+        closeM('detail');
+      }
+    });
+
+    // Ajoute aussi un "Reset"
+    setTimeout(function() {
+      var errEl = document.getElementById('ard-generic-error');
+      if (errEl) {
+        errEl.style.color = '#1A2C6B';
+        errEl.style.display = 'block';
+        errEl.innerHTML = '<button class="btn-s" style="font-size:11px;padding:4px 10px" onclick="window.__ardalosResetPipeFilters && window.__ardalosResetPipeFilters()">Reset filtres</button>';
+      }
+    }, 50);
+  };
+
+  window.__ardalosResetPipeFilters = function() {
+    window.__ardalosFiltersPipe = {};
+    applyPipeFilters();
+    closeM('detail');
+  };
+
+  function applyPipeFilters() {
+    var f = window.__ardalosFiltersPipe || {};
+    var kw = (f.keyword || '').toLowerCase();
+    var badge = (f.badge || '').toLowerCase();
+    var cards = document.querySelectorAll('#page-pipeline .kb-card');
+    var visible = 0, total = cards.length;
+    cards.forEach(function(card) {
+      var txt = card.textContent.toLowerCase();
+      var matchKw = !kw || txt.indexOf(kw) !== -1;
+      var matchBadge = !badge || txt.indexOf(badge) !== -1 ||
+        (badge === 'urgent' && (txt.indexOf('j-') !== -1 || txt.indexOf('urgent') !== -1));
+      if (matchKw && matchBadge) {
+        card.style.display = '';
+        visible++;
+      } else {
+        card.style.display = 'none';
+      }
+    });
+    var subtitle = document.getElementById('pipe-subtitle');
+    if (subtitle && (kw || badge)) {
+      subtitle.textContent = visible + ' / ' + total + ' cartes (filtres actifs : ' +
+        (kw ? '"' + kw + '"' : '') + (kw && badge ? ', ' : '') + (badge || '') + ')';
+    }
+  }
+
+  // ====================================================================
+  // 2. FILTRES FUNDING (meme pattern que Pipeline mais sur #page-funding)
+  // ====================================================================
+  window.__ardalosFiltersFund = {};
+
+  window.ardalosFilterFunding = function() {
+    var cur = window.__ardalosFiltersFund;
+    var formHtml =
+      '<div class="fg"><label class="flabel">Mot-clé</label>' +
+        '<input class="finput" type="text" id="ff-kw" value="' + escHtml(cur.keyword || '') + '" placeholder="Ex: Sophie, AFDAS..."></div>' +
+      '<div class="frow">' +
+        '<div class="fg"><label class="flabel">Type de financement</label>' +
+          '<select class="fselect" id="ff-type">' +
+            '<option value="">— Tous —</option>' +
+            '<option value="AFDAS">AFDAS</option>' +
+            '<option value="CPF">CPF</option>' +
+            '<option value="OPCO">OPCO</option>' +
+            '<option value="autofi">Auto-financement</option>' +
+          '</select></div>' +
+        '<div class="fg"><label class="flabel">Statut</label>' +
+          '<select class="fselect" id="ff-statut">' +
+            '<option value="">— Tous —</option>' +
+            '<option value="constitution">Constitution</option>' +
+            '<option value="depose">Déposé</option>' +
+            '<option value="accord">Accord</option>' +
+            '<option value="refus">Refus</option>' +
+          '</select></div>' +
+      '</div>' +
+      '<div style="padding:10px 12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;font-size:12px;color:#1e40af;margin-top:10px">' +
+        'Les filtres cachent les lignes qui ne correspondent pas.' +
+      '</div>';
+
+    showForm('Filtres avancés — Dossiers', formHtml, {
+      primaryLabel: 'Appliquer',
+      onPrimary: async function() {
+        window.__ardalosFiltersFund = {
+          keyword: (document.getElementById('ff-kw').value || '').trim().toLowerCase(),
+          type: document.getElementById('ff-type').value.toLowerCase(),
+          statut: document.getElementById('ff-statut').value.toLowerCase()
+        };
+        applyFundFilters();
+        closeM('detail');
+      }
+    });
+
+    setTimeout(function() {
+      var errEl = document.getElementById('ard-generic-error');
+      if (errEl) {
+        errEl.style.color = '#1A2C6B';
+        errEl.style.display = 'block';
+        errEl.innerHTML = '<button class="btn-s" style="font-size:11px;padding:4px 10px" onclick="window.__ardalosResetFundFilters && window.__ardalosResetFundFilters()">Reset filtres</button>';
+      }
+    }, 50);
+  };
+
+  window.__ardalosResetFundFilters = function() {
+    window.__ardalosFiltersFund = {};
+    applyFundFilters();
+    closeM('detail');
+  };
+
+  function applyFundFilters() {
+    var f = window.__ardalosFiltersFund || {};
+    var kw = (f.keyword || '').toLowerCase();
+    var type = (f.type || '').toLowerCase();
+    var statut = (f.statut || '').toLowerCase();
+    var rows = document.querySelectorAll('#page-funding tbody tr');
+    var visible = 0;
+    rows.forEach(function(row) {
+      var txt = row.textContent.toLowerCase();
+      var ok = true;
+      if (kw && txt.indexOf(kw) === -1) ok = false;
+      if (type && txt.indexOf(type) === -1) ok = false;
+      if (statut && txt.indexOf(statut) === -1) ok = false;
+      row.style.display = ok ? '' : 'none';
+      if (ok) visible++;
+    });
+    var subtitle = document.getElementById('funding-subtitle');
+    if (subtitle && (kw || type || statut)) {
+      subtitle.textContent = visible + ' dossier(s) affiché(s) (filtres actifs)';
+    }
+  }
+
+  // ====================================================================
+  // 3. IMPORT CSV CONTACTS
+  // ====================================================================
+  window.ardalosImportCSV = function() {
+    var formHtml =
+      '<div style="padding:12px;background:#fef3c7;border:1px solid #fde68a;border-radius:8px;font-size:12px;color:#92400e;margin-bottom:14px">' +
+        '<strong>Format CSV attendu :</strong> premiere ligne = entetes.<br>' +
+        'Colonnes supportees : prenom, nom, email, telephone, statut, type, source, notes<br>' +
+        '<strong>Exemple :</strong><br>' +
+        '<code style="font-size:11px">prenom,nom,email,telephone<br>Jean,Dupont,jean@ex.com,0612345678</code>' +
+      '</div>' +
+      '<div class="fg"><label class="flabel">Fichier CSV</label>' +
+        '<input class="finput" type="file" id="csv-file" accept=".csv,text/csv"></div>' +
+      '<div id="csv-preview" style="margin-top:10px;display:none;padding:10px;background:#f9fafb;border-radius:6px;font-size:12px;max-height:200px;overflow-y:auto"></div>';
+
+    showForm('Import CSV — Contacts', formHtml, {
+      primaryLabel: 'Importer',
+      onPrimary: async function() {
+        var fileInput = document.getElementById('csv-file');
+        if (!fileInput.files || fileInput.files.length === 0) {
+          throw new Error('Choisis un fichier CSV');
+        }
+        var file = fileInput.files[0];
+        var text = await file.text();
+        var rows = parseCsv(text);
+        if (rows.length < 2) throw new Error('CSV vide ou mal formaté');
+
+        var headers = rows[0].map(function(h) { return h.trim().toLowerCase(); });
+        var allowed = ['prenom', 'nom', 'email', 'telephone', 'statut', 'type', 'source', 'notes'];
+        var headerMap = {};
+        headers.forEach(function(h, i) {
+          // Normaliser accents
+          var clean = h.replace(/é/g, 'e').replace(/è/g, 'e').replace(/ê/g, 'e').replace(/'/g, '').replace(/"/g, '').trim();
+          if (allowed.indexOf(clean) !== -1) headerMap[clean] = i;
+        });
+        if (Object.keys(headerMap).length === 0) {
+          throw new Error('Aucune colonne reconnue. Vérifie les entêtes CSV.');
+        }
+
+        var dataRows = rows.slice(1).filter(function(r) { return r.some(function(c) { return c && c.trim(); }); });
+        var contacts = dataRows.map(function(r) {
+          var c = {};
+          Object.keys(headerMap).forEach(function(k) {
+            var v = (r[headerMap[k]] || '').trim();
+            if (v) c[k] = v;
+          });
+          return c;
+        }).filter(function(c) { return c.prenom || c.nom || c.email; });
+
+        if (contacts.length === 0) throw new Error('Aucun contact valide détecté');
+
+        if (!confirm('Importer ' + contacts.length + ' contact(s) ? Les doublons ne seront PAS fusionnés automatiquement.')) {
+          return;
+        }
+
+        var r = await sb.from('contacts').insert(contacts).select('id');
+        if (r.error) throw r.error;
+        alert('✅ ' + (r.data ? r.data.length : contacts.length) + ' contact(s) importé(s).');
+        closeM('detail');
+        setTimeout(function() { location.reload(); }, 500);
+      }
+    });
+  };
+
+  // Parser CSV basique (gere virgules + quotes)
+  function parseCsv(text) {
+    var rows = [];
+    var row = [];
+    var cur = '';
+    var inQuotes = false;
+    for (var i = 0; i < text.length; i++) {
+      var ch = text[i];
+      if (inQuotes) {
+        if (ch === '"' && text[i+1] === '"') { cur += '"'; i++; }
+        else if (ch === '"') { inQuotes = false; }
+        else { cur += ch; }
+      } else {
+        if (ch === '"') { inQuotes = true; }
+        else if (ch === ',' || ch === ';') { row.push(cur); cur = ''; }
+        else if (ch === '\n') { row.push(cur); rows.push(row); row = []; cur = ''; }
+        else if (ch === '\r') { /* skip */ }
+        else { cur += ch; }
+      }
+    }
+    if (cur.length > 0 || row.length > 0) { row.push(cur); rows.push(row); }
+    return rows;
+  }
+
+  // ====================================================================
+  // 4. EXPORT CSV CONTACTS
+  // ====================================================================
+  window.ardalosExportContacts = async function() {
+    try {
+      var r = await sb.from('contacts').select('*').order('created_at', { ascending: false });
+      if (r.error) throw r.error;
+      var data = r.data || [];
+      if (data.length === 0) { alert('Aucun contact à exporter'); return; }
+
+      var headers = ['prenom', 'nom', 'email', 'telephone', 'statut', 'type', 'source', 'notes', 'created_at'];
+      var rows = [headers.join(',')];
+      data.forEach(function(c) {
+        var vals = headers.map(function(h) {
+          var v = c[h] == null ? '' : String(c[h]);
+          if (v.indexOf(',') !== -1 || v.indexOf('"') !== -1 || v.indexOf('\n') !== -1) {
+            v = '"' + v.replace(/"/g, '""') + '"';
+          }
+          return v;
+        });
+        rows.push(vals.join(','));
+      });
+
+      var csv = rows.join('\n');
+      downloadCsv(csv, 'contacts-ardalos-' + new Date().toISOString().slice(0, 10) + '.csv');
+      alert('✅ ' + data.length + ' contact(s) exporté(s)');
+    } catch(e) {
+      alert('Erreur export : ' + (e.message || 'inconnue'));
+    }
+  };
+
+  // ====================================================================
+  // 5. EXPORT RAPPORT DASHBOARD (CSV multi-sections)
+  // ====================================================================
+  window.ardalosExportDashboard = async function() {
+    try {
+      var cR = await sb.from('contacts').select('*', { count: 'exact', head: true });
+      var iR = await sb.from('formation_inscriptions').select('id, statut, montant_total_ht, created_at');
+      var sR = await sb.from('formation_sessions').select('id, date_debut, date_fin, prix_session_ht');
+      var fR = await sb.from('formation_financements').select('type_financement, montant_ht, statut_dossier');
+
+      var inscriptions = iR.data || [];
+      var sessions = sR.data || [];
+      var finances = fR.data || [];
+
+      var totalContacts = cR.count || 0;
+      var totalInscrits = inscriptions.filter(function(i) { return i.statut !== 'abandon'; }).length;
+      var caPrevu = inscriptions.filter(function(i) { return i.statut !== 'abandon'; }).reduce(function(s, i) { return s + (Number(i.montant_total_ht) || 0); }, 0);
+      var nbSessions = sessions.length;
+
+      var lines = [
+        'RAPPORT ARDALOS - ' + new Date().toLocaleDateString('fr-FR'),
+        '',
+        'INDICATEUR,VALEUR',
+        'Contacts totaux,' + totalContacts,
+        'Inscrits actifs,' + totalInscrits,
+        'CA prévisionnel (€ HT),' + caPrevu,
+        'Sessions totales,' + nbSessions,
+        '',
+        'INSCRIPTIONS PAR STATUT,NOMBRE'
+      ];
+      var byStatut = {};
+      inscriptions.forEach(function(i) { byStatut[i.statut || 'inconnu'] = (byStatut[i.statut || 'inconnu'] || 0) + 1; });
+      Object.keys(byStatut).sort().forEach(function(k) { lines.push(k + ',' + byStatut[k]); });
+
+      lines.push('');
+      lines.push('FINANCEMENTS PAR TYPE,NOMBRE,MONTANT €');
+      var byType = {};
+      finances.forEach(function(f) {
+        var t = f.type_financement || 'inconnu';
+        if (!byType[t]) byType[t] = { n: 0, m: 0 };
+        byType[t].n += 1;
+        byType[t].m += Number(f.montant_ht) || 0;
+      });
+      Object.keys(byType).sort().forEach(function(k) { lines.push(k + ',' + byType[k].n + ',' + byType[k].m); });
+
+      downloadCsv(lines.join('\n'), 'rapport-ardalos-' + new Date().toISOString().slice(0, 10) + '.csv');
+      alert('✅ Rapport téléchargé');
+    } catch(e) {
+      alert('Erreur rapport : ' + (e.message || 'inconnue'));
+    }
+  };
+
+  function downloadCsv(csv, filename) {
+    var blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function() {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
+  }
+
+  // ====================================================================
+  // 6. AIDE (modale guide rapide)
+  // ====================================================================
+  window.ardalosOpenAide = function() {
+    var html =
+      '<div style="font-size:13px;line-height:1.6">' +
+        '<p style="margin-bottom:14px"><strong>Bienvenue dans le CRM Ardalos Formation.</strong> Voici un rappel des principales actions :</p>' +
+
+        '<div class="font-sb" style="margin-bottom:6px;color:#1A2C6B">📊 Navigation</div>' +
+        '<ul style="margin-bottom:14px;padding-left:20px;list-style:disc">' +
+          '<li>La sidebar gauche permet de naviguer entre toutes les sections</li>' +
+          '<li><strong>Cmd+K</strong> ouvre la recherche (en haut au centre)</li>' +
+          '<li><strong>+ Créer</strong> (en haut à droite) ouvre un menu rapide</li>' +
+        '</ul>' +
+
+        '<div class="font-sb" style="margin-bottom:6px;color:#1A2C6B">👥 Contacts &amp; Pipeline</div>' +
+        '<ul style="margin-bottom:14px;padding-left:20px;list-style:disc">' +
+          '<li>Clic sur une ligne → ouvre la fiche détaillée</li>' +
+          '<li>Import CSV : format 8 colonnes (prenom, nom, email, telephone, statut, type, source, notes)</li>' +
+          '<li>Export CSV : tous les contacts</li>' +
+          '<li>Bouton Filtres : filtre les cartes Kanban par mot-clé / badge</li>' +
+        '</ul>' +
+
+        '<div class="font-sb" style="margin-bottom:6px;color:#1A2C6B">📚 Formations &amp; Sessions</div>' +
+        '<ul style="margin-bottom:14px;padding-left:20px;list-style:disc">' +
+          '<li><strong>+ Nouvelle formation</strong> : crée une formation réutilisable</li>' +
+          '<li><strong>+ Nouvelle session</strong> : crée une cohorte attribuée à une formation</li>' +
+          '<li><strong>Dossier pédagogique</strong> (sur Sessions) : voir les docs manquants par apprenant</li>' +
+          '<li><strong>Générer manquants</strong> : télécharge ZIP/PDF ou envoie par email</li>' +
+        '</ul>' +
+
+        '<div class="font-sb" style="margin-bottom:6px;color:#1A2C6B">🎓 Formateurs &amp; Apprenants</div>' +
+        '<ul style="margin-bottom:14px;padding-left:20px;list-style:disc">' +
+          '<li>Fiche formateur : photo, bio, CV téléchargeable, spécialités, sessions animées</li>' +
+          '<li>Boutons Modifier / Supprimer dans la fiche</li>' +
+          '<li>+ Ajouter apprenant : redirige vers /inscriptions (workflow complet)</li>' +
+        '</ul>' +
+
+        '<div class="font-sb" style="margin-bottom:6px;color:#1A2C6B">⚙️ Workflows</div>' +
+        '<ul style="margin-bottom:14px;padding-left:20px;list-style:disc">' +
+          '<li>Templates préfabriqués (Rappel J-7, Satisfaction J+1, Relance AFDAS, etc.)</li>' +
+          '<li>Custom : crée ton propre workflow (déclencheur + action)</li>' +
+          '<li>Ils sont enregistrés en DB. L\'exécution auto (cron) sera branchée après Qualiopi.</li>' +
+        '</ul>' +
+
+        '<div style="padding:10px 12px;background:#eff6ff;border-left:3px solid #1A2C6B;border-radius:4px;font-size:12px;color:#1e40af">' +
+          '💡 <strong>Feedback / bug ?</strong> Contacte le support technique.<br>' +
+          'CRM Ardalos v2.0 · Session ' + new Date().toLocaleDateString('fr-FR') +
+        '</div>' +
+      '</div>';
+
+    showForm('Aide — Guide rapide CRM', html, { showFooter: true });
+  };
+
+  // ====================================================================
+  // 7. PAGINATION CONTACTS (client-side, 50 par page)
+  // ====================================================================
+  window.__ardalosContactsPage = 0;
+  var PAGE_SIZE = 50;
+
+  function applyContactsPagination() {
+    var tbody = document.getElementById('contacts-tbody');
+    if (!tbody) return;
+    var rows = tbody.querySelectorAll('tr');
+    // Ne pagine que si on a de vraies rows (pas le message "Chargement...")
+    if (rows.length <= 1) return;
+
+    var pg = window.__ardalosContactsPage || 0;
+    var total = rows.length;
+    var nbPages = Math.ceil(total / PAGE_SIZE);
+    if (pg >= nbPages) pg = nbPages - 1;
+    if (pg < 0) pg = 0;
+    window.__ardalosContactsPage = pg;
+
+    var start = pg * PAGE_SIZE;
+    var end = start + PAGE_SIZE;
+
+    // Utilise notre propre classe pour ne pas conflicter avec d'autres show/hide
+    rows.forEach(function(row, i) {
+      if (i >= start && i < end) {
+        row.classList.remove('ard-paginated-hidden');
+      } else {
+        row.classList.add('ard-paginated-hidden');
+      }
+    });
+
+    // Update footer
+    var footer = document.getElementById('contacts-pagination');
+    if (footer) {
+      footer.textContent = (start + 1) + '–' + Math.min(end, total) + ' sur ' + total + ' (page ' + (pg + 1) + '/' + nbPages + ')';
+    }
+    var prevBtn = document.getElementById('contacts-pg-prev');
+    var nextBtn = document.getElementById('contacts-pg-next');
+    if (prevBtn) prevBtn.disabled = (pg === 0);
+    if (nextBtn) nextBtn.disabled = (pg >= nbPages - 1);
+  }
+
+  // Injecte le style pour cacher les rows paginees
+  var pgStyle = document.createElement('style');
+  pgStyle.textContent = '.ard-paginated-hidden { display: none !important; }';
+  document.head.appendChild(pgStyle);
+
+  window.ardalosContactsPrev = function() {
+    window.__ardalosContactsPage = (window.__ardalosContactsPage || 0) - 1;
+    applyContactsPagination();
+  };
+  window.ardalosContactsNext = function() {
+    window.__ardalosContactsPage = (window.__ardalosContactsPage || 0) + 1;
+    applyContactsPagination();
+  };
+
+  // MutationObserver : quand loadContacts() rend le tbody, on applique la pagination
+  function initContactsPagination() {
+    var tbody = document.getElementById('contacts-tbody');
+    if (!tbody) return;
+    var observer = new MutationObserver(function() {
+      // reset page au 1er render
+      window.__ardalosContactsPage = 0;
+      applyContactsPagination();
+    });
+    observer.observe(tbody, { childList: true });
+    // Au cas ou le render a deja eu lieu
+    applyContactsPagination();
+  }
+
+  function init() {
+    initContactsPagination();
+    console.log('[Livraison 1a] init OK');
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+
+<!-- === FIX Rapport Dashboard : HTML stylise Ardalos === -->
+<script>
+(function() {
+  var SUPABASE_URL = 'https://cvxzdiutxonnsnwoicqt.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_J8ta-7L05zgK9rBy2OS9Bg_CjXHwZVK';
+  var sb;
+  try {
+    if (window.supabase && typeof window.supabase.createClient === 'function') {
+      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    }
+  } catch(e) { sb = null; }
+  if (!sb) return;
+
+  function escHtml(s) {
+    if (s == null) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+  function fmtEur(n) {
+    n = Number(n) || 0;
+    return n.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
+  }
+  function fmtDate(s) {
+    if (!s) return '';
+    return new Date(s).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  // Ecrase la fonction du Sprint 4 (init 1a) pour generer du HTML au lieu de CSV
+  window.ardalosExportDashboard = async function() {
+    try {
+      var btn = document.querySelector('[onclick*="ardalosExportDashboard"]');
+      var btnLabel = btn ? btn.textContent : '';
+      if (btn) { btn.disabled = true; btn.textContent = 'Génération...'; }
+
+      var cR = await sb.from('contacts').select('*', { count: 'exact', head: true });
+      var iR = await sb.from('formation_inscriptions').select('id, statut, montant_total_ht, created_at, contact_id');
+      var sR = await sb.from('formation_sessions').select('id, date_debut, date_fin, prix_session_ht, formations(titre)').order('date_debut');
+      var fR = await sb.from('formation_financements').select('type_financement, montant_ht, statut_dossier');
+      var fmtR = await sb.from('formateurs').select('id').eq('actif', true);
+      var focR = await sb.from('formations').select('id, titre');
+
+      var totalContacts = cR.count || 0;
+      var inscriptions = iR.data || [];
+      var sessions = sR.data || [];
+      var finances = fR.data || [];
+
+      var inscrActifs = inscriptions.filter(function(i) { return i.statut !== 'abandon' && i.statut !== 'annule'; });
+      var caPrevu = inscrActifs.reduce(function(s, i) { return s + (Number(i.montant_total_ht) || 0); }, 0);
+
+      // Statut inscriptions
+      var byStatut = {};
+      inscriptions.forEach(function(i) { byStatut[i.statut || 'inconnu'] = (byStatut[i.statut || 'inconnu'] || 0) + 1; });
+
+      // Financements par type
+      var byType = {};
+      finances.forEach(function(f) {
+        var t = f.type_financement || 'Non specifie';
+        if (!byType[t]) byType[t] = { n: 0, m: 0, accords: 0, refus: 0 };
+        byType[t].n += 1;
+        byType[t].m += Number(f.montant_ht) || 0;
+        if (f.statut_dossier === 'accord') byType[t].accords += 1;
+        if (f.statut_dossier === 'refus') byType[t].refus += 1;
+      });
+
+      // Sessions a venir
+      var now = new Date();
+      var sessionsAVenir = sessions.filter(function(s) { return new Date(s.date_debut) >= now; });
+      var sessionsPassees = sessions.filter(function(s) { return new Date(s.date_debut) < now; });
+
+      // Genere le HTML
+      var html = buildReportHtml({
+        totalContacts: totalContacts,
+        inscrActifs: inscrActifs.length,
+        inscrTotal: inscriptions.length,
+        caPrevu: caPrevu,
+        nbSessions: sessions.length,
+        sessionsAVenir: sessionsAVenir.length,
+        sessionsPassees: sessionsPassees.length,
+        nbFormateursActifs: (fmtR.data || []).length,
+        nbFormations: (focR.data || []).length,
+        byStatut: byStatut,
+        byType: byType,
+        sessionsListe: sessions
+      });
+
+      var w = window.open('', '_blank');
+      if (!w) {
+        alert('Impossible d\'ouvrir un nouvel onglet. Autorise les popups pour ce site.');
+        if (btn) { btn.disabled = false; btn.textContent = btnLabel; }
+        return;
+      }
+      w.document.open();
+      w.document.write(html);
+      w.document.close();
+
+      if (btn) { btn.disabled = false; btn.textContent = btnLabel; }
+    } catch(e) {
+      alert('Erreur rapport : ' + (e.message || 'inconnue'));
+      console.error('[Rapport]', e);
+    }
+  };
+
+  function buildReportHtml(d) {
+    var NAVY = '#1A2C6B';
+    var GOLD = '#C9A84C';
+    var dateStr = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+
+    // Statut rows
+    var statutRows = Object.keys(d.byStatut).sort().map(function(k) {
+      return '<tr><td style="text-transform:capitalize">' + escHtml(k) + '</td><td style="text-align:right;font-weight:600">' + d.byStatut[k] + '</td></tr>';
+    }).join('');
+    if (!statutRows) statutRows = '<tr><td colspan="2" style="text-align:center;color:#9ca3af">Aucune inscription</td></tr>';
+
+    // Financement rows
+    var finRows = Object.keys(d.byType).sort().map(function(k) {
+      var t = d.byType[k];
+      return '<tr>' +
+        '<td><strong>' + escHtml(k) + '</strong></td>' +
+        '<td style="text-align:right">' + t.n + '</td>' +
+        '<td style="text-align:right;color:' + NAVY + ';font-weight:600">' + fmtEur(t.m) + '</td>' +
+        '<td style="text-align:center;color:#16a34a">' + t.accords + '</td>' +
+        '<td style="text-align:center;color:#dc2626">' + t.refus + '</td>' +
+      '</tr>';
+    }).join('');
+    if (!finRows) finRows = '<tr><td colspan="5" style="text-align:center;color:#9ca3af">Aucun dossier de financement</td></tr>';
+
+    // Sessions rows (10 prochaines)
+    var sessRows = (d.sessionsListe || []).slice(0, 10).map(function(s) {
+      var titre = s.formations && s.formations.titre ? s.formations.titre : 'Formation';
+      var now = new Date();
+      var debut = new Date(s.date_debut);
+      var statut = debut >= now ? 'À venir' : 'Passée';
+      var color = debut >= now ? '#16a34a' : '#9ca3af';
+      return '<tr>' +
+        '<td>' + fmtDate(s.date_debut) + '</td>' +
+        '<td>' + fmtDate(s.date_fin) + '</td>' +
+        '<td>' + escHtml(titre.slice(0, 55)) + '</td>' +
+        '<td style="text-align:right">' + fmtEur(Number(s.prix_session_ht) || 0) + '</td>' +
+        '<td style="text-align:center"><span style="display:inline-block;padding:2px 8px;background:' + color + '22;color:' + color + ';border-radius:3px;font-size:11px;font-weight:600">' + statut + '</span></td>' +
+      '</tr>';
+    }).join('');
+    if (!sessRows) sessRows = '<tr><td colspan="5" style="text-align:center;color:#9ca3af">Aucune session</td></tr>';
+
+    return [
+'<!DOCTYPE html>',
+'<html lang="fr"><head><meta charset="UTF-8">',
+'<title>Rapport Ardalos — ' + dateStr + '</title>',
+'<style>',
+'  @page { size: A4; margin: 15mm; }',
+'  * { margin:0; padding:0; box-sizing:border-box; }',
+'  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; color:#111827; background:#f9fafb; line-height:1.5; }',
+'  .page { max-width:210mm; margin:20px auto; background:#fff; padding:32px 40px; box-shadow:0 4px 20px rgba(0,0,0,.08); }',
+'  @media print { body{background:#fff} .page{margin:0; box-shadow:none; max-width:100%; padding:0} .no-print{display:none!important} }',
+'  .hdr { display:flex; justify-content:space-between; align-items:flex-start; padding-bottom:18px; border-bottom:3px solid ' + NAVY + '; margin-bottom:24px; }',
+'  .hdr-left h1 { color:' + NAVY + '; font-size:26px; font-weight:800; letter-spacing:-0.5px; }',
+'  .hdr-left .sub { color:#6b7280; font-size:13px; margin-top:4px; }',
+'  .hdr-right { text-align:right; color:' + NAVY + '; font-weight:700; font-size:13px; }',
+'  .hdr-right .accent { color:' + GOLD + '; }',
+'  .kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:28px; }',
+'  .kpi { border:1px solid #e5e7eb; border-top:4px solid ' + NAVY + '; padding:14px 16px; border-radius:6px; background:#fff; }',
+'  .kpi-label { font-size:11px; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px; font-weight:600; }',
+'  .kpi-value { font-size:26px; color:' + NAVY + '; font-weight:800; margin-top:4px; }',
+'  .kpi-sub { font-size:11px; color:#9ca3af; margin-top:2px; }',
+'  .kpi.gold { border-top-color:' + GOLD + '; }',
+'  .kpi.gold .kpi-value { color:' + GOLD + '; }',
+'  .section { margin-top:28px; }',
+'  .section-title { color:' + NAVY + '; font-size:15px; font-weight:700; margin-bottom:12px; padding-bottom:6px; border-bottom:1px solid #e5e7eb; display:flex; align-items:center; gap:8px; }',
+'  .section-title::before { content:""; display:inline-block; width:4px; height:16px; background:' + GOLD + '; border-radius:2px; }',
+'  table { width:100%; border-collapse:collapse; font-size:12px; background:#fff; border:1px solid #e5e7eb; border-radius:6px; overflow:hidden; }',
+'  th { background:' + NAVY + '; color:#fff; text-align:left; padding:10px 12px; font-size:11px; text-transform:uppercase; letter-spacing:0.3px; font-weight:600; }',
+'  td { padding:9px 12px; border-bottom:1px solid #f3f4f6; }',
+'  tr:last-child td { border-bottom:0; }',
+'  tr:nth-child(even) td { background:#fafafa; }',
+'  .cols-2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; }',
+'  .footer { margin-top:40px; padding-top:16px; border-top:1px solid #e5e7eb; display:flex; justify-content:space-between; color:#9ca3af; font-size:11px; }',
+'  .btn-print { position:fixed; top:16px; right:16px; background:' + NAVY + '; color:#fff; border:0; padding:10px 18px; border-radius:6px; cursor:pointer; font-weight:600; font-size:12px; box-shadow:0 4px 12px rgba(26,44,107,0.3); }',
+'  .btn-print:hover { background:#0f1d4a; }',
+'</style></head><body>',
+
+'<button class="btn-print no-print" onclick="window.print()">🖨 Imprimer / Enregistrer en PDF</button>',
+
+'<div class="page">',
+'  <div class="hdr">',
+'    <div class="hdr-left">',
+'      <h1>ARDALOS <span style="color:' + GOLD + '">FORMATION</span></h1>',
+'      <div class="sub">Rapport de pilotage · Vue consolidée Groupe</div>',
+'    </div>',
+'    <div class="hdr-right">',
+'      <div>Édité le <span class="accent">' + dateStr + '</span></div>',
+'      <div style="margin-top:3px;font-size:11px;color:#9ca3af;font-weight:500">SIRET 993 094 085 00017 · NDA 93132464513</div>',
+'    </div>',
+'  </div>',
+
+'  <div class="kpi-grid">',
+'    <div class="kpi"><div class="kpi-label">Contacts</div><div class="kpi-value">' + d.totalContacts + '</div><div class="kpi-sub">dans la base CRM</div></div>',
+'    <div class="kpi"><div class="kpi-label">Inscrits actifs</div><div class="kpi-value">' + d.inscrActifs + '</div><div class="kpi-sub">sur ' + d.inscrTotal + ' au total</div></div>',
+'    <div class="kpi gold"><div class="kpi-label">CA prévisionnel</div><div class="kpi-value">' + fmtEur(d.caPrevu) + '</div><div class="kpi-sub">HT engagé</div></div>',
+'    <div class="kpi"><div class="kpi-label">Sessions</div><div class="kpi-value">' + d.nbSessions + '</div><div class="kpi-sub">' + d.sessionsAVenir + ' à venir</div></div>',
+'  </div>',
+
+'  <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr)">',
+'    <div class="kpi"><div class="kpi-label">Formateurs actifs</div><div class="kpi-value">' + d.nbFormateursActifs + '</div></div>',
+'    <div class="kpi"><div class="kpi-label">Formations au catalogue</div><div class="kpi-value">' + d.nbFormations + '</div></div>',
+'    <div class="kpi"><div class="kpi-label">Sessions passées</div><div class="kpi-value">' + d.sessionsPassees + '</div></div>',
+'  </div>',
+
+'  <div class="cols-2 section">',
+'    <div>',
+'      <div class="section-title">Inscriptions par statut</div>',
+'      <table><thead><tr><th>Statut</th><th style="text-align:right">Nombre</th></tr></thead><tbody>' + statutRows + '</tbody></table>',
+'    </div>',
+'    <div>',
+'      <div class="section-title">Financements par type</div>',
+'      <table><thead><tr><th>Type</th><th style="text-align:right">Dossiers</th><th style="text-align:right">Montant</th><th style="text-align:center">✓</th><th style="text-align:center">✕</th></tr></thead><tbody>' + finRows + '</tbody></table>',
+'    </div>',
+'  </div>',
+
+'  <div class="section">',
+'    <div class="section-title">Calendrier des 10 prochaines sessions</div>',
+'    <table><thead><tr><th>Début</th><th>Fin</th><th>Formation</th><th style="text-align:right">Prix HT</th><th style="text-align:center">Statut</th></tr></thead><tbody>' + sessRows + '</tbody></table>',
+'  </div>',
+
+'  <div class="footer">',
+'    <div><strong style="color:' + NAVY + '">ARDALOS FORMATION SAS</strong> · Martigues (13) · Qualiopi en cours</div>',
+'    <div>Édité par le CRM Ardalos v2.0</div>',
+'  </div>',
+'</div>',
+
+'</body></html>'
+    ].join('\n');
+  }
+
+  console.log('[Fix Rapport Dashboard] HTML stylise Ardalos charge');
+})();
+</script>
+
+<!-- === FIX A+B+C+D+E : Elimination des bugs mocks === -->
+<script>
+(function() {
+  var SUPABASE_URL = 'https://cvxzdiutxonnsnwoicqt.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_J8ta-7L05zgK9rBy2OS9Bg_CjXHwZVK';
+  var sb;
+  try {
+    if (window.supabase && typeof window.supabase.createClient === 'function') {
+      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    }
+  } catch(e) { sb = null; }
+  if (!sb) { console.warn('[Fix A-E] Supabase non dispo'); return; }
+
+  function esc(s) {
+    if (s == null) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+  function closeM(n) { var el = document.getElementById('modal-' + n); if (el) el.classList.remove('open'); }
+  function openM(n) { var el = document.getElementById('modal-' + n); if (el) el.classList.add('open'); }
+
+  // ====================================================================
+  // FIX A : Sauvegarder un nouveau contact
+  // ====================================================================
+  window.ardalosSaveContact = async function() {
+    var btn = event && event.target;
+    var origLabel = btn ? btn.textContent : 'Créer le contact';
+    try {
+      var prenom = (document.getElementById('nc-prenom').value || '').trim();
+      var nom = (document.getElementById('nc-nom').value || '').trim();
+      var email = (document.getElementById('nc-email').value || '').trim();
+      if (!prenom || !nom || !email) {
+        alert('Prénom, nom et email sont obligatoires');
+        return;
+      }
+      if (btn) { btn.disabled = true; btn.textContent = 'Enregistrement...'; }
+
+      var data = {
+        prenom: prenom,
+        nom: nom,
+        email: email,
+        telephone: (document.getElementById('nc-tel').value || '').trim() || null,
+        type: document.getElementById('nc-type').value || null,
+        source: document.getElementById('nc-source').value || null,
+        statut: document.getElementById('nc-statut').value || 'Lead',
+        afdas_categorie: document.getElementById('nc-afdas').value || null,
+        notes: (document.getElementById('nc-notes').value || '').trim() || null
+      };
+      // Commercial assigne : on le stocke dans notes pour l'instant (pas de colonne dediee)
+      var com = document.getElementById('nc-commercial').value;
+      if (com) {
+        data.notes = (data.notes ? data.notes + ' | ' : '') + 'Commercial : ' + com;
+      }
+
+      var r = await sb.from('contacts').insert(data).select().single();
+      if (r.error) throw r.error;
+
+      alert('✅ Contact créé : ' + prenom + ' ' + nom);
+      closeM('new-contact');
+      setTimeout(function() { location.reload(); }, 500);
+    } catch(e) {
+      alert('Erreur : ' + (e.message || 'inconnue'));
+      if (btn) { btn.disabled = false; btn.textContent = origLabel; }
+    }
+  };
+
+  // ====================================================================
+  // FIX B : Generer document (vraie API)
+  // ====================================================================
+  window.ardalosGenererDoc = async function() {
+    try {
+      // Charger les inscriptions pour peupler le select
+      var r = await sb.from('formation_inscriptions')
+        .select('id, contact:contacts(prenom, nom), session:formation_sessions(date_debut, formation:formations(titre))')
+        .order('created_at', { ascending: false })
+        .limit(30);
+
+      if (r.error) throw r.error;
+      var inscriptions = r.data || [];
+      if (inscriptions.length === 0) {
+        alert('Aucune inscription en base. Crée-en une depuis /inscriptions.');
+        return;
+      }
+
+      // Construit une modale propre via detail-modal
+      var titleEl = document.getElementById('detail-modal-title');
+      var bodyEl = document.getElementById('detail-modal-body');
+      if (!titleEl || !bodyEl) {
+        alert('Modale generique indisponible');
+        return;
+      }
+
+      closeM('gen-doc');
+
+      var opts = inscriptions.map(function(i) {
+        var c = i.contact || {};
+        var s = i.session || {};
+        var f = s.formation || {};
+        var label = (c.prenom || '?') + ' ' + (c.nom || '?') +
+          ' — ' + (f.titre || 'Formation').slice(0, 40) +
+          (s.date_debut ? ' (' + new Date(s.date_debut).toLocaleDateString('fr-FR') + ')' : '');
+        return '<option value="' + i.id + '">' + esc(label) + '</option>';
+      }).join('');
+
+      titleEl.textContent = 'Générer un document — Dossier pédagogique';
+      bodyEl.innerHTML =
+        '<div class="fg"><label class="flabel">Inscription / Apprenant <span class="req">*</span></label>' +
+          '<select class="fselect" id="gd-inscription">' + opts + '</select></div>' +
+        '<div class="fg"><label class="flabel">Format de sortie</label>' +
+          '<div style="display:flex;gap:16px">' +
+            '<label><input type="radio" name="gd-fmt" value="pdf" checked> PDF fusionné</label>' +
+            '<label><input type="radio" name="gd-fmt" value="zip"> ZIP (docs séparés)</label>' +
+          '</div></div>' +
+        '<div style="background:#eff6ff;border:1px solid #bfdbfe;padding:10px 12px;border-radius:6px;font-size:12px;color:#1e40af">' +
+          'Le dossier complet (10 documents Qualiopi) sera généré depuis les données de l\'inscription sélectionnée.' +
+        '</div>' +
+        '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid #e5e7eb">' +
+          '<button class="btn-s" onclick="document.getElementById(\'modal-detail\').classList.remove(\'open\')">Annuler</button>' +
+          '<button class="btn-p" id="gd-go">Télécharger</button>' +
+        '</div>' +
+        '<div id="gd-err" style="margin-top:10px;color:#dc2626;font-size:12px;display:none"></div>';
+
+      var goBtn = document.getElementById('gd-go');
+      goBtn.onclick = function() {
+        var inscriptionId = document.getElementById('gd-inscription').value;
+        var fmt = document.querySelector('input[name="gd-fmt"]:checked').value;
+        if (!inscriptionId) return;
+        var url = '/api/generate-dossier?inscriptionId=' + encodeURIComponent(inscriptionId) + '&format=' + fmt;
+        window.open(url, '_blank');
+        closeM('detail');
+      };
+
+      openM('detail');
+    } catch(e) {
+      alert('Erreur : ' + (e.message || 'inconnue'));
+    }
+  };
+
+  // ====================================================================
+  // FIX C : Envoyer un email (depuis contact-detail)
+  // ====================================================================
+  window.ardalosEnvoyerEmailContact = function() {
+    // Chercher l'email dans la modale contact-detail ouverte
+    var modal = document.getElementById('modal-contact-detail');
+    var email = null;
+    var nom = 'contact';
+    if (modal) {
+      var mailto = modal.querySelector('a[href^="mailto:"]');
+      if (mailto) {
+        email = mailto.getAttribute('href').replace(/^mailto:/, '').split('?')[0];
+      }
+      var titleEl = modal.querySelector('.modal-title');
+      if (titleEl) nom = titleEl.textContent.trim();
+    }
+    if (!email) {
+      email = prompt('Email du destinataire :');
+      if (!email) return;
+    }
+
+    var subject = 'ARDALOS Formation — Contact';
+    var body = 'Bonjour,\n\n[Votre message ici]\n\nCordialement,\nÉquipe Ardalos Formation\n--\nARDALOS FORMATION SAS\nSIRET 993 094 085 00017 — NDA 93132464513';
+
+    var cc = 'ardalosformation@gmail.com';
+    var url = 'mailto:' + encodeURIComponent(email) +
+      '?cc=' + encodeURIComponent(cc) +
+      '&subject=' + encodeURIComponent(subject) +
+      '&body=' + encodeURIComponent(body);
+    window.location.href = url;
+  };
+
+  // ====================================================================
+  // FIX D : Dossier-detail dynamique + Marquer a risque + Relance email
+  // ====================================================================
+  window.__ardalosDossierCourant = null;  // garde le dossier actuellement ouvert
+
+  // Ouvre la modale dossier-detail avec les vraies donnees d'une inscription
+  window.ardalosOpenDossierReel = async function(inscriptionId) {
+    try {
+      if (!inscriptionId) return;
+
+      // Charge l'inscription + contact + session + financement
+      var r = await sb.from('formation_inscriptions')
+        .select('*, contact:contacts(*), session:formation_sessions(*, formation:formations(*)), financements:formation_financements(*)')
+        .eq('id', inscriptionId)
+        .single();
+      if (r.error) throw r.error;
+      var ins = r.data;
+      var contact = ins.contact || {};
+      var fin = (ins.financements && ins.financements[0]) || {};
+
+      window.__ardalosDossierCourant = {
+        inscriptionId: inscriptionId,
+        contactEmail: contact.email,
+        contactNom: (contact.prenom || '') + ' ' + (contact.nom || ''),
+        financementId: fin.id,
+        aRisque: fin.a_risque === true,
+        refDossier: fin.reference_dossier || 'N/A'
+      };
+
+      // Update la modale dossier-detail
+      var modal = document.getElementById('modal-dossier-detail');
+      if (!modal) {
+        alert('Modale dossier-detail non trouvee');
+        return;
+      }
+      var titleEl = modal.querySelector('.modal-title');
+      if (titleEl) titleEl.textContent = (fin.reference_dossier || 'DOSS-' + inscriptionId.slice(0, 8)) + ' · ' + window.__ardalosDossierCourant.contactNom;
+
+      // Update le bouton "Marquer a risque" selon l'etat actuel
+      var markBtn = modal.querySelector('.btn-danger');
+      if (markBtn) {
+        markBtn.textContent = window.__ardalosDossierCourant.aRisque ? '✓ Marqué à risque — Annuler' : 'Marquer à risque';
+      }
+
+      openM('dossier-detail');
+    } catch(e) {
+      alert('Erreur chargement dossier : ' + (e.message || 'inconnue'));
+    }
+  };
+
+  window.ardalosMarquerRisque = async function() {
+    var ctx = window.__ardalosDossierCourant;
+    if (!ctx) {
+      alert('Ouvre d\'abord un dossier depuis la page Dossiers (clic sur une ligne du tableau).');
+      return;
+    }
+    if (!ctx.financementId) {
+      alert('Cette inscription n\'a pas encore de dossier de financement. Crée-en un depuis /inscriptions.');
+      return;
+    }
+    var newVal = !ctx.aRisque;
+    var action = newVal ? 'MARQUER comme à risque' : 'RETIRER le statut à risque de';
+    if (!confirm(action + ' le dossier ' + ctx.refDossier + ' ?')) return;
+
+    try {
+      var r = await sb.from('formation_financements')
+        .update({ a_risque: newVal, updated_at: new Date().toISOString() })
+        .eq('id', ctx.financementId);
+      if (r.error) throw r.error;
+      ctx.aRisque = newVal;
+      alert(newVal ? '⚠ Dossier marqué à risque' : '✓ Statut à risque retiré');
+      closeM('dossier-detail');
+      setTimeout(function() { location.reload(); }, 500);
+    } catch(e) {
+      alert('Erreur : ' + (e.message || 'inconnue'));
+    }
+  };
+
+  window.ardalosEnvoyerRelance = function() {
+    var ctx = window.__ardalosDossierCourant;
+    if (!ctx || !ctx.contactEmail) {
+      alert('Aucun contact/email associé à ce dossier. Vérifie l\'inscription.');
+      return;
+    }
+    var subject = 'Relance — ' + ctx.refDossier + ' — Pièces manquantes';
+    var body = 'Bonjour ' + ctx.contactNom + ',\n\n' +
+      'Je reviens vers vous concernant votre dossier de financement ' + ctx.refDossier + '.\n\n' +
+      'Pour finaliser votre dossier dans les délais, nous avons besoin de [préciser les pièces manquantes].\n\n' +
+      'Merci de nous les transmettre dès que possible par retour de mail.\n\n' +
+      'Cordialement,\nÉquipe Ardalos Formation\n\n--\n' +
+      'ARDALOS FORMATION SAS — SIRET 993 094 085 00017 — NDA 93132464513';
+
+    var cc = 'ardalosformation@gmail.com';
+    var url = 'mailto:' + encodeURIComponent(ctx.contactEmail) +
+      '?cc=' + encodeURIComponent(cc) +
+      '&subject=' + encodeURIComponent(subject) +
+      '&body=' + encodeURIComponent(body);
+    window.location.href = url;
+  };
+
+  // Attacher l'ouverture dossier-detail sur les rows du tableau funding
+  function attachFundingRowClick() {
+    var tbody = document.getElementById('funding-tbody');
+    if (!tbody) return;
+    var observer = new MutationObserver(function() {
+      var rows = tbody.querySelectorAll('tr[data-inscription-id], tr[data-id]');
+      rows.forEach(function(row) {
+        if (row.__ardalosBound) return;
+        row.__ardalosBound = true;
+        var id = row.getAttribute('data-inscription-id') || row.getAttribute('data-id');
+        if (!id) return;
+        row.style.cursor = 'pointer';
+        row.addEventListener('click', function(e) {
+          if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A') return;
+          window.ardalosOpenDossierReel(id);
+        });
+      });
+    });
+    observer.observe(tbody, { childList: true, subtree: true });
+  }
+
+  function init() {
+    attachFundingRowClick();
+    console.log('[Fix A+B+C+D+E] init OK');
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 })();
 </script>
 </body>
