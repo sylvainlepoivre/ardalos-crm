@@ -107,7 +107,7 @@ function HomeContent() {
 
         {/* HEADER */}
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <img src="/img/ardalos-logo-full.png?v=3" alt="Ardalos Formation" style={{ width: '160px', height: 'auto', margin: '0 auto 12px', display: 'block' }} />
+          <img src="/img/ardalos-logo-full.png" alt="Ardalos Formation" style={{ width: '160px', height: 'auto', margin: '0 auto 12px', display: 'block' }} />
           <h1 style={{ fontSize: '1.6rem', color: BLEU, margin: 0, fontWeight: 700 }}>Ardalos CRM</h1>
           <p style={{ color: '#6b7280', margin: '4px 0 0 0', fontSize: '13px' }}>Gestion complète Qualiopi / AFDAS</p>
         </div>

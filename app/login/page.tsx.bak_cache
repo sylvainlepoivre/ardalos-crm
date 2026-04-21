@@ -16,7 +16,7 @@ export default function Login() {
     <div style={{minHeight:'100vh',background:'#F3F4F8',display:'flex',alignItems:'center',justifyContent:'center'}}>
       <div style={{background:'#fff',borderRadius:'16px',padding:'40px',width:'100%',maxWidth:'380px',boxShadow:'0 4px 24px rgba(26,44,107,.1)'}}>
         <div style={{textAlign:'center',marginBottom:'32px'}}>
-          <img src="/img/ardalos-logo-full.png?v=3" alt="Ardalos Formation" style={{width:'140px',height:'auto',margin:'0 auto 16px',display:'block'}} />
+          <img src="/img/ardalos-logo-full.png" alt="Ardalos Formation" style={{width:'140px',height:'auto',margin:'0 auto 16px',display:'block'}} />
           <h1 style={{fontSize:'1.4rem',color:'#1A2C6B',marginBottom:'4px'}}>Ardalos CRM</h1>
           <p style={{fontSize:'13px',color:'#9ca3af'}}>Connectez-vous à votre espace</p>
         </div>
