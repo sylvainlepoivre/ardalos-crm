@@ -1129,7 +1129,7 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
 <div id="page-documents" class="page">
   <div class="page-hdr">
     <div class="page-hdr-left"><h1 class="page-title">Documents & Modèles</h1><p class="page-sub" id="docs-subtitle">Chargement...</p></div>
-    <div class="page-hdr-right"><button class="btn-s">Import modèle</button><button class="btn-p" onclick="window.ardalosNewTemplate && window.ardalosNewTemplate()">+ Nouveau modèle</button></div>
+    <div class="page-hdr-right"><button class="btn-s" onclick="window.ardalosImportTemplate && window.ardalosImportTemplate()">Import modèle</button><button class="btn-p" onclick="window.ardalosNewTemplate && window.ardalosNewTemplate()">+ Nouveau modèle</button></div>
   </div>
   <div class="card" style="margin-bottom:14px" id="docs-history-card">
     <div class="card-h"><span class="card-title">Historique generations recentes</span><span class="text-xs text-muted" id="docs-history-count">Chargement...</span></div>
@@ -7915,6 +7915,536 @@ document.getElementById('global-search').addEventListener('keyup', function(e) {
   } else {
     init();
   }
+})();
+</script>
+
+
+
+
+
+<!-- === FIX v3 : Import modele + Docs 3 poles avec import contextuel === -->
+<script>
+(function() {
+  var SUPABASE_URL = 'https://cvxzdiutxonnsnwoicqt.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_J8ta-7L05zgK9rBy2OS9Bg_CjXHwZVK';
+  var BUCKET = 'document-templates';
+  var sb;
+  try {
+    if (window.supabase && typeof window.supabase.createClient === 'function') {
+      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    }
+  } catch(e) { sb = null; }
+  if (!sb) { console.warn('[Docs v3] Supabase non dispo'); return; }
+
+  // Pole actif par defaut
+  window.__ardalosPoleActif = 'formation';
+
+  function esc(s) {
+    if (s == null) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+  function fmtD(d) {
+    if (!d) return '—';
+    try { return new Date(d).toLocaleDateString('fr-FR'); } catch(e) { return d; }
+  }
+  function closeM(n) { var el = document.getElementById('modal-' + n); if (el) el.classList.remove('open'); }
+  function openM(n) { var el = document.getElementById('modal-' + n); if (el) el.classList.add('open'); }
+
+  function poleLabel(pole) {
+    return pole === 'formation' ? '📚 Formation' :
+           pole === 'entreprise' ? '🏢 Entreprise' :
+           '📁 Autres';
+  }
+
+  // Detection auto du type via nom de fichier
+  function detectType(filename) {
+    var n = filename.toLowerCase();
+    if (/convention/.test(n)) return 'convention';
+    if (/programme/.test(n)) return 'programme';
+    if (/facture/.test(n)) return 'facture';
+    if (/devis/.test(n)) return 'devis';
+    if (/attestation/.test(n)) return 'attestation';
+    if (/emargement|feuille/.test(n)) return 'emargement';
+    if (/questionnaire|satisfaction|evaluation/.test(n)) return 'questionnaire';
+    if (/reglement|interieur/.test(n)) return 'reglement_interieur';
+    return 'autre';
+  }
+
+  function sanitizePath(filename) {
+    return filename.toLowerCase().replace(/[^a-z0-9.\-_]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+  }
+
+  function loadJSZip() {
+    if (window.JSZip) return Promise.resolve(window.JSZip);
+    return new Promise(function(resolve, reject) {
+      var s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+      s.onload = function() { resolve(window.JSZip); };
+      s.onerror = function() { reject(new Error('Impossible de charger JSZip')); };
+      document.head.appendChild(s);
+    });
+  }
+
+  function parseCsv(text) {
+    var rows = [], row = [], cur = '', inQ = false;
+    for (var i = 0; i < text.length; i++) {
+      var ch = text[i];
+      if (inQ) {
+        if (ch === '"' && text[i+1] === '"') { cur += '"'; i++; }
+        else if (ch === '"') { inQ = false; }
+        else { cur += ch; }
+      } else {
+        if (ch === '"') { inQ = true; }
+        else if (ch === ',' || ch === ';') { row.push(cur); cur = ''; }
+        else if (ch === '\n') { row.push(cur); rows.push(row); row = []; cur = ''; }
+        else if (ch === '\r') {}
+        else { cur += ch; }
+      }
+    }
+    if (cur.length > 0 || row.length > 0) { row.push(cur); rows.push(row); }
+    return rows;
+  }
+
+  // ===================================================================
+  // MODALE IMPORT (avec pole contextuel)
+  // ===================================================================
+  window.ardalosImportTemplate = function() {
+    var titleEl = document.getElementById('detail-modal-title');
+    var bodyEl = document.getElementById('detail-modal-body');
+    if (!titleEl || !bodyEl) { alert('Modale indisponible'); return; }
+
+    var pole = window.__ardalosPoleActif || 'formation';
+
+    titleEl.textContent = 'Import de modèles dans ' + poleLabel(pole);
+    bodyEl.innerHTML =
+      '<div style="padding:10px 14px;background:#1A2C6B;color:#fff;border-radius:8px;font-size:13px;margin-bottom:14px">' +
+        '<strong>Pôle de destination :</strong> ' + poleLabel(pole) + '<br>' +
+        '<span style="font-size:11px;opacity:0.9">Les fichiers importés apparaîtront dans cet onglet. Pour changer, ferme cette modale et clique sur un autre onglet.</span>' +
+      '</div>' +
+      '<div style="display:flex;gap:4px;margin-bottom:14px;border-bottom:1px solid #e5e7eb">' +
+        '<button id="tab-upload" class="btn-p" style="border-radius:6px 6px 0 0;font-size:12px;padding:8px 14px">📤 Upload fichiers</button>' +
+        '<button id="tab-csv" class="btn-s" style="border-radius:6px 6px 0 0;font-size:12px;padding:8px 14px">📋 Import CSV</button>' +
+      '</div>' +
+
+      '<div id="tab-content-upload">' +
+        '<div style="padding:12px 14px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;font-size:12px;color:#1e40af;margin-bottom:14px">' +
+          '<strong>Formats supportés :</strong> PDF, DOCX et ZIP (extraction auto)<br>' +
+          'Les fichiers sont uploadés dans Supabase Storage + enregistrés dans le pôle <strong>' + poleLabel(pole) + '</strong>.' +
+        '</div>' +
+        '<div class="fg">' +
+          '<label class="flabel">Fichiers à uploader (multi-sélection possible)</label>' +
+          '<input class="finput" type="file" id="up-files" multiple accept=".pdf,.docx,.zip,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/zip">' +
+        '</div>' +
+        '<div class="frow">' +
+          '<div class="fg">' +
+            '<label class="flabel">Type par défaut</label>' +
+            '<select class="fselect" id="up-type-default">' +
+              '<option value="autre">Autre</option>' +
+              '<option value="convention">Convention</option>' +
+              '<option value="programme">Programme</option>' +
+              '<option value="facture">Facture</option>' +
+              '<option value="devis">Devis</option>' +
+              '<option value="attestation">Attestation</option>' +
+              '<option value="emargement">Émargement</option>' +
+              '<option value="questionnaire">Questionnaire</option>' +
+              '<option value="reglement_interieur">Règlement intérieur</option>' +
+            '</select>' +
+          '</div>' +
+          '<div class="fg">' +
+            '<label class="flabel">Version</label>' +
+            '<input class="finput" type="text" id="up-version" value="v1">' +
+          '</div>' +
+        '</div>' +
+        '<div id="up-filelist" style="margin-top:10px;display:none;padding:10px;background:#f9fafb;border-radius:6px;font-size:12px;max-height:200px;overflow-y:auto;border:1px solid #e5e7eb"></div>' +
+        '<div id="up-progress" style="margin-top:10px;display:none">' +
+          '<div style="height:10px;background:#e5e7eb;border-radius:5px;overflow:hidden"><div id="up-progress-bar" style="height:100%;background:#1A2C6B;width:0%;transition:width 0.3s"></div></div>' +
+          '<div id="up-progress-txt" style="font-size:11px;color:#6b7280;margin-top:4px"></div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div id="tab-content-csv" style="display:none">' +
+        '<div style="padding:14px;background:#fef3c7;border:1px solid #fde68a;border-radius:8px;font-size:12px;color:#92400e;margin-bottom:14px">' +
+          '<strong>Format CSV :</strong> <code>nom, description, type_document, fichier_url, version, actif</code><br>' +
+          'Les lignes seront affectées au pôle <strong>' + poleLabel(pole) + '</strong>.' +
+        '</div>' +
+        '<div class="fg"><label class="flabel">Fichier CSV</label>' +
+          '<input class="finput" type="file" id="csv-file" accept=".csv,text/csv"></div>' +
+      '</div>' +
+
+      '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid #e5e7eb">' +
+        '<button class="btn-s" onclick="document.getElementById(\'modal-detail\').classList.remove(\'open\')">Annuler</button>' +
+        '<button class="btn-p" id="up-go-btn">Importer dans ' + poleLabel(pole) + '</button>' +
+      '</div>' +
+      '<div id="up-err" style="margin-top:10px;color:#dc2626;font-size:12px;display:none"></div>';
+
+    var mode = 'upload';
+    document.getElementById('tab-upload').onclick = function() {
+      mode = 'upload';
+      this.className = 'btn-p';
+      document.getElementById('tab-csv').className = 'btn-s';
+      document.getElementById('tab-content-upload').style.display = '';
+      document.getElementById('tab-content-csv').style.display = 'none';
+    };
+    document.getElementById('tab-csv').onclick = function() {
+      mode = 'csv';
+      this.className = 'btn-p';
+      document.getElementById('tab-upload').className = 'btn-s';
+      document.getElementById('tab-content-csv').style.display = '';
+      document.getElementById('tab-content-upload').style.display = 'none';
+    };
+
+    document.getElementById('up-files').onchange = function() {
+      var files = Array.from(this.files || []);
+      var list = document.getElementById('up-filelist');
+      if (files.length === 0) { list.style.display = 'none'; return; }
+      list.style.display = 'block';
+      list.innerHTML = '<strong>' + files.length + ' fichier(s) sélectionné(s) :</strong><ul style="margin:6px 0 0 18px;list-style:disc">' +
+        files.map(function(f) {
+          var kb = Math.round(f.size / 1024);
+          var kbStr = kb > 1024 ? Math.round(kb/1024*10)/10 + ' MB' : kb + ' KB';
+          var detectedType = detectType(f.name);
+          var isZip = f.name.toLowerCase().endsWith('.zip');
+          return '<li>' + esc(f.name) + ' <span style="color:#6b7280">(' + kbStr + ')</span>' +
+            (isZip ? ' <span style="color:#dc2626">→ ZIP (sera extrait)</span>' :
+             ' <span style="color:#059669">→ type: ' + detectedType + '</span>') + '</li>';
+        }).join('') +
+        '</ul>';
+    };
+
+    document.getElementById('up-go-btn').onclick = async function() {
+      var errEl = document.getElementById('up-err');
+      errEl.style.display = 'none';
+      var btn = this;
+      btn.disabled = true;
+      btn.textContent = 'Import en cours...';
+      try {
+        if (mode === 'csv') await handleCsvImport(pole);
+        else await handleUploadImport(pole);
+      } catch(e) {
+        errEl.textContent = 'Erreur : ' + (e.message || 'inconnue');
+        errEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Importer dans ' + poleLabel(pole);
+      }
+    };
+
+    openM('detail');
+  };
+
+  async function handleUploadImport(pole) {
+    var files = Array.from(document.getElementById('up-files').files || []);
+    if (files.length === 0) throw new Error('Sélectionne au moins un fichier');
+
+    var typeDefault = document.getElementById('up-type-default').value;
+    var version = (document.getElementById('up-version').value || 'v1').trim();
+
+    var toUpload = [];
+    for (var i = 0; i < files.length; i++) {
+      var f = files[i];
+      if (f.name.toLowerCase().endsWith('.zip')) {
+        var JSZip = await loadJSZip();
+        var zip = await JSZip.loadAsync(f);
+        var entries = Object.keys(zip.files);
+        for (var j = 0; j < entries.length; j++) {
+          var entry = zip.files[entries[j]];
+          if (entry.dir) continue;
+          var ext = entry.name.toLowerCase().split('.').pop();
+          if (['pdf', 'docx', 'doc', 'pptx', 'xlsx'].indexOf(ext) === -1) continue;
+          var blob = await entry.async('blob');
+          toUpload.push({ name: entry.name.split('/').pop(), blob: blob, size: blob.size });
+        }
+      } else {
+        toUpload.push({ name: f.name, blob: f, size: f.size });
+      }
+    }
+    if (toUpload.length === 0) throw new Error('Aucun fichier exploitable');
+
+    var progressBox = document.getElementById('up-progress');
+    var progressBar = document.getElementById('up-progress-bar');
+    var progressTxt = document.getElementById('up-progress-txt');
+    progressBox.style.display = 'block';
+    progressTxt.textContent = '0 / ' + toUpload.length + ' uploadé(s)';
+
+    var templates = [];
+    var errors = [];
+    for (var k = 0; k < toUpload.length; k++) {
+      var item = toUpload[k];
+      var path = Date.now() + '-' + sanitizePath(item.name);
+      try {
+        var up = await sb.storage.from(BUCKET).upload(path, item.blob, { cacheControl: '3600', upsert: false });
+        if (up.error) throw up.error;
+        var pub = sb.storage.from(BUCKET).getPublicUrl(path);
+        var publicUrl = pub.data && pub.data.publicUrl;
+        var nom = item.name.replace(/\.(pdf|docx|doc|pptx|xlsx)$/i, '');
+        var detected = detectType(item.name);
+        templates.push({
+          nom: nom,
+          description: 'Uploadé le ' + new Date().toLocaleDateString('fr-FR') + ' dans ' + poleLabel(pole),
+          type_document: detected === 'autre' ? typeDefault : detected,
+          fichier_url: publicUrl,
+          version: version,
+          actif: true,
+          pole: pole  // <-- CONTEXTE POLE
+        });
+      } catch(e) {
+        errors.push(item.name + ' : ' + (e.message || 'err'));
+      }
+      var pct = Math.round(((k + 1) / toUpload.length) * 100);
+      progressBar.style.width = pct + '%';
+      progressTxt.textContent = (k + 1) + ' / ' + toUpload.length + ' uploadé(s)';
+    }
+
+    if (templates.length === 0) throw new Error('Aucun upload réussi. ' + errors.join(' · '));
+
+    progressTxt.textContent = 'Enregistrement en base...';
+    var r = await sb.from('document_templates').insert(templates).select('id');
+    if (r.error) throw r.error;
+
+    var msg = '✅ ' + templates.length + ' modèle(s) importé(s) dans ' + poleLabel(pole);
+    if (errors.length > 0) msg += '\n\n⚠ ' + errors.length + ' erreur(s)';
+    alert(msg);
+    closeM('detail');
+    setTimeout(function() { location.reload(); }, 500);
+  }
+
+  async function handleCsvImport(pole) {
+    var fileInput = document.getElementById('csv-file');
+    if (!fileInput.files || fileInput.files.length === 0) throw new Error('Choisis un CSV');
+    var text = await fileInput.files[0].text();
+    var rows = parseCsv(text);
+    if (rows.length < 2) throw new Error('CSV vide');
+
+    var headers = rows[0].map(function(h) { return h.trim().toLowerCase().replace(/"/g, ''); });
+    var allowed = ['nom', 'description', 'type_document', 'fichier_url', 'version', 'actif'];
+    var hMap = {};
+    headers.forEach(function(h, i) { if (allowed.indexOf(h) !== -1) hMap[h] = i; });
+    if (!('nom' in hMap)) throw new Error('Colonne "nom" manquante');
+
+    var validTypes = ['convention','programme','facture','devis','attestation','emargement','questionnaire','reglement_interieur','autre'];
+    var dataRows = rows.slice(1).filter(function(r) { return r.some(function(c) { return c && c.trim(); }); });
+    var templates = dataRows.map(function(r) {
+      var nom = (r[hMap.nom] || '').trim();
+      if (!nom) return null;
+      var typeVal = hMap.type_document != null ? (r[hMap.type_document] || '').trim().toLowerCase() : 'autre';
+      if (typeVal && validTypes.indexOf(typeVal) === -1) typeVal = 'autre';
+      var actifVal = hMap.actif != null ? (r[hMap.actif] || 'true').trim().toLowerCase() : 'true';
+      return {
+        nom: nom,
+        description: hMap.description != null ? ((r[hMap.description] || '').trim() || null) : null,
+        type_document: typeVal || null,
+        fichier_url: hMap.fichier_url != null ? ((r[hMap.fichier_url] || '').trim() || null) : null,
+        version: hMap.version != null ? ((r[hMap.version] || 'v1').trim() || 'v1') : 'v1',
+        actif: !(actifVal === 'false' || actifVal === 'non' || actifVal === '0'),
+        pole: pole  // <-- CONTEXTE POLE
+      };
+    }).filter(Boolean);
+
+    if (templates.length === 0) throw new Error('Aucun modèle valide');
+    if (!confirm('Importer ' + templates.length + ' modèle(s) dans ' + poleLabel(pole) + ' ?')) return;
+
+    var r = await sb.from('document_templates').insert(templates).select('id');
+    if (r.error) throw r.error;
+    alert('✅ ' + templates.length + ' modèle(s) importé(s) dans ' + poleLabel(pole));
+    closeM('detail');
+    setTimeout(function() { location.reload(); }, 500);
+  }
+
+  // ===================================================================
+  // AFFICHAGE 3 POLES (lit le champ pole directement)
+  // ===================================================================
+  var TEMPLATES_FORMATION_HARDCODES = [
+    { nom: 'Convention de formation professionnelle', description: 'Document contractuel Qualiopi obligatoire',  variables: 12, type: 'convention' },
+    { nom: 'Programme de formation',                   description: 'Objectifs, contenu, modalites',              variables: 10, type: 'programme' },
+    { nom: 'Reglement interieur',                      description: 'Regles de fonctionnement du centre',        variables: 6,  type: 'reglement_interieur' },
+    { nom: 'Feuille d\'emargement',                    description: 'Signatures par demi-journee',               variables: 8,  type: 'emargement' },
+    { nom: 'Attestation de fin de formation',          description: 'Remise obligatoire au stagiaire',           variables: 10, type: 'attestation' },
+    { nom: 'Questionnaire satisfaction a chaud',       description: 'Evaluation en fin de formation',            variables: 6,  type: 'questionnaire' },
+    { nom: 'Questionnaire satisfaction a froid',       description: 'Evaluation a 3-6 mois',                     variables: 6,  type: 'questionnaire' },
+    { nom: 'Livret d\'accueil stagiaire',             description: 'Informations pratiques et administratives', variables: 16, type: 'autre' },
+    { nom: 'Bilan pedagogique de fin de formation',    description: 'Synthese du parcours et acquis',            variables: 20, type: 'autre' },
+    { nom: 'Fiche evaluation formateur',               description: 'Evaluation du formateur par les stagiaires', variables: 8,  type: 'autre' },
+    { nom: 'Charte Qualiopi formateur',                description: 'Engagement qualite du formateur',           variables: 9,  type: 'autre' },
+    { nom: 'Devis de formation',                       description: 'Proposition commerciale avec NDA',          variables: 14, type: 'devis' },
+    { nom: 'Facture de formation',                     description: 'Facture apres execution',                   variables: 11, type: 'facture' }
+  ];
+
+  var TEMPLATES_ENTREPRISE_HARDCODES = [
+    // Placeholder pour Ardalos Development Group
+  ];
+
+  // Determine le pole
+  function polePour(t) {
+    if (t.pole) return t.pole; // priorite au champ DB
+    var type = (t.type_document || 'autre').toLowerCase();
+    if (['convention','programme','emargement','attestation','reglement_interieur','questionnaire'].indexOf(type) !== -1) return 'formation';
+    if (['devis','facture'].indexOf(type) !== -1) return 'formation'; // devis/facture formation par defaut
+    return 'autres';
+  }
+
+  function rowTemplate(t, isHardcoded) {
+    var statutBadge = t.actif === false
+      ? '<span class="badge b-gray">Inactif</span>'
+      : '<span class="badge b-green">Actif</span>';
+
+    var actionBtn;
+    if (t.fichier_url) {
+      actionBtn = '<a class="btn-p" href="' + esc(t.fichier_url) + '" target="_blank" rel="noopener" style="font-size:11px;padding:4px 10px;text-decoration:none;display:inline-block">↓ Télécharger</a>';
+    } else if (isHardcoded) {
+      actionBtn = '<button class="btn-p" style="font-size:11px;padding:4px 10px" onclick="window.ardalosGenererDoc && window.ardalosGenererDoc()">Générer</button>';
+    } else {
+      actionBtn = '<span class="text-muted text-xs">—</span>';
+    }
+
+    var nomHtml = '<strong>' + esc(t.nom || 'Sans nom') + '</strong>';
+    if (t.description) nomHtml += '<div class="text-xs text-muted">' + esc(t.description) + '</div>';
+
+    var typeCls = {
+      convention: 'b-navy', programme: 'b-navy', emargement: 'b-navy',
+      attestation: 'b-navy', reglement_interieur: 'b-navy',
+      questionnaire: 'b-amber',
+      devis: 'b-teal', facture: 'b-teal',
+      autre: 'b-gray'
+    }[(t.type_document || t.type || 'autre').toLowerCase()] || 'b-gray';
+    var typeLabel = (t.type_document || t.type || 'autre').replace(/_/g, ' ');
+    var varsText = t.variables ? (t.variables + ' variables') : (t.version || 'v1');
+
+    return '<tr>' +
+      '<td>' + nomHtml + '</td>' +
+      '<td><span class="badge ' + typeCls + '">' + esc(typeLabel) + '</span></td>' +
+      '<td class="text-xs">' + esc(varsText) + '</td>' +
+      '<td class="text-xs">' + fmtD(t.created_at) + '</td>' +
+      '<td>' + statutBadge + '</td>' +
+      '<td>' + actionBtn + '</td>' +
+    '</tr>';
+  }
+
+  async function loadDocs3Poles() {
+    var page = document.getElementById('page-documents');
+    if (!page) return;
+    try {
+      var r = await sb.from('document_templates').select('*').order('created_at', { ascending: false });
+      if (r.error) throw r.error;
+      var templatesDB = r.data || [];
+
+      // Categorise selon champ pole (priorite) sinon heuristique
+      var dbFormation = templatesDB.filter(function(t) { return polePour(t) === 'formation'; });
+      var dbEntreprise = templatesDB.filter(function(t) { return polePour(t) === 'entreprise'; });
+      var dbAutres = templatesDB.filter(function(t) { return polePour(t) === 'autres'; });
+
+      var formationAll = TEMPLATES_FORMATION_HARDCODES.map(function(t) { return { tpl: t, hc: true }; })
+        .concat(dbFormation.map(function(t) { return { tpl: t, hc: false }; }));
+      var entrepriseAll = TEMPLATES_ENTREPRISE_HARDCODES.map(function(t) { return { tpl: t, hc: true }; })
+        .concat(dbEntreprise.map(function(t) { return { tpl: t, hc: false }; }));
+      var autresAll = dbAutres.map(function(t) { return { tpl: t, hc: false }; });
+
+      var tables = page.querySelectorAll('table');
+      var mainTbody = null, maxRows = 0;
+      tables.forEach(function(t) {
+        var tb = t.querySelector('tbody');
+        if (tb) {
+          var nb = tb.querySelectorAll('tr').length;
+          if (nb > maxRows) { maxRows = nb; mainTbody = tb; }
+        }
+      });
+
+      if (mainTbody) {
+        var theadRow = mainTbody.parentElement.querySelector('thead tr');
+        if (theadRow && !theadRow.__ardalosUpdated) {
+          theadRow.innerHTML = '<th>Document</th><th>Type</th><th>Variables / Version</th><th>Ajouté le</th><th>Statut</th><th>Action</th>';
+          theadRow.__ardalosUpdated = true;
+        }
+      }
+
+      // Trouve la rangee d'onglets existante
+      var existingTabsContainer = null;
+      var potentials = page.querySelectorAll('div');
+      potentials.forEach(function(d) {
+        var txt = d.textContent;
+        if (!existingTabsContainer && txt && /Tous\s*\(\s*\d+\s*\)/.test(txt) && /Formation\s*\(\s*\d+\s*\)/.test(txt) && d.children.length >= 3 && d.children.length <= 8) {
+          existingTabsContainer = d;
+        }
+        // aussi si on a deja fait le remplacement V3
+        if (!existingTabsContainer && d.querySelector && d.querySelector('#docs-tab-formation')) {
+          existingTabsContainer = d;
+        }
+      });
+
+      if (existingTabsContainer) {
+        existingTabsContainer.innerHTML =
+          '<div class="flex gap-2" style="border-bottom:2px solid #e5e7eb;padding-bottom:0">' +
+            '<button id="docs-tab-formation" class="btn-p" style="border-radius:6px 6px 0 0;font-size:12px;padding:8px 16px;border:none;margin-bottom:-2px;border-bottom:2px solid #1A2C6B">📚 Documents Formation (' + formationAll.length + ')</button>' +
+            '<button id="docs-tab-entreprise" class="btn-s" style="border-radius:6px 6px 0 0;font-size:12px;padding:8px 16px;border:none">🏢 Documents Entreprise (' + entrepriseAll.length + ')</button>' +
+            '<button id="docs-tab-autres" class="btn-s" style="border-radius:6px 6px 0 0;font-size:12px;padding:8px 16px;border:none">📁 Documents Autres (' + autresAll.length + ')</button>' +
+          '</div>';
+
+        function switchTo(pole) {
+          window.__ardalosPoleActif = pole;
+          var btns = { formation: 'docs-tab-formation', entreprise: 'docs-tab-entreprise', autres: 'docs-tab-autres' };
+          Object.keys(btns).forEach(function(k) {
+            var b = document.getElementById(btns[k]);
+            if (b) {
+              b.className = (k === pole) ? 'btn-p' : 'btn-s';
+              b.style.borderBottom = (k === pole) ? '2px solid #1A2C6B' : 'none';
+              b.style.marginBottom = (k === pole) ? '-2px' : '0';
+            }
+          });
+          renderPole(pole);
+        }
+
+        document.getElementById('docs-tab-formation').onclick = function() { switchTo('formation'); };
+        document.getElementById('docs-tab-entreprise').onclick = function() { switchTo('entreprise'); };
+        document.getElementById('docs-tab-autres').onclick = function() { switchTo('autres'); };
+      }
+
+      function renderPole(pole) {
+        if (!mainTbody) return;
+        var list = pole === 'formation' ? formationAll : (pole === 'entreprise' ? entrepriseAll : autresAll);
+        if (list.length === 0) {
+          var msg = pole === 'entreprise'
+            ? 'Aucun document pour le pôle <strong>Ardalos Development Group</strong>.<br>Clique <strong>Import modèle</strong> pour en ajouter.'
+            : 'Aucun document dans cette catégorie. Clique <strong>Import modèle</strong>.';
+          mainTbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:#9ca3af;font-style:italic">' + msg + '</td></tr>';
+        } else {
+          mainTbody.innerHTML = list.map(function(item) { return rowTemplate(item.tpl, item.hc); }).join('');
+        }
+      }
+
+      // Render initial selon pole memorise
+      var initPole = window.__ardalosPoleActif || 'formation';
+      // trigger switchTo pour bien setter le style
+      var btn = document.getElementById('docs-tab-' + initPole);
+      if (btn) btn.click();
+      else renderPole(initPole);
+
+      var subtitle = page.querySelector('[id*="documents-subtitle"], .page-sub');
+      if (subtitle) {
+        subtitle.textContent = formationAll.length + ' modèles Formation · ' + entrepriseAll.length + ' Entreprise · ' + autresAll.length + ' Autres';
+      }
+
+      console.log('[Docs 3 poles v3] OK :', formationAll.length, '/', entrepriseAll.length, '/', autresAll.length);
+    } catch(e) {
+      console.error('[Docs 3 poles v3]', e);
+    }
+  }
+
+  function hookNav() {
+    var items = document.querySelectorAll('[data-page="documents"]');
+    items.forEach(function(it) {
+      it.addEventListener('click', function() { setTimeout(loadDocs3Poles, 300); });
+    });
+    setTimeout(function() {
+      var page = document.getElementById('page-documents');
+      if (page && page.classList.contains('active')) loadDocs3Poles();
+    }, 1500);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', hookNav);
+  } else {
+    hookNav();
+  }
+
+  console.log('[Docs v3] init OK - import contextuel par pole');
 })();
 </script>
 </body>
