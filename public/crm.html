@@ -870,7 +870,7 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
     <div class="page-hdr-right">
       <select class="fselect" style="width:auto;font-size:12px"><option>Formation Ardalos</option><option>Commercial Groupe</option></select>
       <button class="btn-s">Filtres</button>
-      <button class="btn-p">+ Nouveau deal</button>
+      <button class="btn-p" onclick="window.ardalosNewDeal && window.ardalosNewDeal()">+ Nouveau deal</button>
     </div>
   </div>
   <div class="kanban-wrap" id="pipe-kanban" style="height:calc(100vh - 220px)">
@@ -1129,7 +1129,7 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
 <div id="page-documents" class="page">
   <div class="page-hdr">
     <div class="page-hdr-left"><h1 class="page-title">Documents & Modèles</h1><p class="page-sub" id="docs-subtitle">Chargement...</p></div>
-    <div class="page-hdr-right"><button class="btn-s">Import modèle</button><button class="btn-p">+ Nouveau modèle</button></div>
+    <div class="page-hdr-right"><button class="btn-s">Import modèle</button><button class="btn-p" onclick="window.ardalosNewTemplate && window.ardalosNewTemplate()">+ Nouveau modèle</button></div>
   </div>
   <div class="card" style="margin-bottom:14px" id="docs-history-card">
     <div class="card-h"><span class="card-title">Historique generations recentes</span><span class="text-xs text-muted" id="docs-history-count">Chargement...</span></div>
@@ -1227,7 +1227,7 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
 <div id="page-sessions" class="page">
   <div class="page-hdr">
     <div class="page-hdr-left"><h1 class="page-title">Sessions & Cohortes</h1><p class="page-sub" id="sessions-subtitle">Chargement...</p></div>
-    <div class="page-hdr-right"><button class="btn-p">+ Nouvelle session</button></div>
+    <div class="page-hdr-right"><button class="btn-p" onclick="window.location.href='/sessions'">+ Nouvelle session</button></div>
   </div>
   <div class="g65">
     <div class="card">
@@ -1240,22 +1240,11 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
       </table>
     </div>
     <div class="card">
-      <div class="card-h"><span class="card-title">Dossier pédagogique — Fév</span></div>
-      <div class="card-b">
-        <div class="doc-row"><div class="doc-ic">01</div><div class="doc-name">Page de garde + sommaire</div><span class="doc-st ok">✓ Généré</span></div>
-        <div class="doc-row"><div class="doc-ic">02</div><div class="doc-name">Fiches formateurs ×4</div><span class="doc-st ok">✓ Complet</span></div>
-        <div class="doc-row"><div class="doc-ic">03</div><div class="doc-name">Programmes de formation</div><span class="doc-st ok">✓ Complet</span></div>
-        <div class="doc-row"><div class="doc-ic">04</div><div class="doc-name">Conventions signées ×8</div><span class="doc-st ok">✓ Complet</span></div>
-        <div class="doc-row"><div class="doc-ic">05</div><div class="doc-name">Feuilles d'émargement</div><span class="doc-st pend">⟳ En cours</span></div>
-        <div class="doc-row"><div class="doc-ic">06</div><div class="doc-name">Questionnaires satisfaction</div><span class="doc-st pend">⟳ À envoyer</span></div>
-        <div class="doc-row"><div class="doc-ic">07</div><div class="doc-name">Attestations individuelles</div><span class="doc-st miss">⚠ J-15</span></div>
-        <div class="doc-row"><div class="doc-ic">08</div><div class="doc-name">Bilan fin de formation</div><span class="doc-st miss">⚠ J-15</span></div>
-        <div style="margin-top:12px">
-          <div class="flex items-c justify-b mb-1"><span class="text-xs text-muted">Complétude dossier</span><span class="text-xs font-sb text-gold">62%</span></div>
-          <div class="prog"><div class="prog-fill gold" style="width:62%"></div></div>
-        </div>
+      <div class="card-h"><span class="card-title" id="dossier-peda-title">Dossier pédagogique</span></div>
+      <div class="card-b" id="dossier-peda-body">
+        <div style="padding:20px;text-align:center;color:#9ca3af;font-style:italic;font-size:12px">Chargement...</div>
       </div>
-      <div class="card-f"><button class="btn-p" style="font-size:11px;padding:5px 12px">Générer manquants</button></div>
+      <div class="card-f"><button class="btn-p" id="btn-generer-manquants" style="font-size:11px;padding:5px 12px" onclick="window.ardalosOpenGenererManquants && window.ardalosOpenGenererManquants()">Générer manquants</button></div>
     </div>
   </div>
 </div>
@@ -1264,7 +1253,7 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
 <div id="page-formations" class="page">
   <div class="page-hdr">
     <div class="page-hdr-left"><h1 class="page-title">Formations</h1><p class="page-sub" id="formations-subtitle">Chargement...</p></div>
-    <div class="page-hdr-right"><button class="btn-p">+ Nouvelle formation</button></div>
+    <div class="page-hdr-right"><button class="btn-p" onclick="window.ardalosNewFormation && window.ardalosNewFormation()">+ Nouvelle formation</button></div>
   </div>
   <div class="g3" id="formations-grid">
     <div style="grid-column:1/-1;padding:40px;text-align:center;color:#9ca3af;font-style:italic">Chargement...</div>
@@ -1348,7 +1337,7 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
 <div id="page-formateurs" class="page">
   <div class="page-hdr">
     <div class="page-hdr-left"><h1 class="page-title">Formateurs</h1><p class="page-sub" id="formateurs-subtitle">Chargement...</p></div>
-    <div class="page-hdr-right"><button class="btn-p">+ Ajouter formateur</button></div>
+    <div class="page-hdr-right"><button class="btn-p" onclick="window.ardalosNewFormateur && window.ardalosNewFormateur()">+ Ajouter formateur</button></div>
   </div>
   <div class="g3" id="formateurs-grid">
     <div style="grid-column:1/-1;padding:40px;text-align:center;color:#9ca3af;font-style:italic">Chargement...</div>
@@ -1375,7 +1364,7 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
 <div id="page-campaigns" class="page">
   <div class="page-hdr">
     <div class="page-hdr-left"><h1 class="page-title">Campagnes & Emails</h1><p class="page-sub" id="camp-subtitle">Chargement...</p></div>
-    <div class="page-hdr-right"><button class="btn-p">+ Nouvelle campagne</button></div>
+    <div class="page-hdr-right"><button class="btn-p" onclick="window.ardalosNewCampagne && window.ardalosNewCampagne()">+ Nouvelle campagne</button></div>
   </div>
   <div class="card">
     <table class="dt">
@@ -2742,7 +2731,7 @@ document.getElementById('global-search').addEventListener('keyup', function(e) {
           var nb = nbBySession[s.id] || 0;
           var av = getAvancement(s.date_debut, s.date_fin);
 
-          return '<tr>' +
+          return '<tr style="cursor:pointer" data-session-id="' + escapeHtml(s.id) + '" onclick="window.ardalosOpenSession && window.ardalosOpenSession(this.dataset.sessionId)">' +
             '<td class="name-cell">' + escapeHtml(cohorte) + '</td>' +
             '<td>' + escapeHtml(formationTitre) + '</td>' +
             '<td>' + escapeHtml(formateurNom) + '</td>' +
@@ -3117,8 +3106,8 @@ document.getElementById('global-search').addEventListener('keyup', function(e) {
         actionsHtml += '<a href="tel:' + escapeHtml(tel) + '" class="btn-s" style="font-size:12px;padding:6px 12px;text-decoration:none;display:inline-flex;align-items:center;gap:4px">&#128222; T&eacute;l</a>';
       }
       if (lastIns && lastIns.id) {
-        actionsHtml += '<a href="/api/generate-dossier?inscription_id=' + encodeURIComponent(lastIns.id) + '&format=pdf" target="_blank" class="btn-s" style="font-size:12px;padding:6px 12px;text-decoration:none;display:inline-flex;align-items:center;gap:4px">&#128196; Dossier</a>';
-        actionsHtml += '<a href="/api/generate-facture?inscription_id=' + encodeURIComponent(lastIns.id) + '" target="_blank" class="btn-s" style="font-size:12px;padding:6px 12px;text-decoration:none;display:inline-flex;align-items:center;gap:4px">&#128179; Facture</a>';
+        actionsHtml += '<a href="/api/generate-dossier?inscriptionId=' + encodeURIComponent(lastIns.id) + '&format=pdf" target="_blank" class="btn-s" style="font-size:12px;padding:6px 12px;text-decoration:none;display:inline-flex;align-items:center;gap:4px">&#128196; Dossier</a>';
+        actionsHtml += '<a href="/api/generate-facture?inscriptionId=' + encodeURIComponent(lastIns.id) + '" target="_blank" class="btn-s" style="font-size:12px;padding:6px 12px;text-decoration:none;display:inline-flex;align-items:center;gap:4px">&#128179; Facture</a>';
       }
       actionsHtml += '<a href="/factures" class="btn-s" style="font-size:12px;padding:6px 12px;text-decoration:none;display:inline-flex;align-items:center;gap:4px">&#128196; Toutes factures</a>';
       actionsHtml += '</div>';
@@ -3279,61 +3268,359 @@ document.getElementById('global-search').addEventListener('keyup', function(e) {
   // =====================================================================
   window.ardalosOpenFormateur = async function(formateurId) {
     try {
+      var titleEl = document.getElementById('detail-modal-title');
+      var bodyEl = document.getElementById('detail-modal-body');
+      if (!titleEl || !bodyEl) { alert('Modale indisponible'); return; }
+
+      // Recuperer le formateur (directement depuis Supabase pour avoir toutes les colonnes enrichies)
+      var fR = await sb.from('formateurs').select('*').eq('id', formateurId).single();
+      if (fR.error || !fR.data) {
+        alert('Formateur introuvable');
+        return;
+      }
+      var f = fR.data;
+
+      var nomComplet = ((f.prenom || '') + ' ' + (f.nom || '')).trim() || 'Formateur';
+      titleEl.textContent = nomComplet;
+
+      // Sessions animees par ce formateur
+      var sR = await sb.from('formation_sessions')
+        .select('id, date_debut, date_fin, lieu, formations(titre)')
+        .or('formateur_principal_id.eq.' + formateurId + ',formateur_principal.eq.' + encodeURIComponent(nomComplet))
+        .order('date_debut', { ascending: false });
+      var sessions = sR.data || [];
+
+      // Inscriptions pour compter les apprenants
+      var sessionIds = sessions.map(function(s) { return s.id; });
+      var nbApprenantsBySession = {};
+      if (sessionIds.length > 0) {
+        var iR = await sb.from('formation_inscriptions').select('session_id, statut').in('session_id', sessionIds).neq('statut', 'abandon');
+        (iR.data || []).forEach(function(i) {
+          nbApprenantsBySession[i.session_id] = (nbApprenantsBySession[i.session_id] || 0) + 1;
+        });
+      }
+
+      // ============= RENDU =============
+      // Header : photo + identite + boutons rapides
+      var iniF = ((f.prenom || '?').charAt(0) + (f.nom || '?').charAt(0)).toUpperCase();
+      var photoBlock = f.photo_url
+        ? '<img src="' + escapeHtml(f.photo_url) + '" alt="' + escapeHtml(nomComplet) + '" style="width:80px;height:80px;border-radius:50%;object-fit:cover;background:#e5e7eb;flex-shrink:0" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
+          '<div class="av" style="width:80px;height:80px;font-size:24px;background:#1A2C6B;color:#fff;flex-shrink:0;display:none">' + iniF + '</div>'
+        : '<div class="av" style="width:80px;height:80px;font-size:24px;background:#1A2C6B;color:#fff;flex-shrink:0">' + iniF + '</div>';
+
+      var actionBtns = [];
+      if (f.email) actionBtns.push('<a href="mailto:' + encodeURIComponent(f.email) + '" class="btn-s" style="font-size:11px;padding:5px 10px;text-decoration:none">&#128231; Email</a>');
+      if (f.telephone) actionBtns.push('<a href="tel:' + encodeURIComponent(f.telephone.replace(/\s/g,'')) + '" class="btn-s" style="font-size:11px;padding:5px 10px;text-decoration:none">&#128222; Appeler</a>');
+      if (f.cv_url) actionBtns.push('<a href="' + escapeHtml(f.cv_url) + '" target="_blank" class="btn-p" style="font-size:11px;padding:5px 10px;text-decoration:none">&#128196; Voir CV</a>');
+      actionBtns.push('<button class="btn-s" style="font-size:11px;padding:5px 10px" onclick="window.ardalosEditFormateur && window.ardalosEditFormateur(\'' + f.id + '\')">&#9999;&#65039; Modifier</button>');
+      actionBtns.push('<button class="btn-s" style="font-size:11px;padding:5px 10px;color:#dc2626;border-color:#fecaca" onclick="window.ardalosDeleteFormateur && window.ardalosDeleteFormateur(\'' + f.id + '\', \'' + escapeHtml(nomComplet).replace(/\'/g, "&#39;") + '\')">&#128465;&#65039; Supprimer</button>');
+      var actionsHtml = actionBtns.length > 0 ? '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">' + actionBtns.join('') + '</div>' : '';
+
+      var headerHtml =
+        '<div style="display:flex;gap:14px;padding:14px;background:linear-gradient(135deg,#f9fafb,#f3f4f6);border-radius:10px;margin-bottom:14px;align-items:flex-start">' +
+          photoBlock +
+          '<div style="flex:1;min-width:0">' +
+            '<div class="font-sb" style="font-size:17px;color:var(--ard-dark);margin-bottom:2px">' + escapeHtml(nomComplet) + '</div>' +
+            (f.ville ? '<div class="text-xs text-muted">&#128205; ' + escapeHtml(f.ville) + '</div>' : '') +
+            (f.instagram ? '<div class="text-xs text-muted" style="margin-top:2px">&#128247; ' + escapeHtml(f.instagram) + '</div>' : '') +
+            actionsHtml +
+          '</div>' +
+        '</div>';
+
+      // Bloc stats rapides
+      var totalApprenants = Object.keys(nbApprenantsBySession).reduce(function(sum, k) { return sum + nbApprenantsBySession[k]; }, 0);
+      var nbSessionsTot = sessions.length;
+      var now = Date.now();
+      var nbSessionsEnCoursOuAVenir = sessions.filter(function(s) {
+        return !s.date_fin || new Date(s.date_fin).getTime() >= now;
+      }).length;
+
+      var statsHtml =
+        '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">' +
+          '<div style="padding:10px;background:#f9fafb;border-radius:8px;text-align:center">' +
+            '<div class="font-sb" style="font-size:20px;color:var(--ard-dark)">' + nbSessionsTot + '</div>' +
+            '<div class="text-xs text-muted">Session' + (nbSessionsTot > 1 ? 's' : '') + ' total</div>' +
+          '</div>' +
+          '<div style="padding:10px;background:#f0fdf4;border-radius:8px;text-align:center">' +
+            '<div class="font-sb" style="font-size:20px;color:#065f46">' + nbSessionsEnCoursOuAVenir + '</div>' +
+            '<div class="text-xs text-muted">À venir / en cours</div>' +
+          '</div>' +
+          '<div style="padding:10px;background:#eff6ff;border-radius:8px;text-align:center">' +
+            '<div class="font-sb" style="font-size:20px;color:#1e40af">' + totalApprenants + '</div>' +
+            '<div class="text-xs text-muted">Apprenant' + (totalApprenants > 1 ? 's' : '') + ' total</div>' +
+          '</div>' +
+        '</div>';
+
+      // Bio
+      var bioHtml = f.bio
+        ? '<div style="margin-bottom:14px;padding-top:10px;border-top:1px solid #e5e7eb">' +
+            '<div class="font-sb" style="font-size:13px;color:var(--ard-dark);margin-bottom:6px">&#128218; Biographie</div>' +
+            '<div style="font-size:12.5px;line-height:1.6;color:#374151">' + escapeHtml(f.bio) + '</div>' +
+          '</div>'
+        : '';
+
+      // Specialites (tableau)
+      var specHtml = '';
+      if (f.specialites && f.specialites.length > 0) {
+        var chips = f.specialites.map(function(s) {
+          return '<span style="display:inline-block;padding:4px 10px;background:#eff6ff;color:#1e40af;border-radius:12px;font-size:11px;font-weight:500;margin-right:6px;margin-bottom:4px">' + escapeHtml(s) + '</span>';
+        }).join('');
+        specHtml =
+          '<div style="margin-bottom:14px">' +
+            '<div class="font-sb" style="font-size:13px;color:var(--ard-dark);margin-bottom:8px">&#127919; Spécialités</div>' +
+            '<div>' + chips + '</div>' +
+          '</div>';
+      }
+
+      // Contact complet
+      var contactRows = [];
+      if (f.email) contactRows.push('<div class="si"><span class="si-l">Email</span><span class="si-r">' + escapeHtml(f.email) + '</span></div>');
+      if (f.telephone) contactRows.push('<div class="si"><span class="si-l">Téléphone</span><span class="si-r">' + escapeHtml(f.telephone) + '</span></div>');
+      if (f.ville) contactRows.push('<div class="si"><span class="si-l">Ville</span><span class="si-r">' + escapeHtml(f.ville) + '</span></div>');
+      if (f.instagram) contactRows.push('<div class="si"><span class="si-l">Instagram</span><span class="si-r">' + escapeHtml(f.instagram) + '</span></div>');
+      var contactHtml = contactRows.length > 0
+        ? '<div style="margin-bottom:14px">' +
+            '<div class="font-sb" style="font-size:13px;color:var(--ard-dark);margin-bottom:8px">&#128222; Contact</div>' +
+            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' + contactRows.join('') + '</div>' +
+          '</div>'
+        : '';
+
+      // Sessions animees
+      var sessionsHtml;
+      if (sessions.length === 0) {
+        sessionsHtml = '<div style="padding:12px;text-align:center;color:#9ca3af;font-style:italic;border:1px dashed #e5e7eb;border-radius:8px;font-size:12px">Aucune session attribuée</div>';
+      } else {
+        sessionsHtml = sessions.map(function(s) {
+          var nbAp = nbApprenantsBySession[s.id] || 0;
+          var titreF = (s.formations && s.formations.titre) || 'Formation';
+          var cohorte = fmtCohorte(s.date_debut, s.date_fin);
+          var dateFin = s.date_fin ? new Date(s.date_fin).getTime() : null;
+          var statutBadge, statutCls;
+          if (dateFin && dateFin < now) { statutBadge = 'Terminée'; statutCls = 'b-gray'; }
+          else if (s.date_debut && new Date(s.date_debut).getTime() > now) { statutBadge = 'À venir'; statutCls = 'b-navy'; }
+          else { statutBadge = 'En cours'; statutCls = 'b-green'; }
+          return '<div style="padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;margin-bottom:6px;font-size:12px">' +
+            '<div class="flex items-c justify-b" style="margin-bottom:4px">' +
+              '<span class="font-sb" style="font-size:12.5px">' + escapeHtml(titreF.length > 50 ? titreF.slice(0,50) + '…' : titreF) + '</span>' +
+              '<span class="badge ' + statutCls + '">' + statutBadge + '</span>' +
+            '</div>' +
+            '<div class="text-xs text-muted">&#128197; ' + escapeHtml(cohorte) + (s.lieu ? ' · &#128205; ' + escapeHtml(s.lieu) : '') + ' · &#128101; ' + nbAp + ' apprenant' + (nbAp > 1 ? 's' : '') + '</div>' +
+          '</div>';
+        }).join('');
+      }
+
+      var sessionsBlock =
+        '<div style="margin-bottom:14px">' +
+          '<div class="font-sb" style="font-size:13px;color:var(--ard-dark);margin-bottom:8px">&#127891; Sessions animées</div>' +
+          sessionsHtml +
+        '</div>';
+
+      bodyEl.innerHTML = headerHtml + statsHtml + bioHtml + specHtml + contactHtml + sessionsBlock;
+
+      openModal('detail');
+    } catch (e) {
+      console.error('[Ardalos OpenFormateur] Erreur:', e);
+      alert('Erreur : ' + (e.message || 'inconnue'));
+    }
+  };
+
+  // =====================================================================
+  // Patcher les fonctions existantes : apprenants + formateurs pour brancher les boutons
+  window.ardalosOpenSession = async function(sessionId) {
+    try {
       await loadAllData();
       var titleEl = document.getElementById('detail-modal-title');
       var bodyEl = document.getElementById('detail-modal-body');
 
-      var formateur = cache.formateurs.find(function(f) { return f.id === formateurId; });
-      if (!formateur) { alert('Formateur introuvable'); return; }
+      // Re-requete pour avoir toutes les colonnes de la session + formation jointe
+      var sR = await sb.from('formation_sessions').select('*, formations(titre, duree, tarif, ref_interne)').eq('id', sessionId).single();
+      if (sR.error || !sR.data) { alert('Session introuvable'); return; }
+      var session = sR.data;
+      var formation = session.formations || {};
 
-      var nomComplet = ((formateur.prenom || '') + ' ' + (formateur.nom || '')).trim() || 'Formateur';
-      titleEl.textContent = nomComplet;
+      // Apprenants inscrits a cette session
+      var iR = await sb.from('formation_inscriptions')
+        .select('id, statut, montant_total_ht, commercial_responsable, contacts(prenom, nom, email)')
+        .eq('session_id', sessionId)
+        .order('created_at', { ascending: false });
+      var inscriptions = iR.data || [];
+      var inscriptionsActives = inscriptions.filter(function(i) { return i.statut !== 'abandon'; });
+      var nbActifs = inscriptionsActives.length;
+      var caTotal = inscriptionsActives.reduce(function(sum, i) { return sum + (Number(i.montant_total_ht) || 0); }, 0);
 
-      // Sessions de ce formateur
-      var sessions = cache.sessions.filter(function(s) { return s.formateur_principal_id === formateurId; });
-      sessions.sort(function(a, b) {
-        return new Date(b.date_debut || 0).getTime() - new Date(a.date_debut || 0).getTime();
-      });
+      // Formateur : FK prioritaire, fallback sur texte libre
+      var formateur = null;
+      if (session.formateur_principal_id && cache.formateurs) {
+        formateur = cache.formateurs.find(function(f) { return f.id === session.formateur_principal_id; });
+      }
+      var formateurNom = formateur
+        ? ((formateur.prenom || '') + ' ' + (formateur.nom || '')).trim()
+        : (session.formateur_principal || null);
+      var formateurEmail = formateur ? formateur.email : null;
 
-      var formationsById = {};
-      cache.formations.forEach(function(f) { formationsById[f.id] = f; });
+      // Avatar : initiale titre formation + couleur hash
+      var titre = formation.titre || 'Session';
+      var initials = (titre.charAt(0) || 'S').toUpperCase();
+      var _palette = [
+        { bg: '#e0e7ff', fg: '#1A2C6B' },
+        { bg: '#fef3c7', fg: '#92400e' },
+        { bg: '#d1fae5', fg: '#065f46' },
+        { bg: '#fce7f3', fg: '#9f1239' },
+        { bg: '#e0f2fe', fg: '#075985' },
+        { bg: '#ede9fe', fg: '#5b21b6' }
+      ];
+      var _hash = 0;
+      for (var _k = 0; _k < titre.length; _k++) { _hash = (_hash + titre.charCodeAt(_k)) % _palette.length; }
+      var color = _palette[_hash];
 
-      var nbBySession = {};
-      cache.inscriptions.forEach(function(i) {
-        if (i.statut === 'abandon') return;
-        nbBySession[i.session_id] = (nbBySession[i.session_id] || 0) + 1;
-      });
+      // Statut -> classe badge
+      var statutCls = 'b-gray';
+      var statutLabel = session.statut || 'inconnu';
+      if (session.statut === 'ouverte') statutCls = 'b-green';
+      else if (session.statut === 'planifiee') statutCls = 'b-amber';
+      else if (session.statut === 'complete' || session.statut === 'cloture' || session.statut === 'close') statutCls = 'b-teal';
+      else if (session.statut === 'annulee') statutCls = 'b-red';
 
-      var totalApprenants = 0;
-      sessions.forEach(function(s) { totalApprenants += (nbBySession[s.id] || 0); });
+      // Places restantes
+      var nbPlacesMax = session.nb_places_max || 0;
+      var nbPlacesRestantes = (session.nb_places_restantes_override !== null && session.nb_places_restantes_override !== undefined)
+        ? session.nb_places_restantes_override
+        : Math.max(0, nbPlacesMax - nbActifs);
+      var tauxRemplissage = nbPlacesMax > 0 ? Math.round((nbActifs / nbPlacesMax) * 100) : 0;
 
-      var sessionsHtml = sessions.length === 0
-        ? '<div style="padding:14px;text-align:center;color:#9ca3af;font-style:italic;border:1px dashed #e5e7eb;border-radius:8px">Aucune session attribuée</div>'
-        : sessions.map(function(s) {
-            var f = formationsById[s.formation_id] || {};
-            var nb = nbBySession[s.id] || 0;
-            return '<div style="padding:10px;border:1px solid #e5e7eb;border-radius:8px;margin-bottom:8px;font-size:12px">' +
-              '<div class="flex items-c justify-b" style="margin-bottom:4px">' +
-                '<span class="font-sb">' + escapeHtml(f.titre || 'Formation') + '</span>' +
-                '<span class="badge b-navy">' + escapeHtml(fmtCohorte(s.date_debut, s.date_fin)) + '</span>' +
-              '</div>' +
-              '<div class="text-xs text-muted">' + escapeHtml(s.lieu || 'Lieu à préciser') + ' · ' + nb + ' apprenant' + (nb > 1 ? 's' : '') + '</div>' +
-            '</div>';
-          }).join('');
+      // Avancement
+      var now = Date.now();
+      var d1 = session.date_debut ? new Date(session.date_debut).getTime() : null;
+      var d2 = session.date_fin ? new Date(session.date_fin).getTime() : null;
+      var avancement = 'A venir';
+      if (d1 && now >= d1 && (!d2 || now <= d2)) avancement = 'En cours';
+      else if (d2 && now > d2) avancement = 'Terminee';
 
-      bodyEl.innerHTML =
-        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">' +
-          (formateur.specialite ? '<div class="si"><span class="si-l">Spécialité</span><span class="si-r">' + escapeHtml(formateur.specialite) + '</span></div>' : '') +
-          (formateur.titre ? '<div class="si"><span class="si-l">Titre</span><span class="si-r">' + escapeHtml(formateur.titre) + '</span></div>' : '') +
-          (formateur.email ? '<div class="si"><span class="si-l">Email</span><span class="si-r">' + escapeHtml(formateur.email) + '</span></div>' : '') +
-          (formateur.telephone ? '<div class="si"><span class="si-l">Téléphone</span><span class="si-r">' + escapeHtml(formateur.telephone) + '</span></div>' : '') +
-          '<div class="si"><span class="si-l">Sessions totales</span><span class="si-r">' + sessions.length + '</span></div>' +
-          '<div class="si"><span class="si-l">Apprenants totaux</span><span class="si-r">' + totalApprenants + '</span></div>' +
-        '</div>' +
-        '<div style="margin-top:14px;padding-top:14px;border-top:1px solid #e5e7eb">' +
-          '<div class="font-sb" style="font-size:13px;color:var(--ard-dark);margin-bottom:10px">Sessions animées</div>' +
-          sessionsHtml +
+      // Titre modale
+      titleEl.textContent = titre + ' - ' + fmtCohorte(session.date_debut, session.date_fin);
+
+      // Header
+      var subtitle = nbActifs + ' apprenant' + (nbActifs > 1 ? 's' : '') + ' / ' + nbPlacesMax + ' places';
+      subtitle += ' &middot; ' + tauxRemplissage + '% rempli';
+      if (caTotal > 0) subtitle += ' &middot; CA ' + fmtEuro(caTotal) + ' HT';
+
+      // Actions rapides
+      var actionsHtml = '<div class="flex items-c gap-2" style="flex-wrap:wrap;margin-top:10px">';
+      actionsHtml += '<a href="/sessions" class="btn-s" style="font-size:12px;padding:6px 12px;text-decoration:none;display:inline-flex;align-items:center;gap:4px">&#9999;&#65039; &Eacute;diter</a>';
+      // Email groupe : mailto bcc avec tous les apprenants
+      var emailsApprenants = inscriptionsActives
+        .filter(function(i) { return i.contacts && i.contacts.email; })
+        .map(function(i) { return i.contacts.email; });
+      if (emailsApprenants.length > 0) {
+        var mailBody = 'Bonjour,\n\nInformation concernant la formation : ' + titre + '\nCohorte : ' + fmtCohorte(session.date_debut, session.date_fin) + '\n\n';
+        actionsHtml += '<a href="mailto:?bcc=' + encodeURIComponent(emailsApprenants.join(',')) + '&subject=' + encodeURIComponent(titre) + '&body=' + encodeURIComponent(mailBody) + '" class="btn-s" style="font-size:12px;padding:6px 12px;text-decoration:none;display:inline-flex;align-items:center;gap:4px">&#128231; Email groupe (' + emailsApprenants.length + ')</a>';
+      }
+      if (formateurEmail) {
+        actionsHtml += '<a href="mailto:' + escapeHtml(formateurEmail) + '" class="btn-s" style="font-size:12px;padding:6px 12px;text-decoration:none;display:inline-flex;align-items:center;gap:4px">&#128104;&#8205;&#127979; Contacter formateur</a>';
+      }
+      actionsHtml += '</div>';
+
+      var headerHtml =
+        '<div class="flex items-c gap-2" style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #e5e7eb">' +
+          '<div class="av" style="background:' + color.bg + ';color:' + color.fg + ';width:52px;height:52px;font-size:22px;flex-shrink:0">' + initials + '</div>' +
+          '<div style="flex:1;min-width:0">' +
+            '<div class="flex items-c gap-2" style="flex-wrap:wrap">' +
+              '<span class="font-sb" style="font-size:17px;color:var(--ard-dark)">' + escapeHtml(titre) + '</span>' +
+              '<span class="badge ' + statutCls + '">' + escapeHtml(statutLabel) + '</span>' +
+              '<span class="badge b-navy">' + escapeHtml(avancement) + '</span>' +
+            '</div>' +
+            '<div class="text-xs text-muted" style="margin-top:2px">' + subtitle + '</div>' +
+            actionsHtml +
+          '</div>' +
         '</div>';
+
+      // Helper ligne info
+      function ligneInfo(label, value) {
+        return '<div class="si"><span class="si-l">' + escapeHtml(label) + '</span><span class="si-r">' + (value ? escapeHtml(String(value)) : '<span class="text-muted">&mdash;</span>') + '</span></div>';
+      }
+
+      // Section Formation
+      var formationHtml =
+        '<div class="font-sb" style="font-size:12px;color:var(--ard-dark);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">&#127891; Formation</div>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;margin-bottom:14px">' +
+          ligneInfo('Titre', formation.titre) +
+          ligneInfo('Ref. interne', formation.ref_interne) +
+          ligneInfo('Duree', formation.duree) +
+          ligneInfo('Tarif reference', formation.tarif ? fmtEuro(Number(formation.tarif)) : null) +
+        '</div>';
+
+      // Section Session
+      var sessionHtml =
+        '<div class="font-sb" style="font-size:12px;color:var(--ard-dark);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">&#128197; Session</div>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;margin-bottom:14px">' +
+          ligneInfo('Date debut', session.date_debut ? fmtDate(session.date_debut) : null) +
+          ligneInfo('Date fin', session.date_fin ? fmtDate(session.date_fin) : null) +
+          ligneInfo('Lieu', session.lieu) +
+          ligneInfo('Formateur', formateurNom) +
+        '</div>';
+
+      // Adresse
+      var adresseHtml = '';
+      if (session.adresse) {
+        adresseHtml =
+          '<div class="font-sb" style="font-size:12px;color:var(--ard-dark);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">&#128205; Adresse</div>' +
+          '<div style="padding:10px 12px;background:#f9fafb;border-radius:6px;font-size:13px;margin-bottom:14px">' + escapeHtml(session.adresse) + '</div>';
+      }
+
+      // Section Capacite & finances
+      var capaciteHtml =
+        '<div class="font-sb" style="font-size:12px;color:var(--ard-dark);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">&#128200; Capacite &amp; finances</div>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;margin-bottom:14px">' +
+          ligneInfo('Places max', nbPlacesMax || '—') +
+          ligneInfo('Places restantes', nbPlacesRestantes) +
+          ligneInfo('Inscrits actifs', nbActifs) +
+          ligneInfo('Taux remplissage', tauxRemplissage + '%') +
+          ligneInfo('Prix session HT', session.prix_session_ht ? fmtEuro(Number(session.prix_session_ht)) : null) +
+          ligneInfo('CA reel cumule', caTotal > 0 ? fmtEuro(caTotal) : null) +
+        '</div>';
+
+      // Section Apprenants inscrits
+      var apprenantsHtml = '';
+      if (inscriptions.length === 0) {
+        apprenantsHtml = '<div style="padding:14px;text-align:center;color:#9ca3af;font-style:italic;border:1px dashed #e5e7eb;border-radius:8px">Aucun apprenant inscrit</div>';
+      } else {
+        apprenantsHtml = inscriptions.map(function(i) {
+          var c = i.contacts || {};
+          var nomContact = ((c.prenom || '') + ' ' + (c.nom || '')).trim() || 'Sans nom';
+          var iniC = ((c.prenom || '?').charAt(0) + (c.nom || '?').charAt(0)).toUpperCase();
+          var sCls = 'b-gray';
+          if (i.statut === 'confirme' || i.statut === 'present') sCls = 'b-green';
+          else if (i.statut === 'abandon') sCls = 'b-red';
+          else if (i.statut === 'prospect') sCls = 'b-amber';
+          else if (i.statut === 'inscrit') sCls = 'b-teal';
+          return '<div style="padding:8px 10px;border:1px solid #e5e7eb;border-radius:6px;margin-bottom:6px;font-size:12px;display:flex;align-items:center;gap:10px">' +
+            '<div class="av" style="background:#e5e7eb;color:#374151;width:32px;height:32px;font-size:11px;flex-shrink:0">' + iniC + '</div>' +
+            '<div style="flex:1;min-width:0">' +
+              '<div class="font-sb" style="font-size:13px">' + escapeHtml(nomContact) + '</div>' +
+              '<div class="text-xs text-muted">' + escapeHtml(c.email || '—') + (i.commercial_responsable ? ' &middot; Commercial : ' + escapeHtml(i.commercial_responsable) : '') + '</div>' +
+            '</div>' +
+            '<div style="text-align:right;flex-shrink:0">' +
+              '<div><span class="badge ' + sCls + '">' + escapeHtml(i.statut || 'inconnu') + '</span></div>' +
+              (i.montant_total_ht ? '<div class="text-xs" style="margin-top:2px">' + fmtEuro(Number(i.montant_total_ht)) + '</div>' : '') +
+            '</div>' +
+          '</div>';
+        }).join('');
+      }
+      var apprenantsBlock =
+        '<div class="font-sb" style="font-size:12px;color:var(--ard-dark);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">&#128100; Apprenants inscrits (' + inscriptions.length + ')</div>' +
+        apprenantsHtml;
+
+      // Section Notes
+      var notesHtml = '';
+      if (session.notes) {
+        notesHtml =
+          '<div style="margin-top:14px">' +
+            '<div class="font-sb" style="font-size:12px;color:var(--ard-dark);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">&#128221; Notes</div>' +
+            '<div style="padding:10px 12px;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;font-size:13px;white-space:pre-wrap">' + escapeHtml(session.notes) + '</div>' +
+          '</div>';
+      }
+
+      bodyEl.innerHTML = headerHtml + formationHtml + sessionHtml + adresseHtml + capaciteHtml + apprenantsBlock + notesHtml;
 
       openModal('detail');
     } catch (e) {
@@ -3342,8 +3629,6 @@ document.getElementById('global-search').addEventListener('keyup', function(e) {
     }
   };
 
-  // =====================================================================
-  // Patcher les fonctions existantes : apprenants + formateurs pour brancher les boutons
   // =====================================================================
   // On patche le script apprenants pour que le bouton "Voir" appelle ardalosOpenApprenant
   // Meme logique pour formateurs
@@ -5465,5 +5750,1094 @@ document.getElementById('global-search').addEventListener('keyup', function(e) {
 })();
 </script>
 
+
+<!-- === DOSSIER PEDAGOGIQUE + WORKFLOWS PREMIUM === -->
+<script>
+(function() {
+  // ----- Init autonome (notre scope n'a pas acces au sb/helpers de l'IIFE parente) -----
+  var SUPABASE_URL = 'https://cvxzdiutxonnsnwoicqt.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_J8ta-7L05zgK9rBy2OS9Bg_CjXHwZVK';
+  var sb;
+  try {
+    if (window.supabase && typeof window.supabase.createClient === 'function') {
+      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    }
+  } catch(e) { sb = null; }
+  if (!sb) {
+    console.warn('[Dossier+WF] Supabase JS non disponible (window.supabase manquant)');
+    return;
+  }
+
+  // Helpers locaux (autonomes)
+  function escapeHtml(s) {
+    if (s == null) return '';
+    return String(s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  function fmtDate(d) {
+    if (!d) return '';
+    try {
+      return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+    } catch(e) { return String(d); }
+  }
+  function fmtEuro(n) {
+    if (n == null) return '';
+    var v = Number(n);
+    if (isNaN(v)) return String(n);
+    return v.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + ' EUR';
+  }
+  var MOIS_ABR = ['Janv', 'Fev', 'Mars', 'Avr', 'Mai', 'Juin', 'Juil', 'Aout', 'Sept', 'Oct', 'Nov', 'Dec'];
+  function fmtCohorte(d1, d2) {
+    if (!d1) return '—';
+    try {
+      var dd1 = new Date(d1);
+      var m1 = MOIS_ABR[dd1.getMonth()];
+      var y1 = dd1.getFullYear();
+      if (!d2) return m1 + ' ' + y1;
+      var dd2 = new Date(d2);
+      var m2 = MOIS_ABR[dd2.getMonth()];
+      var y2 = dd2.getFullYear();
+      if (y1 === y2) return m1 + '–' + m2 + ' ' + y1;
+      return m1 + ' ' + y1 + '–' + m2 + ' ' + y2;
+    } catch(e) { return String(d1); }
+  }
+  // openModal / closeModal doivent etre globaux (appeles dans onclick inline)
+  function openModal(name) {
+    if (typeof window.openModal === 'function') return window.openModal(name);
+    var el = document.getElementById('modal-' + name);
+    if (el) el.classList.add('open');
+  }
+  function closeModal(name) {
+    if (typeof window.closeModal === 'function') return window.closeModal(name);
+    var el = document.getElementById('modal-' + name);
+    if (el) el.classList.remove('open');
+  }
+
+  console.log('[Dossier+WF] init autonome OK');
+
+  // Liste des 5 "documents" suivis par inscription, avec leur champ DB
+  var DOC_STEPS = [
+    { key: 'devis_envoye_at', label: 'Devis envoyé', order: 1 },
+    { key: 'programme_envoye_at', label: 'Programme envoyé', order: 2 },
+    { key: 'demande_financement_envoyee_at', label: 'Demande financement', order: 3 },
+    { key: 'convention_envoyee_at', label: 'Convention envoyée', order: 4 },
+    { key: 'convention_signee_at', label: 'Convention signée', order: 5 }
+  ];
+
+  // Cache global de la session en cours pour la modale Générer manquants
+  var __currentSession = null;
+  var __currentInscriptions = [];
+
+  // ====================================================================
+  // Panneau Dossier pédagogique connecté aux inscriptions
+  // ====================================================================
+  async function loadDossierPedagogique() {
+    var titleEl = document.getElementById('dossier-peda-title');
+    var bodyEl = document.getElementById('dossier-peda-body');
+    if (!bodyEl) return;
+
+    try {
+      // 1. Trouve la session "la plus pertinente" : celle avec le plus d'inscriptions actives et dont la date_fin est la plus proche (ou passée recemment)
+      var sR = await sb.from('formation_sessions').select('id, date_debut, date_fin, formations(titre)').order('date_debut', { ascending: true });
+      var sessions = sR.data || [];
+
+      var iR = await sb.from('formation_inscriptions').select('*').neq('statut', 'abandon');
+      var inscriptions = iR.data || [];
+
+      // Groupe inscriptions par session
+      var insBySession = {};
+      inscriptions.forEach(function(i) {
+        if (!insBySession[i.session_id]) insBySession[i.session_id] = [];
+        insBySession[i.session_id].push(i);
+      });
+
+      // Sélection : session avec le plus d'inscriptions actives, puis la plus proche dans le futur (ou récente)
+      var now = Date.now();
+      var sessionsAvecIns = sessions.filter(function(s) {
+        return (insBySession[s.id] || []).length > 0;
+      });
+
+      if (sessionsAvecIns.length === 0) {
+        bodyEl.innerHTML = '<div style="padding:20px;text-align:center;color:#9ca3af;font-style:italic;font-size:12px">Aucune session avec inscriptions actives</div>';
+        if (titleEl) titleEl.textContent = 'Dossier pédagogique';
+        return;
+      }
+
+      // Priorité : session avec date_fin >= aujourd'hui, triée par date_debut croissante
+      var sessionCible = sessionsAvecIns
+        .filter(function(s) { return !s.date_fin || new Date(s.date_fin).getTime() >= now - (30 * 24 * 3600 * 1000); })
+        .sort(function(a, b) { return new Date(a.date_debut || 0) - new Date(b.date_debut || 0); })[0];
+
+      if (!sessionCible) {
+        // Fallback : session avec le plus d'inscriptions
+        sessionCible = sessionsAvecIns.sort(function(a, b) {
+          return (insBySession[b.id] || []).length - (insBySession[a.id] || []).length;
+        })[0];
+      }
+
+      __currentSession = sessionCible;
+      __currentInscriptions = insBySession[sessionCible.id] || [];
+
+      var nbIns = __currentInscriptions.length;
+      var cohorteLabel = fmtCohorte(sessionCible.date_debut, sessionCible.date_fin);
+
+      if (titleEl) {
+        var titreForm = (sessionCible.formations && sessionCible.formations.titre) || 'Session';
+        var titreShort = titreForm.length > 35 ? titreForm.slice(0, 35) + '…' : titreForm;
+        titleEl.textContent = 'Dossier pédagogique — ' + cohorteLabel;
+        titleEl.title = titreForm + ' — ' + cohorteLabel;
+      }
+
+      // Calcul completude : pour chaque doc_step, combien d'inscriptions l'ont rempli
+      var stepsStatus = DOC_STEPS.map(function(step) {
+        var nbFait = __currentInscriptions.filter(function(i) { return !!i[step.key]; }).length;
+        return { step: step, nbFait: nbFait, total: nbIns, pct: nbIns > 0 ? Math.round((nbFait / nbIns) * 100) : 0 };
+      });
+
+      var totalChecks = stepsStatus.length * nbIns;
+      var doneChecks = stepsStatus.reduce(function(sum, s) { return sum + s.nbFait; }, 0);
+      var completude = totalChecks > 0 ? Math.round((doneChecks / totalChecks) * 100) : 0;
+
+      var completudeCls = completude >= 80 ? 'green' : (completude >= 50 ? 'gold' : 'red');
+      var completudeTextCls = completude >= 80 ? 'text-green' : (completude >= 50 ? 'text-gold' : 'text-red');
+
+      var rowsHtml = stepsStatus.map(function(s, idx) {
+        var num = String(idx + 1).padStart(2, '0');
+        var statutHtml;
+        if (s.nbFait === s.total && s.total > 0) {
+          statutHtml = '<span class="doc-st ok">&#10003; ' + s.nbFait + '/' + s.total + '</span>';
+        } else if (s.nbFait > 0) {
+          statutHtml = '<span class="doc-st pend">&#8987; ' + s.nbFait + '/' + s.total + '</span>';
+        } else {
+          statutHtml = '<span class="doc-st miss">&#9888; 0/' + s.total + '</span>';
+        }
+        return '<div class="doc-row"><div class="doc-ic">' + num + '</div><div class="doc-name">' + escapeHtml(s.step.label) + '</div>' + statutHtml + '</div>';
+      }).join('');
+
+      bodyEl.innerHTML = rowsHtml +
+        '<div style="margin-top:12px">' +
+          '<div class="flex items-c justify-b mb-1">' +
+            '<span class="text-xs text-muted">Complétude dossier (' + nbIns + ' inscrit' + (nbIns > 1 ? 's' : '') + ')</span>' +
+            '<span class="text-xs font-sb ' + completudeTextCls + '">' + completude + '%</span>' +
+          '</div>' +
+          '<div class="prog"><div class="prog-fill ' + completudeCls + '" style="width:' + completude + '%"></div></div>' +
+        '</div>';
+
+      console.log('[Ardalos Dossier Peda] OK :', sessionCible.id.slice(0, 8), '-', nbIns, 'inscrits,', completude, '% complet');
+    } catch (e) {
+      console.error('[Ardalos Dossier Peda] Erreur:', e);
+      bodyEl.innerHTML = '<div style="padding:14px;text-align:center;color:#dc2626;font-size:12px">Erreur : ' + escapeHtml(e.message || 'inconnue') + '</div>';
+    }
+  }
+
+  // ====================================================================
+  // Modale "Générer manquants" : liste des docs manquants par inscription
+  // ====================================================================
+  window.ardalosOpenGenererManquants = async function() {
+    try {
+      // S'assure qu'on a les données à jour
+      await loadDossierPedagogique();
+
+      var titleEl = document.getElementById('detail-modal-title');
+      var bodyEl = document.getElementById('detail-modal-body');
+      if (!titleEl || !bodyEl) { alert('Modale indisponible'); return; }
+
+      if (!__currentSession || __currentInscriptions.length === 0) {
+        alert('Aucune session avec inscriptions actives trouvée.');
+        return;
+      }
+
+      var cohorteLabel = fmtCohorte(__currentSession.date_debut, __currentSession.date_fin);
+      var titreForm = (__currentSession.formations && __currentSession.formations.titre) || 'Session';
+      titleEl.textContent = 'Générer documents manquants — ' + cohorteLabel;
+
+      // Pour chaque inscription, calcule la liste des docs manquants
+      var sbContactsR = await sb.from('contacts').select('id, prenom, nom, email');
+      var contactsById = {};
+      (sbContactsR.data || []).forEach(function(c) { contactsById[c.id] = c; });
+
+      var inscriptionsData = __currentInscriptions.map(function(ins) {
+        var contact = contactsById[ins.contact_id] || {};
+        var manquants = DOC_STEPS.filter(function(step) { return !ins[step.key]; });
+        var faits = DOC_STEPS.filter(function(step) { return !!ins[step.key]; });
+        var nomContact = ((contact.prenom || '') + ' ' + (contact.nom || '')).trim() || 'Sans nom';
+        return { ins: ins, contact: contact, manquants: manquants, faits: faits, nom: nomContact };
+      });
+
+      // Tri : inscriptions avec le plus de manquants en premier
+      inscriptionsData.sort(function(a, b) { return b.manquants.length - a.manquants.length; });
+
+      var nbInsCompletes = inscriptionsData.filter(function(d) { return d.manquants.length === 0; }).length;
+      var nbInsIncompletes = inscriptionsData.length - nbInsCompletes;
+
+      // Header
+      var headerHtml =
+        '<div style="padding:12px 14px;background:#f9fafb;border-radius:8px;margin-bottom:14px;font-size:13px">' +
+          '<div class="font-sb" style="margin-bottom:4px">' + escapeHtml(titreForm) + '</div>' +
+          '<div class="text-xs text-muted">' + cohorteLabel + ' &middot; ' + inscriptionsData.length + ' inscription' + (inscriptionsData.length > 1 ? 's' : '') + ' &middot; ' +
+            '<span class="text-green">' + nbInsCompletes + ' complète' + (nbInsCompletes > 1 ? 's' : '') + '</span> &middot; ' +
+            '<span class="text-gold">' + nbInsIncompletes + ' à traiter</span>' +
+          '</div>' +
+        '</div>';
+
+      // Rendu par inscription
+      var rowsHtml = inscriptionsData.map(function(d) {
+        var ins = d.ins;
+        var contact = d.contact;
+        var iniC = ((contact.prenom || '?').charAt(0) + (contact.nom || '?').charAt(0)).toUpperCase();
+        var isComplete = d.manquants.length === 0;
+
+        // Chips docs
+        var docsChipsHtml = DOC_STEPS.map(function(step) {
+          var ok = !!ins[step.key];
+          var ico = ok ? '&#9989;' : '&#9675;';
+          var cls = ok ? '' : 'text-muted';
+          var title = ok ? (step.label + ' : ' + fmtDate(ins[step.key])) : (step.label + ' : non fait');
+          return '<span class="' + cls + '" style="font-size:11px;white-space:nowrap" title="' + escapeHtml(title) + '">' + ico + ' ' + escapeHtml(step.label) + '</span>';
+        }).join(' &nbsp; ');
+
+        // Actions
+        var actionsHtml = '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">';
+        if (!isComplete) {
+          actionsHtml += '<a href="/api/generate-dossier?inscriptionId=' + encodeURIComponent(ins.id) + '&format=zip" target="_blank" class="btn-s" style="font-size:11px;padding:4px 10px;text-decoration:none">&#128230; ZIP complet</a>';
+          actionsHtml += '<a href="/api/generate-dossier?inscriptionId=' + encodeURIComponent(ins.id) + '&format=pdf" target="_blank" class="btn-s" style="font-size:11px;padding:4px 10px;text-decoration:none">&#128196; PDF fusionné</a>';
+          if (contact.email) {
+            actionsHtml += '<button class="btn-p" style="font-size:11px;padding:4px 10px" onclick="window.ardalosEnvoyerDossierInscription(\'' + ins.id + '\', this)">&#128231; Envoyer par email</button>';
+          }
+        } else {
+          actionsHtml += '<span class="text-xs text-green" style="padding:4px 0">&#10003; Dossier complet</span>';
+        }
+        actionsHtml += '</div>';
+
+        var borderCls = isComplete ? '#d1fae5' : '#fde68a';
+        var bgCls = isComplete ? '#f0fdf4' : '#fffbeb';
+
+        return '<div style="padding:12px;border:1px solid ' + borderCls + ';background:' + bgCls + ';border-radius:8px;margin-bottom:8px">' +
+          '<div class="flex items-c gap-2" style="margin-bottom:8px">' +
+            '<div class="av" style="background:#e5e7eb;color:#374151;width:34px;height:34px;font-size:12px;flex-shrink:0">' + iniC + '</div>' +
+            '<div style="flex:1;min-width:0">' +
+              '<div class="font-sb" style="font-size:13px">' + escapeHtml(d.nom) + '</div>' +
+              '<div class="text-xs text-muted">' + escapeHtml(contact.email || '—') + '</div>' +
+            '</div>' +
+            '<div style="text-align:right">' +
+              (isComplete
+                ? '<span class="badge b-green">Complet</span>'
+                : '<span class="badge b-amber">' + d.manquants.length + ' manquant' + (d.manquants.length > 1 ? 's' : '') + '</span>') +
+            '</div>' +
+          '</div>' +
+          '<div style="padding:6px 0;display:flex;gap:6px;flex-wrap:wrap">' + docsChipsHtml + '</div>' +
+          actionsHtml +
+        '</div>';
+      }).join('');
+
+      bodyEl.innerHTML = headerHtml + rowsHtml +
+        '<div style="margin-top:14px;padding:10px 12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;font-size:12px;color:#1e40af">' +
+          '&#128161; <strong>Astuce :</strong> les dates de signature/envoi sont enregistrées dans chaque inscription. Édite-les depuis la page <a href="/inscriptions" style="color:inherit;text-decoration:underline">Inscriptions</a> pour faire passer un doc en "fait".' +
+        '</div>';
+
+      openModal('detail');
+    } catch (e) {
+      console.error('[Ardalos GenererManquants] Erreur:', e);
+      alert('Erreur : ' + (e.message || 'inconnue'));
+    }
+  };
+
+  // Action : envoyer le dossier par email (appelle /api/send-dossier-email)
+  window.ardalosEnvoyerDossierInscription = async function(inscriptionId, btn) {
+    if (!confirm('Envoyer le dossier complet par email à cette personne ?')) return;
+    var originalText = btn.innerHTML;
+    btn.innerHTML = '&#8987; Envoi...';
+    btn.disabled = true;
+    try {
+      var r = await fetch('/api/send-dossier-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ inscriptionId: inscriptionId })
+      });
+      var data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'Erreur serveur');
+      btn.innerHTML = '&#10003; Envoyé !';
+      btn.style.background = '#10b981';
+      setTimeout(function() {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        btn.style.background = '';
+      }, 3000);
+    } catch (e) {
+      alert('Erreur envoi : ' + (e.message || 'inconnue'));
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+    }
+  };
+
+  // ====================================================================
+  // MODALE NOUVEAU WORKFLOW - premium avec templates + custom
+  // ====================================================================
+  var WORKFLOW_TEMPLATES = [
+    {
+      id: 'rappel_session_j7',
+      nom: 'Rappel apprenants J-7 avant session',
+      description: 'Envoie un email aux apprenants confirmés 7 jours avant le début de la session.',
+      emoji: '&#128197;',
+      declencheur: 'date_debut_session',
+      declencheur_valeur: -7,
+      action: 'email_apprenants',
+      action_params: { template: 'rappel_j7', subject: 'Votre formation commence dans 7 jours' }
+    },
+    {
+      id: 'satisfaction_j1',
+      nom: 'Questionnaire satisfaction J+1',
+      description: 'Envoie le lien du questionnaire de satisfaction le lendemain de la fin de formation.',
+      emoji: '&#11088;',
+      declencheur: 'date_fin_session',
+      declencheur_valeur: 1,
+      action: 'email_apprenants',
+      action_params: { template: 'satisfaction', subject: 'Partagez votre avis sur la formation' }
+    },
+    {
+      id: 'relance_afdas_j15',
+      nom: 'Relance AFDAS J+15 sans réponse',
+      description: 'Crée une tâche si une demande AFDAS n\'a pas eu de décision après 15 jours.',
+      emoji: '&#128176;',
+      declencheur: 'demande_financement_envoyee_at',
+      declencheur_valeur: 15,
+      action: 'creer_tache',
+      action_params: { priorite: 'haute', titre: 'Relancer AFDAS — dossier sans réponse' }
+    },
+    {
+      id: 'prospect_30j',
+      nom: 'Relance prospect dormant J+30',
+      description: 'Crée une tâche commerciale pour tout prospect sans contact depuis 30 jours.',
+      emoji: '&#128176;',
+      declencheur: 'date_dernier_contact',
+      declencheur_valeur: 30,
+      action: 'creer_tache',
+      action_params: { priorite: 'normale', titre: 'Relancer prospect dormant' }
+    },
+    {
+      id: 'attestation_auto_j15',
+      nom: 'Générer attestations J-15',
+      description: 'Génère automatiquement les attestations de présence 15 jours avant la fin de session.',
+      emoji: '&#128196;',
+      declencheur: 'date_fin_session',
+      declencheur_valeur: -15,
+      action: 'generer_attestations',
+      action_params: {}
+    }
+  ];
+
+  window.ardalosWorkflowInfo = async function() {
+    var titleEl = document.getElementById('detail-modal-title');
+    var bodyEl = document.getElementById('detail-modal-body');
+    if (!titleEl || !bodyEl) return;
+
+    titleEl.textContent = '⚙️ Créer un workflow';
+
+    // Onglets : Templates / Custom
+    var templatesCards = WORKFLOW_TEMPLATES.map(function(t) {
+      var paramsPreview = '';
+      if (t.declencheur_valeur > 0) paramsPreview = t.declencheur_valeur + ' jours après ' + t.declencheur;
+      else if (t.declencheur_valeur < 0) paramsPreview = Math.abs(t.declencheur_valeur) + ' jours avant ' + t.declencheur;
+      else paramsPreview = 'au ' + t.declencheur;
+
+      return '<div class="card" style="padding:14px;margin-bottom:10px;border:1px solid #e5e7eb;cursor:pointer;transition:all 0.2s" ' +
+        'onmouseover="this.style.borderColor=\'#1A2C6B\';this.style.boxShadow=\'0 2px 6px rgba(26,44,107,0.1)\'" ' +
+        'onmouseout="this.style.borderColor=\'#e5e7eb\';this.style.boxShadow=\'none\'" ' +
+        'onclick="window.ardalosActiverTemplate(\'' + t.id + '\')">' +
+        '<div class="flex items-c gap-2" style="margin-bottom:6px">' +
+          '<span style="font-size:22px">' + t.emoji + '</span>' +
+          '<div style="flex:1">' +
+            '<div class="font-sb" style="font-size:14px">' + escapeHtml(t.nom) + '</div>' +
+            '<div class="text-xs text-muted" style="margin-top:2px">' + escapeHtml(paramsPreview) + '</div>' +
+          '</div>' +
+          '<button class="btn-p" style="font-size:11px;padding:4px 10px" onclick="event.stopPropagation(); window.ardalosActiverTemplate(\'' + t.id + '\')">Activer</button>' +
+        '</div>' +
+        '<div class="text-xs" style="color:#4b5563;line-height:1.4">' + escapeHtml(t.description) + '</div>' +
+      '</div>';
+    }).join('');
+
+    // Form custom
+    var customFormHtml =
+      '<div class="fg">' +
+        '<label class="flabel">Nom du workflow <span class="req">*</span></label>' +
+        '<input class="finput" type="text" id="wf-nom" placeholder="Ex : Relancer apprenants sans réponse" autocomplete="off">' +
+      '</div>' +
+      '<div class="fg">' +
+        '<label class="flabel">Description</label>' +
+        '<textarea class="finput" id="wf-desc" rows="2" placeholder="Décris brièvement ce que fait ce workflow..."></textarea>' +
+      '</div>' +
+      '<div class="frow">' +
+        '<div class="fg">' +
+          '<label class="flabel">Déclencheur</label>' +
+          '<select class="fselect" id="wf-declencheur">' +
+            '<option value="date_debut_session">Date début de session</option>' +
+            '<option value="date_fin_session">Date fin de session</option>' +
+            '<option value="date_inscription">Date d\'inscription</option>' +
+            '<option value="date_dernier_contact">Date dernier contact</option>' +
+            '<option value="demande_financement_envoyee_at">Envoi dossier financement</option>' +
+            '<option value="manuel">Déclenchement manuel</option>' +
+          '</select>' +
+        '</div>' +
+        '<div class="fg">' +
+          '<label class="flabel">Décalage (jours)</label>' +
+          '<input class="finput" type="number" id="wf-decalage" value="0" placeholder="Ex: -7 pour J-7">' +
+        '</div>' +
+      '</div>' +
+      '<div class="fg">' +
+        '<label class="flabel">Action</label>' +
+        '<select class="fselect" id="wf-action">' +
+          '<option value="email_apprenants">Envoyer email aux apprenants</option>' +
+          '<option value="email_commercial">Envoyer email au commercial</option>' +
+          '<option value="creer_tache">Créer une tâche</option>' +
+          '<option value="generer_attestations">Générer attestations</option>' +
+          '<option value="generer_dossier">Générer dossier pédagogique</option>' +
+          '<option value="custom">Action personnalisée (webhook)</option>' +
+        '</select>' +
+      '</div>' +
+      '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">' +
+        '<button class="btn-s" onclick="closeModal(\'detail\')">Annuler</button>' +
+        '<button class="btn-p" onclick="window.ardalosSaveWorkflowCustom()">Créer le workflow</button>' +
+      '</div>' +
+      '<div id="wf-custom-error" style="margin-top:10px;color:#dc2626;font-size:12px;display:none"></div>';
+
+    bodyEl.innerHTML =
+      '<div style="display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid #e5e7eb">' +
+        '<button id="wf-tab-templates" class="btn-s" style="border:none;background:transparent;border-bottom:2px solid #1A2C6B;color:#1A2C6B;font-weight:600;padding:8px 14px;border-radius:0" onclick="window.ardalosSwitchWfTab(\'templates\')">📚 Templates</button>' +
+        '<button id="wf-tab-custom" class="btn-s" style="border:none;background:transparent;border-bottom:2px solid transparent;color:#6b7280;padding:8px 14px;border-radius:0" onclick="window.ardalosSwitchWfTab(\'custom\')">✏️ Créer depuis zéro</button>' +
+      '</div>' +
+      '<div id="wf-pane-templates">' +
+        '<div class="text-xs text-muted" style="margin-bottom:10px">Clique sur un template pour l\'activer instantanément.</div>' +
+        templatesCards +
+      '</div>' +
+      '<div id="wf-pane-custom" style="display:none">' +
+        customFormHtml +
+      '</div>' +
+      '<div style="margin-top:14px;padding:10px 12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;font-size:12px;color:#1e40af">' +
+        '&#128161; <strong>Note :</strong> les workflows créés sont <strong>enregistrés en base</strong>. L\'exécution automatique (cron) sera branchée après la certification Qualiopi. En attendant, tu peux toujours déclencher manuellement.' +
+      '</div>';
+
+    openModal('detail');
+  };
+
+  window.ardalosSwitchWfTab = function(tab) {
+    var tabT = document.getElementById('wf-tab-templates');
+    var tabC = document.getElementById('wf-tab-custom');
+    var paneT = document.getElementById('wf-pane-templates');
+    var paneC = document.getElementById('wf-pane-custom');
+    if (!tabT || !tabC || !paneT || !paneC) return;
+    if (tab === 'templates') {
+      tabT.style.borderBottomColor = '#1A2C6B'; tabT.style.color = '#1A2C6B'; tabT.style.fontWeight = '600';
+      tabC.style.borderBottomColor = 'transparent'; tabC.style.color = '#6b7280'; tabC.style.fontWeight = 'normal';
+      paneT.style.display = 'block'; paneC.style.display = 'none';
+    } else {
+      tabC.style.borderBottomColor = '#1A2C6B'; tabC.style.color = '#1A2C6B'; tabC.style.fontWeight = '600';
+      tabT.style.borderBottomColor = 'transparent'; tabT.style.color = '#6b7280'; tabT.style.fontWeight = 'normal';
+      paneC.style.display = 'block'; paneT.style.display = 'none';
+    }
+  };
+
+  window.ardalosActiverTemplate = async function(templateId) {
+    var tpl = WORKFLOW_TEMPLATES.find(function(t) { return t.id === templateId; });
+    if (!tpl) { alert('Template introuvable'); return; }
+    if (!confirm('Activer le template "' + tpl.nom + '" ?')) return;
+    try {
+      var r = await sb.from('workflows').insert({
+        nom: tpl.nom,
+        description: tpl.description,
+        type: 'template',
+        template_id: tpl.id,
+        declencheur: tpl.declencheur,
+        declencheur_valeur: tpl.declencheur_valeur,
+        action: tpl.action,
+        action_params: tpl.action_params,
+        actif: true
+      }).select().single();
+      if (r.error) throw r.error;
+      alert('✅ Workflow activé : ' + tpl.nom);
+      closeModal('detail');
+      loadMesWorkflows();
+    } catch (e) {
+      alert('Erreur : ' + (e.message || 'inconnue'));
+    }
+  };
+
+  window.ardalosSaveWorkflowCustom = async function() {
+    var errEl = document.getElementById('wf-custom-error');
+    errEl.style.display = 'none';
+    var nom = (document.getElementById('wf-nom').value || '').trim();
+    var desc = (document.getElementById('wf-desc').value || '').trim();
+    var declencheur = document.getElementById('wf-declencheur').value;
+    var decalage = parseInt(document.getElementById('wf-decalage').value || '0', 10);
+    var action = document.getElementById('wf-action').value;
+    if (!nom) {
+      errEl.textContent = 'Le nom du workflow est obligatoire.';
+      errEl.style.display = 'block';
+      return;
+    }
+    try {
+      var r = await sb.from('workflows').insert({
+        nom: nom,
+        description: desc || null,
+        type: 'custom',
+        declencheur: declencheur,
+        declencheur_valeur: decalage,
+        action: action,
+        action_params: {},
+        actif: true
+      }).select().single();
+      if (r.error) throw r.error;
+      alert('✅ Workflow créé : ' + nom);
+      closeModal('detail');
+      loadMesWorkflows();
+    } catch (e) {
+      errEl.textContent = 'Erreur : ' + (e.message || 'inconnue');
+      errEl.style.display = 'block';
+    }
+  };
+
+  // ====================================================================
+  // Section "Mes workflows" en haut de la page Workflows
+  // ====================================================================
+  async function loadMesWorkflows() {
+    try {
+      var r = await sb.from('workflows').select('*').order('created_at', { ascending: false });
+      var workflows = r.data || [];
+
+      // Crée le conteneur s'il n'existe pas encore
+      var page = document.getElementById('page-workflows');
+      if (!page) return;
+      var container = document.getElementById('mes-workflows-container');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'mes-workflows-container';
+        container.style.marginBottom = '20px';
+        // Insère juste après la page-hdr
+        var hdr = page.querySelector('.page-hdr');
+        if (hdr && hdr.nextSibling) {
+          page.insertBefore(container, hdr.nextSibling);
+        } else {
+          page.appendChild(container);
+        }
+      }
+
+      if (workflows.length === 0) {
+        container.innerHTML =
+          '<div class="card" style="padding:16px;background:#f9fafb;border:1px dashed #d1d5db">' +
+            '<div class="flex items-c justify-b">' +
+              '<div>' +
+                '<div class="font-sb" style="font-size:14px;color:var(--ard-dark)">&#9881;&#65039; Mes workflows</div>' +
+                '<div class="text-xs text-muted" style="margin-top:2px">Aucun workflow créé. Clique sur "+ Nouveau workflow" pour commencer.</div>' +
+              '</div>' +
+            '</div>' +
+          '</div>';
+        return;
+      }
+
+      var rowsHtml = workflows.map(function(w) {
+        var badgeActif = w.actif
+          ? '<span class="badge b-green">Actif</span>'
+          : '<span class="badge b-gray">Inactif</span>';
+        var badgeType = w.type === 'template'
+          ? '<span class="badge b-navy">Template</span>'
+          : '<span class="badge b-teal">Custom</span>';
+        var decalageLbl = '';
+        if (w.declencheur_valeur > 0) decalageLbl = 'J+' + w.declencheur_valeur;
+        else if (w.declencheur_valeur < 0) decalageLbl = 'J' + w.declencheur_valeur;
+        else decalageLbl = 'J';
+
+        return '<div style="padding:10px 12px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;gap:10px">' +
+          '<div style="flex:1;min-width:0">' +
+            '<div class="flex items-c gap-2" style="flex-wrap:wrap">' +
+              '<span class="font-sb" style="font-size:13px">' + escapeHtml(w.nom) + '</span>' +
+              badgeType + badgeActif +
+            '</div>' +
+            (w.description ? '<div class="text-xs text-muted" style="margin-top:2px">' + escapeHtml(w.description) + '</div>' : '') +
+            '<div class="text-xs text-muted" style="margin-top:2px">Déclencheur : ' + escapeHtml(w.declencheur) + ' ' + decalageLbl + ' &middot; Action : ' + escapeHtml(w.action) + '</div>' +
+          '</div>' +
+          '<div style="text-align:right;flex-shrink:0">' +
+            '<button class="btn-s" style="font-size:11px;padding:4px 8px" onclick="window.ardalosToggleWorkflow(\'' + w.id + '\', ' + !w.actif + ')">' + (w.actif ? 'Pause' : 'Reprendre') + '</button> ' +
+            '<button class="btn-s" style="font-size:11px;padding:4px 8px;color:#dc2626" onclick="window.ardalosDeleteWorkflow(\'' + w.id + '\')">Supprimer</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+
+      var nbActifs = workflows.filter(function(w) { return w.actif; }).length;
+      container.innerHTML =
+        '<div class="card">' +
+          '<div class="card-h">' +
+            '<span class="card-title">&#9881;&#65039; Mes workflows</span>' +
+            '<span class="badge b-navy">' + nbActifs + ' actif' + (nbActifs > 1 ? 's' : '') + ' / ' + workflows.length + '</span>' +
+          '</div>' +
+          '<div class="card-b" style="padding:0">' + rowsHtml + '</div>' +
+        '</div>';
+    } catch (e) {
+      console.error('[Ardalos MesWorkflows] Erreur:', e);
+    }
+  }
+
+  window.ardalosToggleWorkflow = async function(id, newActif) {
+    try {
+      var r = await sb.from('workflows').update({ actif: newActif, updated_at: new Date().toISOString() }).eq('id', id);
+      if (r.error) throw r.error;
+      loadMesWorkflows();
+    } catch (e) {
+      alert('Erreur : ' + (e.message || 'inconnue'));
+    }
+  };
+
+  window.ardalosDeleteWorkflow = async function(id) {
+    if (!confirm('Supprimer ce workflow ? Cette action est irréversible.')) return;
+    try {
+      var r = await sb.from('workflows').delete().eq('id', id);
+      if (r.error) throw r.error;
+      loadMesWorkflows();
+    } catch (e) {
+      alert('Erreur : ' + (e.message || 'inconnue'));
+    }
+  };
+
+  // ====================================================================
+  // Init : charge au DOMContentLoaded
+  // ====================================================================
+  function initDossierEtWorkflows() {
+    loadDossierPedagogique();
+    loadMesWorkflows();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initDossierEtWorkflows);
+  } else {
+    initDossierEtWorkflows();
+  }
+})();
+</script>
+
+<!-- === SPRINT 1+2 : CRUD + CREATIONS D'ENTITES === -->
+<script>
+(function() {
+  // Init autonome (ne depend pas de l'IIFE parente)
+  var SUPABASE_URL = 'https://cvxzdiutxonnsnwoicqt.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_J8ta-7L05zgK9rBy2OS9Bg_CjXHwZVK';
+  var sb;
+  try {
+    if (window.supabase && typeof window.supabase.createClient === 'function') {
+      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    }
+  } catch(e) { sb = null; }
+  if (!sb) {
+    console.warn('[CRUD] Supabase JS non disponible');
+    return;
+  }
+
+  // ----- Helpers locaux -----
+  function escHtml(s) {
+    if (s == null) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+  function openM(n) {
+    var el = document.getElementById('modal-' + n);
+    if (el) el.classList.add('open');
+  }
+  function closeM(n) {
+    var el = document.getElementById('modal-' + n);
+    if (el) el.classList.remove('open');
+  }
+
+  // ----- Modale generique pour formulaires -----
+  // Utilise la modale #modal-detail existante avec un rendu HTML custom
+  function showForm(title, formHtml, onSave) {
+    var titleEl = document.getElementById('detail-modal-title');
+    var bodyEl = document.getElementById('detail-modal-body');
+    if (!titleEl || !bodyEl) { alert('Modale indisponible'); return; }
+
+    titleEl.textContent = title;
+    bodyEl.innerHTML = formHtml +
+      '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid #e5e7eb">' +
+        '<button class="btn-s" onclick="window.__ardalosFormCancel && window.__ardalosFormCancel()">Annuler</button>' +
+        '<button class="btn-p" id="ard-form-save-btn">Enregistrer</button>' +
+      '</div>' +
+      '<div id="ard-form-error" style="margin-top:10px;color:#dc2626;font-size:12px;display:none"></div>';
+
+    // Attacher le save
+    var saveBtn = document.getElementById('ard-form-save-btn');
+    saveBtn.onclick = async function() {
+      var errEl = document.getElementById('ard-form-error');
+      errEl.style.display = 'none';
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Enregistrement...';
+      try {
+        await onSave();
+      } catch (e) {
+        errEl.textContent = 'Erreur : ' + (e.message || 'inconnue');
+        errEl.style.display = 'block';
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Enregistrer';
+      }
+    };
+
+    window.__ardalosFormCancel = function() { closeM('detail'); };
+
+    openM('detail');
+  }
+
+  function showSuccess(msg) { alert('✅ ' + msg); }
+
+  // ====================================================================
+  // DEFINE : ardalosReloadTasks (etait orphan)
+  // ====================================================================
+  window.ardalosReloadTasks = function() {
+    // Appelee apres creation d'une tache. On recharge la liste.
+    // La fonction loadTasks() est dans une IIFE donc non accessible :
+    // solution simple = reload de la page.
+    setTimeout(function() { location.reload(); }, 800);
+  };
+
+  // ====================================================================
+  // FORMATEURS : Create / Edit / Delete
+  // ====================================================================
+  function formateurFormHtml(f) {
+    f = f || {};
+    function val(k, d) { return escHtml(f[k] != null ? f[k] : (d || '')); }
+    var specialites = Array.isArray(f.specialites) ? f.specialites.join(', ') : '';
+    return (
+      '<div class="fg"><label class="flabel">Prénom <span class="req">*</span></label>' +
+        '<input class="finput" type="text" id="fm-prenom" value="' + val('prenom') + '" autofocus></div>' +
+      '<div class="fg"><label class="flabel">Nom <span class="req">*</span></label>' +
+        '<input class="finput" type="text" id="fm-nom" value="' + val('nom') + '"></div>' +
+      '<div class="frow">' +
+        '<div class="fg"><label class="flabel">Email</label>' +
+          '<input class="finput" type="email" id="fm-email" value="' + val('email') + '"></div>' +
+        '<div class="fg"><label class="flabel">Téléphone</label>' +
+          '<input class="finput" type="tel" id="fm-tel" value="' + val('telephone') + '"></div>' +
+      '</div>' +
+      '<div class="fg"><label class="flabel">Spécialité principale</label>' +
+        '<input class="finput" type="text" id="fm-spec-main" value="' + val('specialite_principale') + '" placeholder="Ex: Danse contemporaine"></div>' +
+      '<div class="fg"><label class="flabel">Spécialités (séparées par virgules)</label>' +
+        '<input class="finput" type="text" id="fm-specialites" value="' + escHtml(specialites) + '" placeholder="Danse Electro, Krump, Chorégraphie"></div>' +
+      '<div class="fg"><label class="flabel">Biographie</label>' +
+        '<textarea class="finput" id="fm-bio" rows="4" placeholder="Parcours, expériences...">' + val('bio') + '</textarea></div>' +
+      '<div class="frow">' +
+        '<div class="fg"><label class="flabel">URL photo</label>' +
+          '<input class="finput" type="text" id="fm-photo" value="' + val('photo_url') + '" placeholder="/cvs/prenom-nom.png"></div>' +
+        '<div class="fg"><label class="flabel">URL CV (PDF)</label>' +
+          '<input class="finput" type="text" id="fm-cv" value="' + val('cv_url') + '" placeholder="/cvs/prenom-nom.pdf"></div>' +
+      '</div>' +
+      '<div class="fg"><label class="flabel">Ville</label>' +
+        '<input class="finput" type="text" id="fm-ville" value="' + val('ville') + '"></div>' +
+      '<div class="fg"><label style="display:flex;align-items:center;gap:6px">' +
+        '<input type="checkbox" id="fm-actif"' + ((f.actif === false) ? '' : ' checked') + '> Formateur actif</label></div>'
+    );
+  }
+
+  function collectFormateurForm() {
+    var prenom = (document.getElementById('fm-prenom').value || '').trim();
+    var nom = (document.getElementById('fm-nom').value || '').trim();
+    if (!prenom || !nom) throw new Error('Prénom et nom sont obligatoires');
+    var specsRaw = (document.getElementById('fm-specialites').value || '').trim();
+    var specs = specsRaw ? specsRaw.split(',').map(function(s) { return s.trim(); }).filter(Boolean) : [];
+    return {
+      prenom: prenom,
+      nom: nom,
+      email: (document.getElementById('fm-email').value || '').trim() || null,
+      telephone: (document.getElementById('fm-tel').value || '').trim() || null,
+      specialite_principale: (document.getElementById('fm-spec-main').value || '').trim() || null,
+      specialites: specs,
+      bio: (document.getElementById('fm-bio').value || '').trim() || null,
+      photo_url: (document.getElementById('fm-photo').value || '').trim() || null,
+      cv_url: (document.getElementById('fm-cv').value || '').trim() || null,
+      ville: (document.getElementById('fm-ville').value || '').trim() || null,
+      actif: document.getElementById('fm-actif').checked
+    };
+  }
+
+  window.ardalosNewFormateur = function() {
+    showForm('Nouveau formateur', formateurFormHtml(), async function() {
+      var data = collectFormateurForm();
+      var r = await sb.from('formateurs').insert(data).select().single();
+      if (r.error) throw r.error;
+      closeM('detail');
+      showSuccess('Formateur créé : ' + data.prenom + ' ' + data.nom);
+      setTimeout(function() { location.reload(); }, 500);
+    });
+  };
+
+  window.ardalosEditFormateur = async function(id) {
+    try {
+      var r = await sb.from('formateurs').select('*').eq('id', id).single();
+      if (r.error) throw r.error;
+      var f = r.data;
+      showForm('Modifier : ' + (f.prenom || '') + ' ' + (f.nom || ''), formateurFormHtml(f), async function() {
+        var data = collectFormateurForm();
+        data.updated_at = new Date().toISOString();
+        var u = await sb.from('formateurs').update(data).eq('id', id);
+        if (u.error) throw u.error;
+        closeM('detail');
+        showSuccess('Formateur modifié');
+        setTimeout(function() { location.reload(); }, 500);
+      });
+    } catch (e) {
+      alert('Erreur chargement : ' + (e.message || 'inconnue'));
+    }
+  };
+
+  window.ardalosDeleteFormateur = async function(id, nom) {
+    if (!confirm('Supprimer définitivement le formateur "' + nom + '" ? Cette action est irréversible.')) return;
+    try {
+      var r = await sb.from('formateurs').delete().eq('id', id);
+      if (r.error) throw r.error;
+      closeM('detail');
+      showSuccess('Formateur supprimé');
+      setTimeout(function() { location.reload(); }, 500);
+    } catch (e) {
+      alert('Erreur suppression : ' + (e.message || 'inconnue'));
+    }
+  };
+
+  // ====================================================================
+  // FORMATIONS : Create (table formations existe avec 14 colonnes)
+  // ====================================================================
+  window.ardalosNewFormation = function() {
+    var formHtml =
+      '<div class="fg"><label class="flabel">Titre <span class="req">*</span></label>' +
+        '<input class="finput" type="text" id="fo-titre" placeholder="Ex: Performance artistique..." autofocus></div>' +
+      '<div class="fg"><label class="flabel">Référence interne</label>' +
+        '<input class="finput" type="text" id="fo-ref" placeholder="Ex: ARD-2026-DANSE-02"></div>' +
+      '<div class="fg"><label class="flabel">Description</label>' +
+        '<textarea class="finput" id="fo-desc" rows="3"></textarea></div>' +
+      '<div class="fg"><label class="flabel">Objectifs pédagogiques</label>' +
+        '<textarea class="finput" id="fo-obj" rows="2"></textarea></div>' +
+      '<div class="fg"><label class="flabel">Prérequis</label>' +
+        '<input class="finput" type="text" id="fo-prereq" placeholder="Ex: Pratique régulière de la danse"></div>' +
+      '<div class="fg"><label class="flabel">Public visé</label>' +
+        '<input class="finput" type="text" id="fo-public" placeholder="Ex: Danseurs professionnels"></div>' +
+      '<div class="frow">' +
+        '<div class="fg"><label class="flabel">Durée (heures)</label>' +
+          '<input class="finput" type="number" id="fo-duree" value="35" min="1"></div>' +
+        '<div class="fg"><label class="flabel">Tarif HT (€)</label>' +
+          '<input class="finput" type="number" id="fo-tarif" value="0" min="0" step="100"></div>' +
+      '</div>' +
+      '<div class="frow">' +
+        '<div class="fg"><label class="flabel">Modalité</label>' +
+          '<select class="fselect" id="fo-mod"><option>Présentiel</option><option>Distanciel</option><option>Mixte</option></select></div>' +
+        '<div class="fg"><label class="flabel">Niveau</label>' +
+          '<select class="fselect" id="fo-niv"><option>Débutant</option><option selected>Intermédiaire</option><option>Avancé</option><option>Tous niveaux</option></select></div>' +
+      '</div>' +
+      '<div class="fg"><label class="flabel">Financements possibles</label>' +
+        '<input class="finput" type="text" id="fo-fin" value="AFDAS,CPF,Plan de formation" placeholder="AFDAS,CPF,OPCO..."></div>';
+
+    showForm('Nouvelle formation', formHtml, async function() {
+      var titre = (document.getElementById('fo-titre').value || '').trim();
+      if (!titre) throw new Error('Le titre est obligatoire');
+      var data = {
+        titre: titre,
+        ref_interne: (document.getElementById('fo-ref').value || '').trim() || null,
+        description: (document.getElementById('fo-desc').value || '').trim() || null,
+        objectifs: (document.getElementById('fo-obj').value || '').trim() || null,
+        prerequis: (document.getElementById('fo-prereq').value || '').trim() || null,
+        public_vise: (document.getElementById('fo-public').value || '').trim() || null,
+        duree: parseInt(document.getElementById('fo-duree').value || '35', 10),
+        tarif: parseFloat(document.getElementById('fo-tarif').value || '0'),
+        modalite: document.getElementById('fo-mod').value,
+        niveau: document.getElementById('fo-niv').value,
+        financement: (document.getElementById('fo-fin').value || '').trim() || null
+      };
+      var r = await sb.from('formations').insert(data).select().single();
+      if (r.error) throw r.error;
+      closeM('detail');
+      showSuccess('Formation créée : ' + titre);
+      setTimeout(function() { location.reload(); }, 500);
+    });
+  };
+
+  // ====================================================================
+  // DEALS : Create (nouvelle table pipeline_deals)
+  // ====================================================================
+  window.ardalosNewDeal = async function() {
+    // Charger les contacts pour le select
+    var cR = await sb.from('contacts').select('id, prenom, nom, email').order('created_at', { ascending: false }).limit(50);
+    var contacts = cR.data || [];
+    var contactsOpts = '<option value="">— Aucun —</option>' + contacts.map(function(c) {
+      var label = (c.prenom || '?') + ' ' + (c.nom || '?') + (c.email ? ' (' + c.email + ')' : '');
+      return '<option value="' + c.id + '">' + escHtml(label) + '</option>';
+    }).join('');
+
+    var formHtml =
+      '<div class="fg"><label class="flabel">Nom du deal <span class="req">*</span></label>' +
+        '<input class="finput" type="text" id="dl-nom" placeholder="Ex: Formation danse AFDAS Dupont" autofocus></div>' +
+      '<div class="frow">' +
+        '<div class="fg"><label class="flabel">Contact associé</label>' +
+          '<select class="fselect" id="dl-contact">' + contactsOpts + '</select></div>' +
+        '<div class="fg"><label class="flabel">Entreprise (si pas de contact)</label>' +
+          '<input class="finput" type="text" id="dl-ent" placeholder="Ex: NEXVA"></div>' +
+      '</div>' +
+      '<div class="frow">' +
+        '<div class="fg"><label class="flabel">Statut</label>' +
+          '<select class="fselect" id="dl-statut">' +
+            '<option value="nouveau">Nouveau</option>' +
+            '<option value="qualifie">Qualifié</option>' +
+            '<option value="proposition">Proposition</option>' +
+            '<option value="negocie">En négociation</option>' +
+            '<option value="gagne">Gagné</option>' +
+            '<option value="perdu">Perdu</option>' +
+          '</select></div>' +
+        '<div class="fg"><label class="flabel">Probabilité (%)</label>' +
+          '<input class="finput" type="number" id="dl-proba" value="50" min="0" max="100" step="5"></div>' +
+      '</div>' +
+      '<div class="frow">' +
+        '<div class="fg"><label class="flabel">Montant HT (€)</label>' +
+          '<input class="finput" type="number" id="dl-montant" min="0" step="100"></div>' +
+        '<div class="fg"><label class="flabel">Date d\'échéance</label>' +
+          '<input class="finput" type="date" id="dl-date"></div>' +
+      '</div>' +
+      '<div class="fg"><label class="flabel">Commercial responsable</label>' +
+        '<select class="fselect" id="dl-com">' +
+          '<option value="">— Non assigné —</option>' +
+          '<option>Sylvain</option><option>David</option><option>Shaun</option><option>Jérôme</option><option>Julien</option>' +
+        '</select></div>' +
+      '<div class="fg"><label class="flabel">Notes</label>' +
+        '<textarea class="finput" id="dl-notes" rows="2"></textarea></div>';
+
+    showForm('Nouveau deal', formHtml, async function() {
+      var nom = (document.getElementById('dl-nom').value || '').trim();
+      if (!nom) throw new Error('Le nom du deal est obligatoire');
+      var contactSelect = document.getElementById('dl-contact').value || null;
+      var montant = document.getElementById('dl-montant').value;
+      var data = {
+        nom: nom,
+        contact_id: contactSelect || null,
+        entreprise_nom: (document.getElementById('dl-ent').value || '').trim() || null,
+        statut: document.getElementById('dl-statut').value,
+        probabilite: parseInt(document.getElementById('dl-proba').value || '50', 10),
+        montant_ht: montant ? parseFloat(montant) : null,
+        date_echeance: document.getElementById('dl-date').value || null,
+        commercial_responsable: document.getElementById('dl-com').value || null,
+        notes: (document.getElementById('dl-notes').value || '').trim() || null
+      };
+      var r = await sb.from('pipeline_deals').insert(data).select().single();
+      if (r.error) throw r.error;
+      closeM('detail');
+      showSuccess('Deal créé : ' + nom);
+      setTimeout(function() { location.reload(); }, 500);
+    });
+  };
+
+  // ====================================================================
+  // CAMPAGNES : Create
+  // ====================================================================
+  window.ardalosNewCampagne = function() {
+    var today = new Date().toISOString().slice(0, 10);
+    var formHtml =
+      '<div class="fg"><label class="flabel">Nom de la campagne <span class="req">*</span></label>' +
+        '<input class="finput" type="text" id="cp-nom" placeholder="Ex: Lancement formation printemps 2026" autofocus></div>' +
+      '<div class="fg"><label class="flabel">Description</label>' +
+        '<textarea class="finput" id="cp-desc" rows="2"></textarea></div>' +
+      '<div class="frow">' +
+        '<div class="fg"><label class="flabel">Canal</label>' +
+          '<select class="fselect" id="cp-canal">' +
+            '<option value="email">Email</option>' +
+            '<option value="sms">SMS</option>' +
+            '<option value="linkedin">LinkedIn</option>' +
+            '<option value="telephone">Téléphone</option>' +
+            '<option value="autre">Autre</option>' +
+          '</select></div>' +
+        '<div class="fg"><label class="flabel">Statut</label>' +
+          '<select class="fselect" id="cp-statut">' +
+            '<option value="brouillon">Brouillon</option>' +
+            '<option value="planifiee">Planifiée</option>' +
+            '<option value="en_cours">En cours</option>' +
+            '<option value="terminee">Terminée</option>' +
+          '</select></div>' +
+      '</div>' +
+      '<div class="frow">' +
+        '<div class="fg"><label class="flabel">Date début</label>' +
+          '<input class="finput" type="date" id="cp-debut" value="' + today + '"></div>' +
+        '<div class="fg"><label class="flabel">Date fin</label>' +
+          '<input class="finput" type="date" id="cp-fin"></div>' +
+      '</div>' +
+      '<div class="fg"><label class="flabel">Cible / Audience</label>' +
+        '<input class="finput" type="text" id="cp-cible" placeholder="Ex: Prospects AFDAS 2026"></div>' +
+      '<div class="frow">' +
+        '<div class="fg"><label class="flabel">Nb destinataires</label>' +
+          '<input class="finput" type="number" id="cp-nbdest" value="0" min="0"></div>' +
+        '<div class="fg"><label class="flabel">Budget (€)</label>' +
+          '<input class="finput" type="number" id="cp-budget" min="0" step="10"></div>' +
+      '</div>';
+
+    showForm('Nouvelle campagne', formHtml, async function() {
+      var nom = (document.getElementById('cp-nom').value || '').trim();
+      if (!nom) throw new Error('Le nom de la campagne est obligatoire');
+      var budget = document.getElementById('cp-budget').value;
+      var data = {
+        nom: nom,
+        description: (document.getElementById('cp-desc').value || '').trim() || null,
+        canal: document.getElementById('cp-canal').value,
+        statut: document.getElementById('cp-statut').value,
+        date_debut: document.getElementById('cp-debut').value || null,
+        date_fin: document.getElementById('cp-fin').value || null,
+        cible: (document.getElementById('cp-cible').value || '').trim() || null,
+        nb_destinataires: parseInt(document.getElementById('cp-nbdest').value || '0', 10),
+        budget: budget ? parseFloat(budget) : null
+      };
+      var r = await sb.from('campagnes').insert(data).select().single();
+      if (r.error) throw r.error;
+      closeM('detail');
+      showSuccess('Campagne créée : ' + nom);
+      setTimeout(function() { location.reload(); }, 500);
+    });
+  };
+
+  // ====================================================================
+  // DOCUMENT TEMPLATES : Create
+  // ====================================================================
+  window.ardalosNewTemplate = function() {
+    var formHtml =
+      '<div class="fg"><label class="flabel">Nom du modèle <span class="req">*</span></label>' +
+        '<input class="finput" type="text" id="tp-nom" placeholder="Ex: Convention de formation 2026" autofocus></div>' +
+      '<div class="fg"><label class="flabel">Description</label>' +
+        '<textarea class="finput" id="tp-desc" rows="2" placeholder="À quoi sert ce modèle..."></textarea></div>' +
+      '<div class="frow">' +
+        '<div class="fg"><label class="flabel">Type de document</label>' +
+          '<select class="fselect" id="tp-type">' +
+            '<option value="convention">Convention</option>' +
+            '<option value="programme">Programme</option>' +
+            '<option value="facture">Facture</option>' +
+            '<option value="devis">Devis</option>' +
+            '<option value="attestation">Attestation</option>' +
+            '<option value="emargement">Émargement</option>' +
+            '<option value="questionnaire">Questionnaire</option>' +
+            '<option value="reglement_interieur">Règlement intérieur</option>' +
+            '<option value="autre">Autre</option>' +
+          '</select></div>' +
+        '<div class="fg"><label class="flabel">Version</label>' +
+          '<input class="finput" type="text" id="tp-ver" value="v1"></div>' +
+      '</div>' +
+      '<div class="fg"><label class="flabel">URL du fichier template</label>' +
+        '<input class="finput" type="text" id="tp-url" placeholder="https://... ou /templates/nom.docx"></div>' +
+      '<div class="fg"><label style="display:flex;align-items:center;gap:6px">' +
+        '<input type="checkbox" id="tp-actif" checked> Modèle actif</label></div>';
+
+    showForm('Nouveau modèle de document', formHtml, async function() {
+      var nom = (document.getElementById('tp-nom').value || '').trim();
+      if (!nom) throw new Error('Le nom du modèle est obligatoire');
+      var data = {
+        nom: nom,
+        description: (document.getElementById('tp-desc').value || '').trim() || null,
+        type_document: document.getElementById('tp-type').value,
+        version: (document.getElementById('tp-ver').value || 'v1').trim(),
+        fichier_url: (document.getElementById('tp-url').value || '').trim() || null,
+        actif: document.getElementById('tp-actif').checked
+      };
+      var r = await sb.from('document_templates').insert(data).select().single();
+      if (r.error) throw r.error;
+      closeM('detail');
+      showSuccess('Modèle créé : ' + nom);
+      setTimeout(function() { location.reload(); }, 500);
+    });
+  };
+
+  console.log('[Sprint 1+2 CRUD] init autonome OK');
+})();
+</script>
 </body>
 </html>
