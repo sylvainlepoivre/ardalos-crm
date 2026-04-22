@@ -555,6 +555,8 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
   margin-top: 2px !important;
 }
 </style>
+  <!-- ARDALOS_CHARTJS_CDN (Phase D1) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
 <!-- ARDALOS_POLE_BOOTSTRAP -->
@@ -1464,6 +1466,18 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
       <div class="card-b" style="padding:14px 16px"><div style="font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;font-weight:600">TOP APPORTEUR</div><div style="font-size:18px;font-weight:600;color:#1A2C6B;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="com-kpi-top">—</div></div>
     </div>
 
+    <!-- ARDALOS_COMMISSIONS_D1_CHART -->
+    <div class="card-b" style="padding:16px 18px;margin-bottom:18px;background:#fff">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:600;color:#1A2C6B">📊 Commissions par mois (12 derniers mois)</div>
+        <div style="display:flex;gap:16px;font-size:11px;color:#6B7280">
+          <span>🟢 Payées</span>
+          <span>🟡 À payer</span>
+        </div>
+      </div>
+      <div style="position:relative;height:220px"><canvas id="com-chart"></canvas></div>
+    </div>
+
     <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
       <select id="com-filter-apporteur" class="finput" style="max-width:200px"><option value="all">Tous apporteurs</option></select>
       <select id="com-filter-periode" class="finput" style="max-width:160px">
@@ -1474,7 +1488,7 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
       </select>
       <select id="com-filter-statut" class="finput" style="max-width:160px">
         <option value="all">Tous statuts</option>
-        <option value="calculee">À payer</option>
+        <option value="a_valider">À payer</option>
         <option value="validee">Validée</option>
         <option value="payee">Payée</option>
         <option value="contestee">Contestée</option>
@@ -10646,6 +10660,7 @@ window.ARDALOS_APPORTEURS_SEED = [
   'use strict';
   if (window.__ARDALOS_COMMISSIONS_V2) return;
   window.__ARDALOS_COMMISSIONS_V2 = true;
+  // [ARDALOS_STATUS_FIX_V1] Statuts alignes sur contrainte DB
 
   var state = {
     commissions: [], apporteurs: [], contrats: [], deals: [],
@@ -10756,7 +10771,7 @@ window.ARDALOS_APPORTEURS_SEED = [
         montant_base_eur: baseHT,
         taux_applique_pct: taux,
         montant_commission_eur: Math.round(commission * 100) / 100,
-        statut: 'calculee',
+        statut: 'a_valider',
         justificatifs: []
       });
     }
@@ -10801,7 +10816,7 @@ window.ARDALOS_APPORTEURS_SEED = [
     var apayer = 0, ytd = 0, attente = 0;
     var curY = new Date().getFullYear();
     filtered.forEach(function(c) {
-      if (c.statut === 'calculee' || c.statut === 'validee') {
+      if (c.statut === 'a_valider' || c.statut === 'validee') {
         apayer += Number(c.montant_commission_eur || 0);
         attente++;
       }
@@ -10840,7 +10855,7 @@ window.ARDALOS_APPORTEURS_SEED = [
       return;
     }
     var badges = {
-      calculee: '<span style="background:#FEF3C7;color:#B45309;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600">🟡 À payer</span>',
+      a_valider: '<span style="background:#FEF3C7;color:#B45309;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600">🟡 À payer</span>',
       validee:  '<span style="background:#DBEAFE;color:#1E40AF;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600">🔵 Validée</span>',
       payee:    '<span style="background:#D1FAE5;color:#047857;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600">🟢 Payée</span>',
       contestee:'<span style="background:#FEE2E2;color:#B91C1C;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600">🔴 Contestée</span>'
@@ -10852,7 +10867,7 @@ window.ARDALOS_APPORTEURS_SEED = [
       for (var j = 0; j < state.deals.length; j++) if (state.deals[j].id === c.pipeline_deal_id) { deal = state.deals[j]; break; }
       var dealLbl = deal ? escHtml(deal.nom) : (c.inscription_id ? 'Inscription Formation' : '—');
       var action = '';
-      if (c.statut === 'calculee' || c.statut === 'validee') {
+      if (c.statut === 'a_valider' || c.statut === 'validee') {
         action = '<button class="btn-s" style="font-size:11px;padding:4px 10px" onclick="window.ardalosMarkCommissionPaid(\''+escHtml(c.id)+'\')">Marquer payée</button>';
       } else if (c.statut === 'payee') {
         action = '<span style="color:#9CA3AF;font-size:11px">'+fmtDate(c.date_paiement)+'</span>';
@@ -10868,6 +10883,96 @@ window.ARDALOS_APPORTEURS_SEED = [
         + '<td style="padding:10px;text-align:center">'+action+'</td>'
         + '</tr>';
     }).join('');
+  }
+
+  // [ARDALOS_COMMISSIONS_D1_CHART]
+  var __chartInstance = null;
+  function renderChart() {
+    if (typeof Chart === 'undefined') { return; }
+    var canvas = document.getElementById('com-chart');
+    if (!canvas) return;
+    // Recuperer les commissions filtrees (memes regles que le tableau)
+    var filtered = applyFilters();
+    // Generer les 12 derniers mois (du plus ancien au plus recent)
+    var months = [];
+    var now = new Date();
+    for (var i = 11; i >= 0; i--) {
+      var d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      months.push({
+        key: d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'),
+        label: d.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' }),
+        payee: 0, apayer: 0
+      });
+    }
+    // Aggregation
+    filtered.forEach(function(c) {
+      if (!c.date_apport) return;
+      var d = new Date(c.date_apport);
+      var k = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+      for (var i = 0; i < months.length; i++) {
+        if (months[i].key === k) {
+          if (c.statut === 'payee') months[i].payee += Number(c.montant_commission_eur || 0);
+          else if (c.statut === 'a_valider' || c.statut === 'validee') months[i].apayer += Number(c.montant_commission_eur || 0);
+          break;
+        }
+      }
+    });
+    var data = {
+      labels: months.map(function(m) { return m.label; }),
+      datasets: [
+        {
+          label: 'Payées',
+          data: months.map(function(m) { return m.payee; }),
+          backgroundColor: '#047857',
+          borderRadius: 4,
+          stack: 's'
+        },
+        {
+          label: 'À payer',
+          data: months.map(function(m) { return m.apayer; }),
+          backgroundColor: '#F59E0B',
+          borderRadius: 4,
+          stack: 's'
+        }
+      ]
+    };
+    var opts = {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 400 },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              var v = ctx.parsed.y || 0;
+              return ctx.dataset.label + ' : ' + v.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
+            }
+          }
+        }
+      },
+      scales: {
+        x: { stacked: true, grid: { display: false }, ticks: { font: { size: 11 }, color: '#6B7280' } },
+        y: {
+          stacked: true,
+          grid: { color: '#F3F4F6' },
+          ticks: {
+            font: { size: 11 },
+            color: '#6B7280',
+            callback: function(v) { return v >= 1000 ? (v / 1000).toFixed(1) + 'k€' : v + '€'; }
+          }
+        }
+      }
+    };
+    if (__chartInstance) {
+      __chartInstance.data = data;
+      __chartInstance.update('none');
+    } else {
+      try {
+        __chartInstance = new Chart(canvas.getContext('2d'), { type: 'bar', data: data, options: opts });
+      } catch(e) { console.warn('[D1 Chart] erreur creation', e); }
+    }
+    try { renderChart(); /* ARDALOS_RENDER_CHART_CALL */ } catch(e) { console.warn('[D1] renderChart err', e); }
   }
 
   function populateApporteurFilter() {
@@ -10899,7 +11004,7 @@ window.ARDALOS_APPORTEURS_SEED = [
     var filtered = applyFilters();
     if (filtered.length === 0) { alert('Aucune commission à exporter'); return; }
     var rows = [['Date','Apporteur','SIRET','Deal','Base HT','Taux %','Commission HT','TVA 20%','TTC','Statut']];
-    var labels = { calculee:'À payer', validee:'Validée', payee:'Payée', contestee:'Contestée' };
+    var labels = { a_valider:'À payer', validee:'Validée', payee:'Payée', contestee:'Contestée' };
     filtered.forEach(function(c) {
       var ap = null;
       for (var i = 0; i < state.apporteurs.length; i++) if (state.apporteurs[i].id === c.apporteur_id) { ap = state.apporteurs[i]; break; }
