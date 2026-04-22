@@ -631,6 +631,11 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
       <svg class="nav-ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="5" cy="5" r="2.5"/><circle cx="11" cy="5" r="2.5"/><path d="M1 14c0-2.2 1.8-3.5 4-3.5s4 1.3 4 3.5"/><path d="M9 14c0-2.2 1.8-3.5 4-3.5"/></svg>
       Apprenants
     </div>
+    <div class="nav-item" data-page="suivi-prod">
+      <svg class="nav-ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 2h12v12H2z"/><path d="M5 6h6M5 9h6M5 12h4"/></svg>
+      Suivi production
+      <span class="nav-badge" id="suivi-prod-badge">...</span>
+    </div>
     <div class="nav-item" data-page="formateurs">
       <svg class="nav-ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="4" r="2.5"/><path d="M3 14c0-2.8 2.2-5 5-5s5 2.2 5 5"/><path d="M11 9l3-2-3-2"/></svg>
       Formateurs
@@ -1503,6 +1508,152 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
     </div>
   </div>
 
+
+<!-- ARDALOS_SUIVI_PROD_V1 -->
+<div id="page-suivi-prod" class="page">
+  <div class="page-hdr">
+    <div class="page-hdr-left">
+      <h1 class="page-title">Suivi production stagiaires</h1>
+      <p class="page-sub" id="suivi-prod-subtitle">Chargement...</p>
+    </div>
+    <div class="page-hdr-right">
+      <button class="btn-s" onclick="window.ardalosSuiviProdExport && window.ardalosSuiviProdExport()">💾 Export CSV</button>
+      <button class="btn-p" onclick="window.ardalosSuiviProdNew && window.ardalosSuiviProdNew()">+ Nouveau stagiaire</button>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-grid g4 anim-kpi" style="margin-bottom:18px">
+    <div class="kpi navy"><div class="kpi-label">TOTAL</div><div class="kpi-value" id="sp-kpi-total">—</div><div class="kpi-sub">stagiaires</div></div>
+    <div class="kpi gold"><div class="kpi-label">EN COURS</div><div class="kpi-value" id="sp-kpi-encours">—</div><div class="kpi-sub">formations actives</div></div>
+    <div class="kpi green"><div class="kpi-label">COMPLETS</div><div class="kpi-value" id="sp-kpi-complets">—</div><div class="kpi-sub">dossiers validés</div></div>
+    <div class="kpi red"><div class="kpi-label">BLOQUÉS</div><div class="kpi-value" id="sp-kpi-bloques">—</div><div class="kpi-sub">documents manquants</div></div>
+  </div>
+
+  <!-- Filtres -->
+  <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
+    <input type="search" id="sp-search" class="finput" placeholder="Rechercher nom, prénom..." style="width:280px">
+    <select id="sp-filter-stage" class="fselect" style="width:auto">
+      <option value="all">Toutes les étapes</option>
+      <option value="CONTACT_CREATED">1. Contact créé</option>
+      <option value="INFO_COLLECTED">2. Infos collectées</option>
+      <option value="DOCUMENTS_RECEIVED">3. Documents reçus</option>
+      <option value="FILE_IN_REVIEW">4. Dossier en relecture</option>
+      <option value="FILE_COMPLETE">5. Dossier complet</option>
+      <option value="ADMIN_VALIDATED">6. Admin validé</option>
+      <option value="TRAINING_STARTED">7. Formation démarrée</option>
+      <option value="IN_PROGRESS">8. En cours</option>
+      <option value="TRAINING_COMPLETED">9. Formation terminée</option>
+      <option value="FILE_CLOSED">10. Dossier clôturé</option>
+    </select>
+    <select id="sp-filter-year" class="fselect" style="width:auto">
+      <option value="all">Toutes années</option>
+      <option value="2024">2024</option>
+      <option value="2025">2025</option>
+      <option value="2026">2026</option>
+    </select>
+    <span id="sp-count" style="font-size:12px;color:#6B7280"></span>
+  </div>
+
+  <!-- Tableau -->
+  <div class="card-b" style="background:#fff;border-radius:8px;overflow:hidden;border:1px solid #E5E7EB">
+    <table style="width:100%;border-collapse:collapse">
+      <thead style="background:#F9FAFB;border-bottom:1px solid #E5E7EB">
+        <tr style="font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px">
+          <th style="padding:12px;text-align:left">Nom complet</th>
+          <th style="padding:12px;text-align:left">Formation</th>
+          <th style="padding:12px;text-align:center">Étape</th>
+          <th style="padding:12px;text-align:center">Progression</th>
+          <th style="padding:12px;text-align:left">Prochaine action</th>
+          <th style="padding:12px;text-align:center">Action</th>
+        </tr>
+      </thead>
+      <tbody id="sp-table-body">
+        <tr><td colspan="6" style="padding:40px;text-align:center;color:#9CA3AF;font-style:italic">Chargement...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- FICHE DÉTAILLÉE -->
+<div id="page-suivi-prod-fiche" class="page">
+  <div class="page-hdr">
+    <div class="page-hdr-left">
+      <a href="javascript:void(0)" onclick="navigate('suivi-prod')" style="font-size:12px;color:#1A2C6B;text-decoration:none">← Retour liste</a>
+      <h1 class="page-title" id="sp-fiche-nom">—</h1>
+      <p class="page-sub" id="sp-fiche-sub">—</p>
+    </div>
+    <div class="page-hdr-right">
+      <button class="btn-s" onclick="window.ardalosSuiviProdDelete && window.ardalosSuiviProdDelete()">🗑 Supprimer</button>
+      <button class="btn-p" onclick="window.ardalosSuiviProdNextStage && window.ardalosSuiviProdNextStage()">▶ Passer à l\'étape suivante</button>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:18px">
+    <!-- Colonne gauche : timeline + docs -->
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <!-- Timeline -->
+      <div class="card-b" style="background:#fff;border-radius:10px;padding:20px;border:1px solid #E5E7EB">
+        <div style="font-size:13px;font-weight:600;color:#1A2C6B;margin-bottom:16px">📊 Timeline du dossier</div>
+        <div id="sp-fiche-timeline"></div>
+      </div>
+
+      <!-- Checklist docs -->
+      <div class="card-b" style="background:#fff;border-radius:10px;padding:20px;border:1px solid #E5E7EB">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div style="font-size:13px;font-weight:600;color:#1A2C6B">📄 Documents du dossier</div>
+          <button class="btn-s" onclick="window.ardalosSuiviProdAddDoc && window.ardalosSuiviProdAddDoc()">+ Ajouter</button>
+        </div>
+        <div id="sp-fiche-docs"></div>
+      </div>
+
+      <!-- Notes internes -->
+      <div class="card-b" style="background:#fff;border-radius:10px;padding:20px;border:1px solid #E5E7EB">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div style="font-size:13px;font-weight:600;color:#1A2C6B">📝 Notes internes</div>
+          <button class="btn-s" onclick="window.ardalosSuiviProdEditNotes && window.ardalosSuiviProdEditNotes()">✏️ Éditer</button>
+        </div>
+        <div id="sp-fiche-notes" style="font-size:12px;color:#4B5563;white-space:pre-wrap;min-height:40px">—</div>
+      </div>
+
+      <!-- Journal d'activité -->
+      <div class="card-b" style="background:#fff;border-radius:10px;padding:20px;border:1px solid #E5E7EB">
+        <div style="font-size:13px;font-weight:600;color:#1A2C6B;margin-bottom:12px">🕐 Journal d\'activité</div>
+        <div id="sp-fiche-activity"></div>
+      </div>
+    </div>
+
+    <!-- Colonne droite : infos + actions -->
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <!-- Infos -->
+      <div class="card-b" style="background:#fff;border-radius:10px;padding:20px;border:1px solid #E5E7EB">
+        <div style="font-size:13px;font-weight:600;color:#1A2C6B;margin-bottom:12px">ℹ️ Informations</div>
+        <div id="sp-fiche-infos" style="font-size:12px;color:#4B5563;line-height:1.8"></div>
+      </div>
+
+      <!-- Prochaine action -->
+      <div class="card-b" style="background:#FEF3C7;border:1px solid #F59E0B;border-radius:10px;padding:16px">
+        <div style="font-size:11px;font-weight:600;color:#92400E;text-transform:uppercase;margin-bottom:6px">⚡ Prochaine action</div>
+        <div id="sp-fiche-nextaction" style="font-size:13px;color:#78350F">—</div>
+        <button class="btn-s" style="margin-top:10px" onclick="window.ardalosSuiviProdEditAction && window.ardalosSuiviProdEditAction()">✏️ Modifier</button>
+      </div>
+
+      <!-- Actions rapides -->
+      <div class="card-b" style="background:#fff;border-radius:10px;padding:20px;border:1px solid #E5E7EB">
+        <div style="font-size:13px;font-weight:600;color:#1A2C6B;margin-bottom:12px">🎯 Actions</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="btn-s" onclick="window.ardalosSuiviProdValidate && window.ardalosSuiviProdValidate()">✓ Valider l\'étape</button>
+          <button class="btn-s" onclick="window.ardalosSuiviProdMarkComplete && window.ardalosSuiviProdMarkComplete()">✅ Marquer dossier complet</button>
+          <button class="btn-s" onclick="window.ardalosSuiviProdAssign && window.ardalosSuiviProdAssign()">👤 Assigner responsable</button>
+          <button class="btn-s" onclick="window.ardalosSuiviProdRelance && window.ardalosSuiviProdRelance()">📞 Relancer</button>
+          <button class="btn-s" style="border-color:#DC2626;color:#DC2626" onclick="window.ardalosSuiviProdClose && window.ardalosSuiviProdClose()">🔒 Clôturer dossier</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- /ARDALOS_SUIVI_PROD_V1 -->
+
 </div><!-- /content -->
 </div><!-- /main -->
 
@@ -1894,7 +2045,7 @@ const PAGE_TITLES = {
   dashboard:'Dashboard',contacts:'Contacts',companies:'Entreprises',
   pipeline:'Pipeline',formations:'Formations',sessions:'Sessions & Cohortes',
   apprenants:'Apprenants',formateurs:'Formateurs',funding:'Dossiers financement',
-  afdas:'Moteur AFDAS',qualiopi:'Qualiopi',documents:'Documents',
+  afdas:'Moteur AFDAS',qualiopi:'Qualiopi',documents:'Documents','suivi-prod':'Suivi production','suivi-prod-fiche':'Fiche stagiaire',
   workflows:'Workflows',tasks:'Tâches',reporting:'Reporting',campaigns:'Campagnes'
 };
 
@@ -10877,5 +11028,618 @@ window.ARDALOS_APPORTEURS_SEED = [
 })();
 </script>
 
+
+<!-- ARDALOS_SUIVI_PROD_SCRIPT_V1 -->
+<script>
+(function() {
+  if (window.__ARDALOS_SUIVI_PROD_V1) return;
+  window.__ARDALOS_SUIVI_PROD_V1 = true;
+
+  // Mapping des stages (ordre + label + % progression)
+  var STAGES = [
+    { key:'CONTACT_CREATED',    label:'1. Contact créé',           pct:10  },
+    { key:'INFO_COLLECTED',     label:'2. Infos collectées',       pct:20  },
+    { key:'DOCUMENTS_RECEIVED', label:'3. Documents reçus',        pct:30  },
+    { key:'FILE_IN_REVIEW',     label:'4. Dossier en relecture',   pct:45  },
+    { key:'FILE_COMPLETE',      label:'5. Dossier complet',        pct:55  },
+    { key:'ADMIN_VALIDATED',    label:'6. Admin validé',           pct:65  },
+    { key:'TRAINING_STARTED',   label:'7. Formation démarrée',     pct:75  },
+    { key:'IN_PROGRESS',        label:'8. En cours',               pct:85  },
+    { key:'TRAINING_COMPLETED', label:'9. Formation terminée',     pct:95  },
+    { key:'FILE_CLOSED',        label:'10. Dossier clôturé',       pct:100 }
+  ];
+
+  function stageInfo(key) {
+    for (var i=0; i<STAGES.length; i++) if (STAGES[i].key === key) return { idx:i, info:STAGES[i] };
+    return { idx:0, info:STAGES[0] };
+  }
+
+  // Supabase client (même stratégie que Sprint 1.7 v3)
+  var __sb = null;
+  function getSb() {
+    if (__sb) return __sb;
+    if (window.sb) { __sb = window.sb; return __sb; }
+    if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+      __sb = window.supabase.createClient(
+        'https://cvxzdiutxonnsnwoicqt.supabase.co',
+        'sb_publishable_J8ta-7L05zgK9rBy2OS9Bg_CjXHwZVK'
+      );
+      if (!window.sb) window.sb = __sb;
+      return __sb;
+    }
+    return null;
+  }
+
+  var state = {
+    list: [],
+    currentId: null,
+    currentFiche: null,
+    currentActivity: [],
+    currentDocs: []
+  };
+
+  // ─── Helpers ───
+  function fmtDate(d) {
+    if (!d) return '—';
+    var parts = d.split('-');
+    return parts[2] + '/' + parts[1] + '/' + parts[0];
+  }
+  function fmtDateTime(d) {
+    if (!d) return '—';
+    var dt = new Date(d);
+    return dt.toLocaleDateString('fr-FR') + ' ' + dt.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+  }
+  function esc(s) {
+    if (s === null || s === undefined) return '';
+    return String(s).replace(/[&<>"']/g, function(c) {
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  }
+  function toast(msg, type) {
+    if (typeof window.toast === 'function') { window.toast(msg, type); return; }
+    console.log('[Suivi Prod]', msg);
+  }
+
+  // ─── Log activité ───
+  async function logActivity(stagiaireId, actionType, actionLabel, oldVal, newVal) {
+    var sb = getSb(); if (!sb) return;
+    try {
+      await sb.from('stagiaires_suivi_activity').insert({
+        stagiaire_id: stagiaireId,
+        action_type: actionType,
+        action_label: actionLabel,
+        old_value: oldVal ? { value: oldVal } : null,
+        new_value: newVal ? { value: newVal } : null,
+        performed_by: 'Sylvain'
+      });
+    } catch(e) { console.warn('[Suivi Prod] logActivity err', e); }
+  }
+
+  // ─── Chargement liste ───
+  async function loadList() {
+    var sb = getSb(); if (!sb) { toast('Supabase indisponible', 'err'); return; }
+    var r = await sb.from('stagiaires_suivi').select('*').order('created_at', { ascending: false });
+    if (r.error) { toast('Erreur chargement: ' + r.error.message, 'err'); return; }
+    state.list = r.data || [];
+    renderKpis();
+    renderTable();
+    updateBadge();
+  }
+
+  function renderKpis() {
+    var total = state.list.length;
+    var encours = state.list.filter(function(s){ return ['TRAINING_STARTED','IN_PROGRESS'].indexOf(s.current_stage) >= 0; }).length;
+    var complets = state.list.filter(function(s){ return ['FILE_COMPLETE','ADMIN_VALIDATED','FILE_CLOSED','TRAINING_COMPLETED'].indexOf(s.current_stage) >= 0; }).length;
+    var bloques = state.list.filter(function(s){ return s.current_stage === 'FILE_IN_REVIEW'; }).length;
+    var el = document.getElementById('sp-kpi-total'); if (el) el.textContent = total;
+    el = document.getElementById('sp-kpi-encours'); if (el) el.textContent = encours;
+    el = document.getElementById('sp-kpi-complets'); if (el) el.textContent = complets;
+    el = document.getElementById('sp-kpi-bloques'); if (el) el.textContent = bloques;
+    el = document.getElementById('suivi-prod-subtitle'); if (el) el.textContent = total + ' stagiaire' + (total>1?'s':'') + ' · ' + encours + ' en cours · ' + complets + ' complets';
+  }
+
+  function updateBadge() {
+    var b = document.getElementById('suivi-prod-badge');
+    if (b) b.textContent = state.list.length;
+  }
+
+  function applyFilters() {
+    var search = (document.getElementById('sp-search') || {}).value || '';
+    var stage = (document.getElementById('sp-filter-stage') || {}).value || 'all';
+    var year = (document.getElementById('sp-filter-year') || {}).value || 'all';
+    var q = search.toLowerCase().trim();
+    return state.list.filter(function(s) {
+      if (q && (s.full_name || '').toLowerCase().indexOf(q) < 0) return false;
+      if (stage !== 'all' && s.current_stage !== stage) return false;
+      if (year !== 'all' && (s.training_start_date || '').indexOf(year) !== 0) return false;
+      return true;
+    });
+  }
+
+  function renderTable() {
+    var filtered = applyFilters();
+    var body = document.getElementById('sp-table-body');
+    var cntEl = document.getElementById('sp-count');
+    if (cntEl) cntEl.textContent = filtered.length + ' / ' + state.list.length + ' visibles';
+    if (!body) return;
+    if (filtered.length === 0) {
+      body.innerHTML = '<tr><td colspan="6" style="padding:40px;text-align:center;color:#9CA3AF;font-style:italic">Aucun stagiaire</td></tr>';
+      return;
+    }
+    body.innerHTML = filtered.map(function(s) {
+      var si = stageInfo(s.current_stage);
+      var pct = s.completion_percentage || si.info.pct;
+      var progColor = pct >= 90 ? '#047857' : pct >= 60 ? '#1A2C6B' : pct >= 30 ? '#F59E0B' : '#9CA3AF';
+      return '<tr style="border-top:1px solid #F3F4F6;font-size:12px" onmouseover="this.style.background=\'#F9FAFB\'" onmouseout="this.style.background=\'\'">' +
+        '<td style="padding:12px;font-weight:600;color:#1A2C6B">' + esc(s.full_name) + '</td>' +
+        '<td style="padding:12px;color:#6B7280">' + fmtDate(s.training_start_date) + ' → ' + fmtDate(s.training_end_date) + '</td>' +
+        '<td style="padding:12px;text-align:center"><span style="display:inline-block;padding:3px 8px;border-radius:4px;background:#F3F4F6;color:#4B5563;font-size:11px">' + esc(si.info.label) + '</span></td>' +
+        '<td style="padding:12px;text-align:center"><div style="background:#F3F4F6;border-radius:4px;height:8px;position:relative;width:80px;margin:0 auto"><div style="width:' + pct + '%;height:100%;background:' + progColor + ';border-radius:4px"></div></div><div style="font-size:10px;margin-top:3px;color:#6B7280">' + pct + '%</div></td>' +
+        '<td style="padding:12px;color:#4B5563">' + esc(s.next_action || '—') + '</td>' +
+        '<td style="padding:12px;text-align:center"><button class="btn-s" onclick="window.ardalosSuiviProdOpen(\'' + s.id + '\')">Ouvrir →</button></td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  // ─── Ouverture fiche ───
+  window.ardalosSuiviProdOpen = async function(id) {
+    state.currentId = id;
+    var sb = getSb(); if (!sb) return;
+    var r = await sb.from('stagiaires_suivi').select('*').eq('id', id).single();
+    if (r.error) { toast('Erreur: ' + r.error.message, 'err'); return; }
+    state.currentFiche = r.data;
+    var r2 = await sb.from('stagiaires_suivi_activity').select('*').eq('stagiaire_id', id).order('created_at', { ascending: false });
+    state.currentActivity = r2.data || [];
+    var r3 = await sb.from('stagiaires_suivi_documents').select('*').eq('stagiaire_id', id).order('created_at', { ascending: false });
+    state.currentDocs = r3.data || [];
+    if (typeof navigate === 'function') navigate('suivi-prod-fiche');
+    renderFiche();
+  };
+
+  function renderFiche() {
+    var s = state.currentFiche; if (!s) return;
+    var si = stageInfo(s.current_stage);
+    var pct = s.completion_percentage || si.info.pct;
+
+    var elNom = document.getElementById('sp-fiche-nom'); if (elNom) elNom.textContent = s.full_name;
+    var elSub = document.getElementById('sp-fiche-sub'); if (elSub) elSub.textContent = fmtDate(s.training_start_date) + ' → ' + fmtDate(s.training_end_date) + ' · ' + si.info.label + ' · ' + pct + '%';
+
+    // Timeline
+    var tl = document.getElementById('sp-fiche-timeline');
+    if (tl) {
+      tl.innerHTML = STAGES.map(function(stg, i) {
+        var isDone = i < si.idx;
+        var isCurrent = i === si.idx;
+        var bg = isDone ? '#047857' : isCurrent ? '#F59E0B' : '#E5E7EB';
+        var color = (isDone || isCurrent) ? '#fff' : '#9CA3AF';
+        return '<div style="display:flex;align-items:center;gap:12px;padding:6px 0">' +
+          '<div style="width:26px;height:26px;border-radius:50%;background:' + bg + ';color:' + color + ';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0">' + (isDone ? '✓' : (i+1)) + '</div>' +
+          '<div style="font-size:12px;color:' + (isCurrent ? '#1A2C6B' : isDone ? '#6B7280' : '#9CA3AF') + ';font-weight:' + (isCurrent ? '600' : '400') + '">' + esc(stg.label) + '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    // Docs checklist
+    var docsEl = document.getElementById('sp-fiche-docs');
+    if (docsEl) {
+      var cl = s.documents_checklist || {};
+      var items = [
+        {key:'devis_envoye', label:'Devis envoyé'},
+        {key:'programme_envoye', label:'Programme envoyé'},
+        {key:'convention_envoyee', label:'Convention envoyée'},
+        {key:'afdas_envoye', label:'AFDAS envoyé'},
+        {key:'dossier_complet', label:'Dossier complet'}
+      ];
+      docsEl.innerHTML = items.map(function(it) {
+        var ok = !!cl[it.key];
+        return '<label style="display:flex;align-items:center;gap:10px;padding:6px 0;cursor:pointer;font-size:12px;color:#4B5563">' +
+          '<input type="checkbox" ' + (ok ? 'checked' : '') + ' onchange="window.ardalosSuiviProdToggleDoc(\'' + it.key + '\', this.checked)">' +
+          '<span style="' + (ok ? 'text-decoration:line-through;color:#9CA3AF' : '') + '">' + esc(it.label) + '</span>' +
+        '</label>';
+      }).join('');
+      if (state.currentDocs.length > 0) {
+        docsEl.innerHTML += '<div style="margin-top:12px;padding-top:12px;border-top:1px solid #F3F4F6"><div style="font-size:11px;color:#6B7280;margin-bottom:6px">Documents joints</div>' +
+          state.currentDocs.map(function(d) {
+            return '<div style="font-size:12px;padding:4px 0">📎 ' + esc(d.document_type) + ' · ' + esc(d.file_name || '—') + ' · ' + fmtDateTime(d.uploaded_at) + '</div>';
+          }).join('') + '</div>';
+      }
+    }
+
+    // Notes
+    var notesEl = document.getElementById('sp-fiche-notes');
+    if (notesEl) notesEl.textContent = s.internal_notes || 'Aucune note';
+
+    // Infos
+    var infosEl = document.getElementById('sp-fiche-infos');
+    if (infosEl) {
+      infosEl.innerHTML =
+        '<div><strong>Téléphone :</strong> ' + esc(s.phone || '—') + '</div>' +
+        '<div><strong>Email :</strong> ' + esc(s.email || '—') + '</div>' +
+        '<div><strong>Début :</strong> ' + fmtDate(s.training_start_date) + '</div>' +
+        '<div><strong>Fin :</strong> ' + fmtDate(s.training_end_date) + '</div>' +
+        '<div><strong>Session :</strong> ' + esc(s.session_name || '—') + '</div>' +
+        '<div><strong>Prospecté par :</strong> ' + esc(s.prospecte_par || '—') + '</div>' +
+        '<div><strong>Assigné à :</strong> ' + esc(s.assigned_to || '—') + '</div>' +
+        '<div><strong>Statut admin :</strong> ' + esc(s.administrative_status || '—') + '</div>' +
+        '<div><strong>Statut péda :</strong> ' + esc(s.pedagogical_status || '—') + '</div>';
+    }
+
+    // Prochaine action
+    var naEl = document.getElementById('sp-fiche-nextaction');
+    if (naEl) naEl.textContent = s.next_action ? (s.next_action + (s.next_action_due_date ? ' (avant le ' + fmtDate(s.next_action_due_date) + ')' : '')) : 'Aucune action programmée';
+
+    // Journal
+    var actEl = document.getElementById('sp-fiche-activity');
+    if (actEl) {
+      if (state.currentActivity.length === 0) {
+        actEl.innerHTML = '<div style="font-size:12px;color:#9CA3AF;font-style:italic">Aucune activité enregistrée</div>';
+      } else {
+        actEl.innerHTML = state.currentActivity.slice(0, 20).map(function(a) {
+          return '<div style="padding:8px 0;border-bottom:1px solid #F3F4F6;font-size:12px">' +
+            '<div style="color:#1A2C6B;font-weight:600">' + esc(a.action_label || a.action_type) + '</div>' +
+            '<div style="color:#6B7280;font-size:11px;margin-top:2px">' + fmtDateTime(a.created_at) + ' · ' + esc(a.performed_by || 'système') + '</div>' +
+          '</div>';
+        }).join('');
+      }
+    }
+  }
+
+  // ─── Actions sur la fiche (8 boutons) ───
+
+  // 1. Passer à l'étape suivante
+  window.ardalosSuiviProdNextStage = async function() {
+    var s = state.currentFiche; if (!s) return;
+    var si = stageInfo(s.current_stage);
+    if (si.idx >= STAGES.length - 1) { toast('Déjà à la dernière étape', 'err'); return; }
+    var next = STAGES[si.idx + 1];
+    var sb = getSb();
+    var r = await sb.from('stagiaires_suivi').update({
+      current_stage: next.key,
+      completion_percentage: next.pct
+    }).eq('id', s.id).select().single();
+    if (r.error) { toast('Erreur: ' + r.error.message, 'err'); return; }
+    await logActivity(s.id, 'stage_change', 'Passage à : ' + next.label, s.current_stage, next.key);
+    state.currentFiche = r.data;
+    var r2 = await sb.from('stagiaires_suivi_activity').select('*').eq('stagiaire_id', s.id).order('created_at', { ascending: false });
+    state.currentActivity = r2.data || [];
+    renderFiche();
+    // Met aussi à jour la liste en arrière-plan
+    for (var i=0; i<state.list.length; i++) if (state.list[i].id === s.id) state.list[i] = r.data;
+    toast('✓ Étape validée : ' + next.label, 'ok');
+  };
+
+  // 2. Valider l'étape actuelle
+  window.ardalosSuiviProdValidate = async function() {
+    var s = state.currentFiche; if (!s) return;
+    var sb = getSb();
+    await sb.from('stagiaires_suivi').update({ stage_status: 'validated' }).eq('id', s.id);
+    await logActivity(s.id, 'stage_validated', 'Étape validée : ' + stageInfo(s.current_stage).info.label);
+    toast('✓ Étape validée', 'ok');
+    await window.ardalosSuiviProdOpen(s.id);
+  };
+
+  // 3. Ajouter un document
+  window.ardalosSuiviProdAddDoc = async function() {
+    var s = state.currentFiche; if (!s) return;
+    var type = prompt('Type de document (ex: Convention, AFDAS, Devis...)');
+    if (!type) return;
+    var fileName = prompt('Nom du fichier (optionnel)') || '';
+    var sb = getSb();
+    var r = await sb.from('stagiaires_suivi_documents').insert({
+      stagiaire_id: s.id,
+      document_type: type,
+      file_name: fileName,
+      is_received: true
+    }).select().single();
+    if (r.error) { toast('Erreur: ' + r.error.message, 'err'); return; }
+    await logActivity(s.id, 'doc_added', 'Document ajouté : ' + type);
+    toast('✓ Document ajouté', 'ok');
+    await window.ardalosSuiviProdOpen(s.id);
+  };
+
+  // 4. Toggle checklist doc
+  window.ardalosSuiviProdToggleDoc = async function(key, checked) {
+    var s = state.currentFiche; if (!s) return;
+    var cl = Object.assign({}, s.documents_checklist || {});
+    cl[key] = checked;
+    var sb = getSb();
+    var r = await sb.from('stagiaires_suivi').update({ documents_checklist: cl }).eq('id', s.id).select().single();
+    if (r.error) { toast('Erreur: ' + r.error.message, 'err'); return; }
+    state.currentFiche = r.data;
+    await logActivity(s.id, 'checklist_update', (checked ? 'Coché' : 'Décoché') + ' : ' + key);
+    toast('✓ Checklist mise à jour', 'ok');
+  };
+
+  // 5. Marquer dossier complet
+  window.ardalosSuiviProdMarkComplete = async function() {
+    var s = state.currentFiche; if (!s) return;
+    if (!confirm('Marquer le dossier comme complet ?')) return;
+    var sb = getSb();
+    var r = await sb.from('stagiaires_suivi').update({
+      current_stage: 'FILE_COMPLETE',
+      completion_percentage: 55,
+      administrative_status: 'complet'
+    }).eq('id', s.id).select().single();
+    if (r.error) { toast('Erreur: ' + r.error.message, 'err'); return; }
+    await logActivity(s.id, 'file_complete', 'Dossier marqué complet');
+    toast('✓ Dossier complet', 'ok');
+    await window.ardalosSuiviProdOpen(s.id);
+  };
+
+  // 6. Assigner un responsable
+  window.ardalosSuiviProdAssign = async function() {
+    var s = state.currentFiche; if (!s) return;
+    var who = prompt('Assigner à (nom du responsable) :', s.assigned_to || '');
+    if (who === null) return;
+    var sb = getSb();
+    await sb.from('stagiaires_suivi').update({ assigned_to: who }).eq('id', s.id);
+    await logActivity(s.id, 'assigned', 'Assigné à : ' + who);
+    toast('✓ Assigné à ' + who, 'ok');
+    await window.ardalosSuiviProdOpen(s.id);
+  };
+
+  // 7. Éditer notes
+  window.ardalosSuiviProdEditNotes = async function() {
+    var s = state.currentFiche; if (!s) return;
+    var notes = prompt('Notes internes :', s.internal_notes || '');
+    if (notes === null) return;
+    var sb = getSb();
+    await sb.from('stagiaires_suivi').update({ internal_notes: notes }).eq('id', s.id);
+    await logActivity(s.id, 'notes_update', 'Notes mises à jour');
+    toast('✓ Notes enregistrées', 'ok');
+    await window.ardalosSuiviProdOpen(s.id);
+  };
+
+  // 8. Éditer prochaine action
+  window.ardalosSuiviProdEditAction = async function() {
+    var s = state.currentFiche; if (!s) return;
+    var action = prompt('Prochaine action :', s.next_action || '');
+    if (action === null) return;
+    var due = prompt('Date butoir (JJ/MM/AAAA, ou vide) :', '');
+    var dueDate = null;
+    if (due && due.indexOf('/') >= 0) {
+      var p = due.split('/');
+      if (p.length === 3) dueDate = p[2] + '-' + p[1].padStart(2,'0') + '-' + p[0].padStart(2,'0');
+    }
+    var sb = getSb();
+    await sb.from('stagiaires_suivi').update({ next_action: action, next_action_due_date: dueDate }).eq('id', s.id);
+    await logActivity(s.id, 'next_action_update', 'Action : ' + action);
+    toast('✓ Action enregistrée', 'ok');
+    await window.ardalosSuiviProdOpen(s.id);
+  };
+
+  // Relancer
+  window.ardalosSuiviProdRelance = async function() {
+    var s = state.currentFiche; if (!s) return;
+    await logActivity(s.id, 'relance', 'Relance effectuée');
+    toast('✓ Relance journalisée', 'ok');
+    await window.ardalosSuiviProdOpen(s.id);
+  };
+
+  // Clôturer
+  window.ardalosSuiviProdClose = async function() {
+    var s = state.currentFiche; if (!s) return;
+    if (!confirm('Clôturer définitivement ce dossier ?')) return;
+    var sb = getSb();
+    await sb.from('stagiaires_suivi').update({
+      current_stage: 'FILE_CLOSED',
+      completion_percentage: 100,
+      stage_status: 'closed'
+    }).eq('id', s.id);
+    await logActivity(s.id, 'file_closed', 'Dossier clôturé');
+    toast('✓ Dossier clôturé', 'ok');
+    await window.ardalosSuiviProdOpen(s.id);
+    await loadList();
+  };
+
+  // Supprimer
+  window.ardalosSuiviProdDelete = async function() {
+    var s = state.currentFiche; if (!s) return;
+    if (!confirm('Supprimer DÉFINITIVEMENT le dossier de ' + s.full_name + ' ?')) return;
+    var sb = getSb();
+    await sb.from('stagiaires_suivi').delete().eq('id', s.id);
+    toast('✓ Dossier supprimé', 'ok');
+    await loadList();
+    if (typeof navigate === 'function') navigate('suivi-prod');
+  };
+
+  // Nouveau stagiaire
+  window.ardalosSuiviProdNew = async function() {
+    var name = prompt('Nom complet du stagiaire :');
+    if (!name || !name.trim()) return;
+    var parts = name.trim().split(' ');
+    var fn = parts[0];
+    var ln = parts.slice(1).join(' ') || '';
+    var sb = getSb();
+    var r = await sb.from('stagiaires_suivi').insert({
+      first_name: fn, last_name: ln, full_name: name.trim(),
+      prospecte_par: 'Sylvain Lepoivre',
+      current_stage: 'CONTACT_CREATED',
+      completion_percentage: 10
+    }).select().single();
+    if (r.error) { toast('Erreur: ' + r.error.message, 'err'); return; }
+    await logActivity(r.data.id, 'created', 'Fiche créée pour ' + name);
+    toast('✓ Stagiaire créé', 'ok');
+    await loadList();
+    await window.ardalosSuiviProdOpen(r.data.id);
+  };
+
+  // Export CSV
+  window.ardalosSuiviProdExport = function() {
+    var data = applyFilters();
+    if (data.length === 0) { alert('Rien à exporter'); return; }
+    var header = ['Nom','Début','Fin','Étape','Progression %','Statut admin','Prochaine action','Assigné'];
+    var rows = data.map(function(s) {
+      var si = stageInfo(s.current_stage);
+      return [s.full_name, s.training_start_date||'', s.training_end_date||'', si.info.label, s.completion_percentage||si.info.pct, s.administrative_status||'', s.next_action||'', s.assigned_to||''];
+    });
+    var csv = [header].concat(rows).map(function(r){
+      return r.map(function(c){ return '"' + String(c||'').replace(/"/g,'""') + '"'; }).join(',');
+    }).join('\n');
+    var blob = new Blob(['\ufeff' + csv], { type:'text/csv;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'suivi_production_' + new Date().toISOString().slice(0,10) + '.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  // ─── Wire-up ───
+  function wire() {
+    ['sp-search','sp-filter-stage','sp-filter-year'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.addEventListener('input', renderTable);
+      if (el && el.tagName === 'SELECT') el.addEventListener('change', renderTable);
+    });
+  }
+
+  // ─── Init au chargement ───
+  function init() {
+    wire();
+    loadList();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() { setTimeout(init, 300); });
+  } else {
+    setTimeout(init, 300);
+  }
+
+  console.log('[Suivi Prod] init OK');
+})();
+</script>
+<!-- /ARDALOS_SUIVI_PROD_SCRIPT_V1 -->
+
+<!-- ARDALOS_SUIVI_PROD_REFRESH_V1 -->
+<script>
+(function() {
+  if (window.__ARDALOS_SUIVI_PROD_REFRESH_V1) return;
+  window.__ARDALOS_SUIVI_PROD_REFRESH_V1 = true;
+
+  // Wrap la fonction navigate pour detecter retour a la liste
+  function installRefreshHook() {
+    if (typeof window.navigate !== 'function') {
+      setTimeout(installRefreshHook, 300);
+      return;
+    }
+    var origNavigate = window.navigate;
+    window.navigate = function(page) {
+      origNavigate(page);
+      // Si on arrive sur la page liste Suivi Production, on recharge depuis Supabase
+      if (page === 'suivi-prod') {
+        // Recharger la liste en arriere-plan
+        setTimeout(function() {
+          var sb = window.sb;
+          if (!sb) return;
+          sb.from('stagiaires_suivi').select('*').order('created_at', { ascending: false }).then(function(r) {
+            if (r.error) { console.warn('[Suivi Prod Refresh] err', r.error); return; }
+            // Trouver le state du module Suivi Prod et le mettre a jour
+            // Le state est dans la closure de l'IIFE, donc on passe par un trick:
+            // on re-render le tableau en mettant a jour les lignes directement
+            var list = r.data || [];
+            // Re-render via event synthetique: on change la valeur d'un input puis on dispatch
+            // Plus simple: on appelle directement les renders exposes
+            // Mais les renders ne sont pas exposes. On va juste replacer l'innerHTML du tableau.
+            renderSuiviProdTable(list);
+            renderSuiviProdKpis(list);
+            console.log('[Suivi Prod Refresh] Liste rechargee:', list.length, 'stagiaires');
+          });
+        }, 100);
+      }
+    };
+    console.log('[Suivi Prod Refresh] Hook installe');
+  }
+
+  // Reimplementation locale du rendu (identique au code original)
+  var STAGES = [
+    { key:'CONTACT_CREATED',    label:'1. Contact cree',           pct:10  },
+    { key:'INFO_COLLECTED',     label:'2. Infos collectees',       pct:20  },
+    { key:'DOCUMENTS_RECEIVED', label:'3. Documents recus',        pct:30  },
+    { key:'FILE_IN_REVIEW',     label:'4. Dossier en relecture',   pct:45  },
+    { key:'FILE_COMPLETE',      label:'5. Dossier complet',        pct:55  },
+    { key:'ADMIN_VALIDATED',    label:'6. Admin valide',           pct:65  },
+    { key:'TRAINING_STARTED',   label:'7. Formation demarree',     pct:75  },
+    { key:'IN_PROGRESS',        label:'8. En cours',               pct:85  },
+    { key:'TRAINING_COMPLETED', label:'9. Formation terminee',     pct:95  },
+    { key:'FILE_CLOSED',        label:'10. Dossier cloture',       pct:100 }
+  ];
+  function stageInfo(key) {
+    for (var i=0; i<STAGES.length; i++) if (STAGES[i].key === key) return { idx:i, info:STAGES[i] };
+    return { idx:0, info:STAGES[0] };
+  }
+  function fmtDate(d) {
+    if (!d) return '—';
+    var parts = d.split('-');
+    return parts[2] + '/' + parts[1] + '/' + parts[0];
+  }
+  function esc(s) {
+    if (s === null || s === undefined) return '';
+    return String(s).replace(/[&<>"']/g, function(c) {
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  }
+
+  function applyFiltersLocal(list) {
+    var search = (document.getElementById('sp-search') || {}).value || '';
+    var stage = (document.getElementById('sp-filter-stage') || {}).value || 'all';
+    var year = (document.getElementById('sp-filter-year') || {}).value || 'all';
+    var q = search.toLowerCase().trim();
+    return list.filter(function(s) {
+      if (q && (s.full_name || '').toLowerCase().indexOf(q) < 0) return false;
+      if (stage !== 'all' && s.current_stage !== stage) return false;
+      if (year !== 'all' && (s.training_start_date || '').indexOf(year) !== 0) return false;
+      return true;
+    });
+  }
+
+  window.renderSuiviProdKpis = function(list) {
+    var total = list.length;
+    var encours = list.filter(function(s){ return ['TRAINING_STARTED','IN_PROGRESS'].indexOf(s.current_stage) >= 0; }).length;
+    var complets = list.filter(function(s){ return ['FILE_COMPLETE','ADMIN_VALIDATED','FILE_CLOSED','TRAINING_COMPLETED'].indexOf(s.current_stage) >= 0; }).length;
+    var bloques = list.filter(function(s){ return s.current_stage === 'FILE_IN_REVIEW'; }).length;
+    var el = document.getElementById('sp-kpi-total'); if (el) el.textContent = total;
+    el = document.getElementById('sp-kpi-encours'); if (el) el.textContent = encours;
+    el = document.getElementById('sp-kpi-complets'); if (el) el.textContent = complets;
+    el = document.getElementById('sp-kpi-bloques'); if (el) el.textContent = bloques;
+    el = document.getElementById('suivi-prod-subtitle'); if (el) el.textContent = total + ' stagiaires · ' + encours + ' en cours · ' + complets + ' complets';
+  };
+
+  window.renderSuiviProdTable = function(list) {
+    var filtered = applyFiltersLocal(list);
+    var body = document.getElementById('sp-table-body');
+    var cntEl = document.getElementById('sp-count');
+    if (cntEl) cntEl.textContent = filtered.length + ' / ' + list.length + ' visibles';
+    if (!body) return;
+    if (filtered.length === 0) {
+      body.innerHTML = '<tr><td colspan="6" style="padding:40px;text-align:center;color:#9CA3AF;font-style:italic">Aucun stagiaire</td></tr>';
+      return;
+    }
+    body.innerHTML = filtered.map(function(s) {
+      var si = stageInfo(s.current_stage);
+      var pct = s.completion_percentage || si.info.pct;
+      var progColor = pct >= 90 ? '#047857' : pct >= 60 ? '#1A2C6B' : pct >= 30 ? '#F59E0B' : '#9CA3AF';
+      return '<tr style="border-top:1px solid #F3F4F6;font-size:12px" onmouseover="this.style.background=\'#F9FAFB\'" onmouseout="this.style.background=\'\'">' +
+        '<td style="padding:12px;font-weight:600;color:#1A2C6B">' + esc(s.full_name) + '</td>' +
+        '<td style="padding:12px;color:#6B7280">' + fmtDate(s.training_start_date) + ' → ' + fmtDate(s.training_end_date) + '</td>' +
+        '<td style="padding:12px;text-align:center"><span style="display:inline-block;padding:3px 8px;border-radius:4px;background:#F3F4F6;color:#4B5563;font-size:11px">' + esc(si.info.label) + '</span></td>' +
+        '<td style="padding:12px;text-align:center"><div style="background:#F3F4F6;border-radius:4px;height:8px;position:relative;width:80px;margin:0 auto"><div style="width:' + pct + '%;height:100%;background:' + progColor + ';border-radius:4px"></div></div><div style="font-size:10px;margin-top:3px;color:#6B7280">' + pct + '%</div></td>' +
+        '<td style="padding:12px;color:#4B5563">' + esc(s.next_action || '—') + '</td>' +
+        '<td style="padding:12px;text-align:center"><button class="btn-s" onclick="window.ardalosSuiviProdOpen(\'' + s.id + '\')">Ouvrir →</button></td>' +
+      '</tr>';
+    }).join('');
+  };
+
+  // Install hook apres chargement page
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() { setTimeout(installRefreshHook, 500); });
+  } else {
+    setTimeout(installRefreshHook, 500);
+  }
+
+  console.log('[Suivi Prod Refresh] Module charge');
+})();
+</script>
+<!-- /ARDALOS_SUIVI_PROD_REFRESH_V1 -->
 </body>
 </html>
