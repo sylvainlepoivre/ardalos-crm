@@ -555,21 +555,7 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
   margin-top: 2px !important;
 }
 </style>
-  <!-- ARDALOS_CHARTJS_CDN (Phase D1) -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-</head>
-<body>
-<!-- ARDALOS_POLE_BOOTSTRAP -->
-<script>
-(function(){try{
-  var p=localStorage.getItem('ardalos_pole_actif')||'group';
-  if(['group','formation','development'].indexOf(p)===-1)p='group';
-  var apply=function(){document.body.setAttribute('data-current-pole',p);};
-  if(document.body){apply();}
-  document.addEventListener('DOMContentLoaded',apply);
-}catch(e){}})();
-</script>
-
+  <!-- ARDALOS_POLES_REMOVED_V1 : bootstrap data-current-pole supprime -->
 <div id="app">
 
 <!-- ════════════════════════════════════════════
@@ -580,7 +566,7 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
     <div class="sb-logo-mark" style="background:transparent !important;padding:2px"><img src="/img/ardalos-logo-icon.png?v=3" alt="Ardalos" style="width:100%;height:100%;object-fit:contain;display:block" /></div>
     <div class="sb-logo-text">
       <div class="t1">Ardalos</div>
-      <div class="t2">Groupe CRM</div>
+      <div class="t2">CRM Ardalos Formation</div>
     </div>
   </div>
 
@@ -631,7 +617,7 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
     </div>
   </div>
 
-  <div class="nav-section" data-pole="formation">
+  <div class="nav-section">
     <div class="nav-section-label">Formation</div>
     <div class="nav-item" data-page="formations">
       <svg class="nav-ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1L14 4.5v4L8 12 2 8.5v-4z"/></svg>
@@ -651,7 +637,7 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
     </div>
   </div>
 
-  <div class="nav-section" data-pole="formation">
+  <div class="nav-section">
     <div class="nav-section-label">Financement</div>
     <div class="nav-item" data-page="funding">
       <svg class="nav-ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="14" height="9" rx="1.5"/><path d="M1 7h14"/><circle cx="5" cy="11" r="1"/></svg>
@@ -667,7 +653,7 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
 
   <div class="nav-section">
     <div class="nav-section-label">Qualité & Docs</div>
-    <div class="nav-item" data-page="qualiopi" data-pole="formation">
+    <div class="nav-item" data-page="qualiopi">
       <svg class="nav-ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1l1.8 3.6L14 5.4l-3 2.9.7 4.1L8 10.4l-3.7 2 .7-4.1-3-2.9 4.2-.8z"/></svg>
       Qualiopi
     </div>
@@ -699,7 +685,7 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
 <div id="main">
 <header id="topbar">
   <div class="breadcrumb">
-    <span>Ardalos Groupe</span>
+    <span>Ardalos Formation</span>
     <span class="breadcrumb-sep">/</span>
     <span class="breadcrumb-cur" id="bc-page">Dashboard</span>
   </div>
@@ -9450,216 +9436,8 @@ document.getElementById('global-search').addEventListener('keyup', function(e) {
 
 
 
-<!-- === SPRINT 1.1 v2 : selecteur pole global en position fixed === -->
-<script>
-(function() {
-  'use strict';
 
-  var POLES = {
-    group:       { id: 'group',       label: 'Ardalos',     icon: '🌐', color: '#6366F1', desc: 'Ardalos Groupe · Vision consolidée' },
-    formation:   { id: 'formation',   label: 'Ardalos Formation', icon: '🎓', color: '#1A2C6B', desc: 'Ardalos Formation · Organisme Qualiopi' },
-    development: { id: 'development', label: 'Ardalos Development Group', icon: '🏭', color: '#B45309', desc: 'Ardalos Development Group · Holding · Agronomie · Minier' },
-  };
-
-  var LS_KEY = 'ardalos_pole_actif';
-  var current = localStorage.getItem(LS_KEY) || 'group';
-  if (!POLES[current]) current = 'group';
-
-  // --- Détection largeur sidebar (pour que le bandeau commence APRES la sidebar) ---
-  function getSidebarWidth() {
-    // Cherche la sidebar Ardalos par différents sélecteurs probables
-    var candidates = [
-      '.sidebar', '.nav-sidebar', 'nav[role="navigation"]',
-      'aside', '#sidebar', '[data-sidebar]'
-    ];
-    for (var i = 0; i < candidates.length; i++) {
-      var el = document.querySelector(candidates[i]);
-      if (el) {
-        var rect = el.getBoundingClientRect();
-        if (rect.width > 100 && rect.width < 400 && rect.left < 20) {
-          return Math.round(rect.width);
-        }
-      }
-    }
-    // Fallback : chercher un élément qui ressemble à une sidebar verticale
-    var allDivs = document.querySelectorAll('body > div, body > div > div');
-    for (var j = 0; j < allDivs.length; j++) {
-      var d = allDivs[j];
-      var r = d.getBoundingClientRect();
-      if (r.left < 20 && r.top < 100 && r.height > 400 && r.width > 100 && r.width < 400) {
-        return Math.round(r.width);
-      }
-    }
-    return 0; // Pas de sidebar détectée
-  }
-
-  // CSS
-  var style = document.createElement('style');
-  style.textContent = [
-    '#pole-switcher {',
-    '  position: fixed;',
-    '  top: 0;',
-    '  right: 0;',
-    '  z-index: 9998;',  /* au-dessus du contenu, en-dessous des modales */
-    '  background: rgba(255,255,255,0.96);',
-    '  backdrop-filter: blur(6px);',
-    '  -webkit-backdrop-filter: blur(6px);',
-    '  border-bottom: 1px solid #E5E7EB;',
-    '  border-left: 1px solid #E5E7EB;',
-    '  border-bottom-left-radius: 10px;',
-    '  padding: 8px 14px;',
-    '  display: flex;',
-    '  align-items: center;',
-    '  gap: 10px;',
-    '  box-shadow: 0 2px 8px rgba(0,0,0,0.06);',
-    '  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;',
-    '}',
-    '#pole-switcher-label {',
-    '  font-size: 10px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.5px;',
-    '  font-weight: 600; flex-shrink: 0;',
-    '}',
-    '#pole-switcher-tabs {',
-    '  display: flex; gap: 3px; background: #F3F4F6; padding: 3px; border-radius: 7px;',
-    '}',
-    '.pole-tab {',
-    '  padding: 5px 12px; border-radius: 5px; font-size: 12px; font-weight: 600;',
-    '  cursor: pointer; transition: all 0.15s; color: #6B7280; border: none; background: transparent;',
-    '  display: flex; align-items: center; gap: 5px; user-select: none; font-family: inherit;',
-    '}',
-    '.pole-tab:hover { color: #1F2937; background: rgba(255,255,255,0.7); }',
-    '.pole-tab.active { background: #fff; color: #1A2C6B; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }',
-    '.pole-tab.active.pole-development { color: #B45309; }',
-    '.pole-tab.active.pole-group { color: #6366F1; }',
-    /* Mode pleine largeur (option alternative) : la barre prend toute la largeur */
-    '#pole-switcher.full-width {',
-    '  left: 0; right: 0; border-bottom-left-radius: 0; border-left: none;',
-    '  justify-content: flex-end;',
-    '}',
-    /* Pastille pole sur éléments */
-    '.pole-chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px;',
-    '  border-radius: 10px; font-size: 10px; font-weight: 600; letter-spacing: 0.2px; }',
-    '.pole-chip-formation { background: #E0E7FF; color: #1A2C6B; }',
-    '.pole-chip-development { background: #FEF3C7; color: #B45309; }',
-    '.pole-chip-both { background: #F3E8FF; color: #7C3AED; }',
-    /* Filtrage auto : data-pole */
-    'body[data-current-pole="formation"] [data-pole="development"]:not([data-pole-both]) { display: none !important; }',
-    'body[data-current-pole="development"] [data-pole="formation"]:not([data-pole-both]) { display: none !important; }',
-    'body[data-current-pole="formation"] [data-pole-only-group] { display: none !important; }',
-    'body[data-current-pole="development"] [data-pole-only-group] { display: none !important; }',
-    '/* ARDALOS_POLE_LABELS_LONG */',
-    '.pole-tab { padding: 5px 10px; font-size: 11.5px; white-space: nowrap; }',
-    '@media (max-width: 900px) {',
-    '  #pole-switcher { max-width: 92vw; flex-wrap: wrap; }',
-    '  #pole-switcher-tabs { flex-wrap: wrap; }',
-    '  .pole-tab { font-size: 10.5px; padding: 4px 8px; }',
-    '  .pole-tab span:nth-child(2) { font-size: 10px; }',
-    '}',
-    /* Responsive */
-    '@media (max-width: 760px) {',
-    '  #pole-switcher { right: 8px; top: 8px; padding: 6px 10px; }',
-    '  #pole-switcher-label { display: none; }',
-    '  .pole-tab { padding: 4px 9px; font-size: 11px; }',
-    '}',
-  ].join('\n');
-  document.head.appendChild(style);
-
-  function buildSwitcher() {
-    // Retire si déjà présent
-    var existing = document.getElementById('pole-switcher');
-    if (existing) existing.remove();
-
-    var bar = document.createElement('div');
-    bar.id = 'pole-switcher';
-    bar.innerHTML =
-      '<div id="pole-switcher-label">Vue :</div>' +
-      '<div id="pole-switcher-tabs">' +
-        Object.keys(POLES).map(function(k) {
-          var p = POLES[k];
-          return '<button class="pole-tab pole-' + k + (k === current ? ' active' : '') + '" data-pole="' + k + '" title="' + p.desc + '">' +
-            '<span>' + p.icon + '</span>' +
-            '<span>' + p.label + '</span>' +
-          '</button>';
-        }).join('') +
-      '</div>';
-
-    // Injecter en tout fin de body (fixed le sort du flow)
-    document.body.appendChild(bar);
-
-    // Ajuster le padding-top du body pour qu'aucun contenu ne soit caché
-    // (on ne touche pas si déjà un header en fixed au même endroit)
-    setTimeout(function() {
-      var h = bar.getBoundingClientRect().height;
-      // Seulement si on n'empiète pas sur des éléments importants existants
-      // On laisse tel quel, le bandeau vient par-dessus en coin haut-droit
-    }, 50);
-
-    // Handlers
-    bar.querySelectorAll('.pole-tab').forEach(function(btn) {
-      btn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        setPole(btn.dataset.pole);
-      });
-    });
-  }
-
-  function setPole(pole) {
-    if (!POLES[pole]) return;
-    current = pole;
-    localStorage.setItem(LS_KEY, pole);
-    document.body.setAttribute('data-current-pole', pole);
-    window.__ardalosPoleActif = pole;
-
-    var bar = document.getElementById('pole-switcher');
-    if (bar) {
-      bar.querySelectorAll('.pole-tab').forEach(function(b) {
-        b.classList.toggle('active', b.dataset.pole === pole);
-      });
-    }
-
-    window.dispatchEvent(new CustomEvent('ardalos:pole-changed', {
-      detail: { pole: pole, config: POLES[pole] }
-    }));
-    console.log('[Ardalos Pole] changement vers:', pole);
-  }
-
-  // API publique
-  window.ardalosPole = {
-    get: function() { return current; },
-    set: setPole,
-    isFormation: function() { return current === 'formation' || current === 'group'; },
-    isDevelopment: function() { return current === 'development' || current === 'group'; },
-    isGroup: function() { return current === 'group'; },
-    config: POLES,
-    chip: function(pole) {
-      var key = pole === 'both' ? 'both' : (pole || 'formation');
-      var cfg = POLES[key] || POLES.formation;
-      return '<span class="pole-chip pole-chip-' + key + '">' + cfg.icon + ' ' + cfg.label + '</span>';
-    }
-  };
-
-  function init() {
-    document.body.setAttribute('data-current-pole', current);
-    window.__ardalosPoleActif = current;
-    buildSwitcher();
-    console.log('[Ardalos Pole v2] init · vue active = ' + current);
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
-
-  // Re-build si le DOM est complètement re-rendu (ex: après navigation)
-  setTimeout(function() {
-    if (!document.getElementById('pole-switcher')) buildSwitcher();
-  }, 2000);
-})();
-</script>
-
-
-
+<!-- ARDALOS_POLES_REMOVED_V1 : switcher poles supprime -->
 <!-- === SPRINT 1.3 v2 : renommage Pipeline -> Apporteurs d'affaires (ciblage data-page) === -->
 <script>
 (function() {
