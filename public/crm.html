@@ -543,8 +543,31 @@ input,select,textarea,button{font-family:'DM Sans',sans-serif}
 const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.co","sb_publishable_J8ta-7L05zgK9rBy2OS9Bg_CjXHwZVK")
 </script>  <!-- === SUPABASE CDN (ajoute pour connexion aux donnees reelles) === -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style id="sprint-1-6-forced-display">
+#page-apporteurs-reseau.active,
+#page-apporteurs-reseau[style*="display: block"] {
+  display: block !important;
+  padding: 20px 32px !important;
+  background: transparent !important;
+}
+.ap-sub-menu {
+  margin-top: 2px !important;
+}
+</style>
 </head>
 <body>
+<!-- ARDALOS_POLE_BOOTSTRAP -->
+<script>
+(function(){try{
+  var p=localStorage.getItem('ardalos_pole_actif')||'group';
+  if(['group','formation','development'].indexOf(p)===-1)p='group';
+  var apply=function(){document.body.setAttribute('data-current-pole',p);};
+  if(document.body){apply();}
+  document.addEventListener('DOMContentLoaded',apply);
+}catch(e){}})();
+</script>
+
 <div id="app">
 
 <!-- ════════════════════════════════════════════
@@ -606,7 +629,7 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
     </div>
   </div>
 
-  <div class="nav-section">
+  <div class="nav-section" data-pole="formation">
     <div class="nav-section-label">Formation</div>
     <div class="nav-item" data-page="formations">
       <svg class="nav-ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1L14 4.5v4L8 12 2 8.5v-4z"/></svg>
@@ -626,7 +649,7 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
     </div>
   </div>
 
-  <div class="nav-section">
+  <div class="nav-section" data-pole="formation">
     <div class="nav-section-label">Financement</div>
     <div class="nav-item" data-page="funding">
       <svg class="nav-ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="14" height="9" rx="1.5"/><path d="M1 7h14"/><circle cx="5" cy="11" r="1"/></svg>
@@ -642,7 +665,7 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
 
   <div class="nav-section">
     <div class="nav-section-label">Qualité & Docs</div>
-    <div class="nav-item" data-page="qualiopi">
+    <div class="nav-item" data-page="qualiopi" data-pole="formation">
       <svg class="nav-ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1l1.8 3.6L14 5.4l-3 2.9.7 4.1L8 10.4l-3.7 2 .7-4.1-3-2.9 4.2-.8z"/></svg>
       Qualiopi
     </div>
@@ -1375,6 +1398,110 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
     </table>
   </div>
 </div>
+
+
+  <!-- ARDALOS_RESEAU_MOVED_INTO_CONTENT -->
+  <!-- ▶ APPORTEURS RESEAU (Sprint 1.6 - deplace dans #content) -->
+  <div id="page-apporteurs-reseau" class="page" style="display:none">
+  <div class="page-hdr">
+    <div class="page-hdr-left">
+      <h1 class="page-title">Réseau apporteurs d'affaires</h1>
+      <p class="page-sub" id="reseau-subtitle">Chargement…</p>
+    </div>
+    <div class="page-hdr-right">
+      <button class="btn-p" onclick="window.ardalosNewApporteur && window.ardalosNewApporteur()">+ Nouvel apporteur</button>
+    </div>
+  </div>
+
+  <!-- Toolbar filtres -->
+  <div id="reseau-toolbar" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 16px;background:linear-gradient(135deg,#FAFAFA,#F3F4F6);border:1px solid #E5E7EB;border-radius:10px;margin-bottom:16px">
+    <div style="flex:1;min-width:220px">
+      <input id="reseau-search" class="finput" type="search" placeholder="🔍 Rechercher un apporteur (nom, prénom, email...)" style="font-size:13px;padding:8px 12px">
+    </div>
+    <select id="reseau-filter-statut" class="fselect" style="font-size:13px;padding:6px 10px;min-width:140px">
+      <option value="all">Tous statuts</option>
+      <option value="actif" selected>Actifs uniquement</option>
+      <option value="inactif">Inactifs</option>
+      <option value="suspendu">Suspendus</option>
+      <option value="archive">Archivés</option>
+    </select>
+    <select id="reseau-filter-canal" class="fselect" style="font-size:13px;padding:6px 10px;min-width:180px">
+      <option value="all">Tous canaux</option>
+      <option value="organique">🌱 Organique</option>
+      <option value="phoning">📞 Phoning</option>
+      <option value="reseaux_sociaux">📱 Réseaux sociaux</option>
+      <option value="evenementiel">🎪 Événementiel</option>
+      <option value="seo">🔍 SEO</option>
+    </select>
+    <div id="reseau-count" style="margin-left:auto;font-size:12px;color:#6B7280;padding:5px 12px;background:#fff;border-radius:6px;border:1px solid #E5E7EB"></div>
+  </div>
+
+  <!-- Grid des cards apporteurs -->
+  <div id="reseau-grid" class="g3" style="gap:14px">
+    <div style="grid-column:1/-1;padding:40px;text-align:center;color:#9ca3af;font-style:italic">Chargement…</div>
+  </div>
+</div>
+
+
+  <!-- ARDALOS_COMMISSIONS_PAGE_V2 -->
+  <!-- ▶ Sprint 1.7 v2 - Page Commissions apporteurs -->
+  <div id="page-apporteurs-commissions" class="page">
+    <div class="page-hdr">
+      <div class="page-hdr-left">
+        <h1 class="page-title">Commissions apporteurs</h1>
+        <p class="page-sub" id="commissions-subtitle">Chargement…</p>
+      </div>
+      <div class="page-hdr-right" style="display:flex;gap:10px">
+        <button class="btn-s" id="commissions-recalc-btn" title="Recalcule les commissions manquantes depuis les deals gagnes">🔄 Recalculer</button>
+        <button class="btn-p" id="commissions-export-btn">💾 Export CSV</button>
+      </div>
+    </div>
+
+    <div class="g4" style="gap:12px;margin-bottom:18px">
+      <div class="card-b" style="padding:14px 16px"><div style="font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;font-weight:600">À PAYER</div><div style="font-size:24px;font-weight:700;color:#B45309;margin-top:4px" id="com-kpi-apayer">—</div></div>
+      <div class="card-b" style="padding:14px 16px"><div style="font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;font-weight:600">PAYÉ YTD</div><div style="font-size:24px;font-weight:700;color:#047857;margin-top:4px" id="com-kpi-payeytd">—</div></div>
+      <div class="card-b" style="padding:14px 16px"><div style="font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;font-weight:600">EN ATTENTE</div><div style="font-size:24px;font-weight:700;color:#1A2C6B;margin-top:4px" id="com-kpi-attente">—</div></div>
+      <div class="card-b" style="padding:14px 16px"><div style="font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;font-weight:600">TOP APPORTEUR</div><div style="font-size:18px;font-weight:600;color:#1A2C6B;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="com-kpi-top">—</div></div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
+      <select id="com-filter-apporteur" class="finput" style="max-width:200px"><option value="all">Tous apporteurs</option></select>
+      <select id="com-filter-periode" class="finput" style="max-width:160px">
+        <option value="all">Toutes périodes</option>
+        <option value="m">Ce mois</option>
+        <option value="q">Ce trimestre</option>
+        <option value="y">Cette année</option>
+      </select>
+      <select id="com-filter-statut" class="finput" style="max-width:160px">
+        <option value="all">Tous statuts</option>
+        <option value="calculee">À payer</option>
+        <option value="validee">Validée</option>
+        <option value="payee">Payée</option>
+        <option value="contestee">Contestée</option>
+      </select>
+      <input type="search" id="com-search" class="finput" placeholder="Rechercher apporteur, deal..." style="flex:1;min-width:200px">
+    </div>
+
+    <div style="background:#fff;border-radius:8px;overflow:auto;box-shadow:0 1px 3px rgba(0,0,0,.06)">
+      <table style="width:100%;border-collapse:collapse;font-size:13px" id="com-table">
+        <thead style="background:#F9FAFB">
+          <tr style="border-bottom:1px solid #E5E7EB">
+            <th style="padding:10px;text-align:left;font-weight:600;color:#6B7280;font-size:11px;text-transform:uppercase">Date</th>
+            <th style="padding:10px;text-align:left;font-weight:600;color:#6B7280;font-size:11px;text-transform:uppercase">Apporteur</th>
+            <th style="padding:10px;text-align:left;font-weight:600;color:#6B7280;font-size:11px;text-transform:uppercase">Deal</th>
+            <th style="padding:10px;text-align:right;font-weight:600;color:#6B7280;font-size:11px;text-transform:uppercase">Base HT</th>
+            <th style="padding:10px;text-align:right;font-weight:600;color:#6B7280;font-size:11px;text-transform:uppercase">Taux</th>
+            <th style="padding:10px;text-align:right;font-weight:600;color:#6B7280;font-size:11px;text-transform:uppercase">Commission</th>
+            <th style="padding:10px;text-align:center;font-weight:600;color:#6B7280;font-size:11px;text-transform:uppercase">Statut</th>
+            <th style="padding:10px;text-align:center;font-weight:600;color:#6B7280;font-size:11px;text-transform:uppercase">Action</th>
+          </tr>
+        </thead>
+        <tbody id="com-tbody">
+          <tr><td colspan="8" style="text-align:center;padding:40px;color:#9CA3AF">Chargement…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
 </div><!-- /content -->
 </div><!-- /main -->
@@ -9315,9 +9442,9 @@ document.getElementById('global-search').addEventListener('keyup', function(e) {
   'use strict';
 
   var POLES = {
-    group:       { id: 'group',       label: 'Groupe',      icon: '🌐', color: '#6366F1', desc: 'Vision consolidée Ardalos' },
-    formation:   { id: 'formation',   label: 'Formation',   icon: '🎓', color: '#1A2C6B', desc: 'Organisme de formation Qualiopi' },
-    development: { id: 'development', label: 'Development', icon: '🏭', color: '#B45309', desc: 'Holding · Agronomie · Minier' },
+    group:       { id: 'group',       label: 'Ardalos',     icon: '🌐', color: '#6366F1', desc: 'Ardalos Groupe · Vision consolidée' },
+    formation:   { id: 'formation',   label: 'Ardalos Formation', icon: '🎓', color: '#1A2C6B', desc: 'Ardalos Formation · Organisme Qualiopi' },
+    development: { id: 'development', label: 'Ardalos Development Group', icon: '🏭', color: '#B45309', desc: 'Ardalos Development Group · Holding · Agronomie · Minier' },
   };
 
   var LS_KEY = 'ardalos_pole_actif';
@@ -9405,6 +9532,14 @@ document.getElementById('global-search').addEventListener('keyup', function(e) {
     'body[data-current-pole="development"] [data-pole="formation"]:not([data-pole-both]) { display: none !important; }',
     'body[data-current-pole="formation"] [data-pole-only-group] { display: none !important; }',
     'body[data-current-pole="development"] [data-pole-only-group] { display: none !important; }',
+    '/* ARDALOS_POLE_LABELS_LONG */',
+    '.pole-tab { padding: 5px 10px; font-size: 11.5px; white-space: nowrap; }',
+    '@media (max-width: 900px) {',
+    '  #pole-switcher { max-width: 92vw; flex-wrap: wrap; }',
+    '  #pole-switcher-tabs { flex-wrap: wrap; }',
+    '  .pole-tab { font-size: 10.5px; padding: 4px 8px; }',
+    '  .pole-tab span:nth-child(2) { font-size: 10px; }',
+    '}',
     /* Responsive */
     '@media (max-width: 760px) {',
     '  #pole-switcher { right: 8px; top: 8px; padding: 6px 10px; }',
@@ -9542,13 +9677,14 @@ document.getElementById('global-search').addEventListener('keyup', function(e) {
     '.ap-sub-menu.open { display: block; }',
     '.ap-sub-item {',
     '  display: flex; align-items: center; gap: 8px;',
-    '  padding: 6px 14px 6px 32px; font-size: 12px; color: inherit; opacity: 0.75;',
+    '  padding: 7px 14px 7px 36px; font-size: 12px; color: #D1D5DB;',
     '  cursor: pointer; transition: all 0.12s; text-decoration: none;',
     '  border-left: 2px solid transparent; margin-left: -2px;',
+    '  font-weight: 500;',
     '}',
-    '.ap-sub-item:hover { opacity: 1; background: rgba(26,44,107,0.08); border-left-color: #1A2C6B; }',
-    '.ap-sub-item.active { opacity: 1; font-weight: 600; border-left-color: #1A2C6B; }',
-    '.ap-sub-lock { margin-left: auto; font-size: 9px; opacity: 0.5; font-weight: 500; }',
+    '.ap-sub-item:hover { color: #FFFFFF; background: rgba(201,168,76,0.15); border-left-color: #C9A84C; }',
+    '.ap-sub-item.active { color: #C9A84C; font-weight: 600; border-left-color: #C9A84C; background: rgba(201,168,76,0.08); }',
+    '.ap-sub-lock { margin-left: auto; font-size: 10px; color: #9CA3AF; font-weight: 500; }',
     '@keyframes ap-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.65; } }',
     '.ap-new-badge { animation: ap-pulse 2s ease-in-out infinite; }',
   ].join('\n');
@@ -9630,8 +9766,8 @@ document.getElementById('global-search').addEventListener('keyup', function(e) {
       sub.className = 'ap-sub-menu';
       sub.innerHTML = [
         '<a class="ap-sub-item active" data-ap-action="kanban">📋 Kanban</a>',
-        '<a class="ap-sub-item" data-ap-action="reseau">👥 Réseau apporteurs <span class="ap-sub-lock">🔒 1.6</span></a>',
-        '<a class="ap-sub-item" data-ap-action="commissions">💶 Commissions <span class="ap-sub-lock">🔒 1.7</span></a>',
+        '<a class="ap-sub-item" data-ap-action="reseau">👥 Réseau apporteurs</a>',
+        '<a class="ap-sub-item" data-ap-action="commissions">💶 Commissions</a>',
       ].join('');
       navItem.parentNode.insertBefore(sub, navItem.nextSibling);
 
@@ -9641,12 +9777,26 @@ document.getElementById('global-search').addEventListener('keyup', function(e) {
           e.stopPropagation();
           var action = item.dataset.apAction;
           if (action === 'kanban') {
-            // Clic sur le nav-item d'origine -> ouvre la page pipeline existante
-            navItem.click();
+            // [ARDALOS_SPRINT_1_7_V2] Ouvre directement pipeline
+            if (typeof navigate === 'function') { navigate('pipeline'); }
+            else { navItem.click(); }
+            var __sm_k = document.getElementById('ardalos-apporteurs-submenu');
+            if (__sm_k) __sm_k.style.display = 'none';
           } else if (action === 'reseau') {
-            toast("🚧 Écran Réseau apporteurs — Sprint 1.6 à venir");
+            if (typeof window.ardalosOpenReseau === 'function') {
+              window.ardalosOpenReseau();
+            } else {
+              toast("Chargement du module Réseau...");
+            }
           } else if (action === 'commissions') {
-            toast("🚧 Écran Commissions — Sprint 1.7 à venir");
+            // [ARDALOS_COMMISSIONS_HANDLER_V2] Ouvre la page Commissions
+            if (typeof window.ardalosOpenCommissions === 'function') {
+              window.ardalosOpenCommissions();
+            } else {
+              toast("Chargement du module Commissions...");
+            }
+            var __sm_c = document.getElementById('ardalos-apporteurs-submenu');
+            if (__sm_c) __sm_c.style.display = 'none';
           }
         });
       });
@@ -9927,5 +10077,922 @@ window.ARDALOS_APPORTEURS_SEED = [
   };
 })();
 </script>
+
+<!-- === SPRINT 1.6 : Reseau apporteurs + Fiche 360 + Creation === -->
+<script>
+(function() {
+  'use strict';
+
+  var SUPABASE_URL = 'https://cvxzdiutxonnsnwoicqt.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_J8ta-7L05zgK9rBy2OS9Bg_CjXHwZVK';
+  var sb;
+  try {
+    if (window.supabase && typeof window.supabase.createClient === 'function') {
+      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    }
+  } catch(e) { sb = null; }
+  if (!sb) { console.warn('[Sprint 1.6] Supabase client introuvable'); return; }
+
+  var CANAUX = {
+    organique:       { label: 'Organique',       color: '#059669', bg: '#D1FAE5', icon: '🌱' },
+    phoning:         { label: 'Phoning',         color: '#DC2626', bg: '#FEE2E2', icon: '📞' },
+    reseaux_sociaux: { label: 'Réseaux sociaux', color: '#7C3AED', bg: '#EDE9FE', icon: '📱' },
+    evenementiel:    { label: 'Événementiel',    color: '#D97706', bg: '#FEF3C7', icon: '🎪' },
+    seo:             { label: 'SEO',             color: '#0891B2', bg: '#CFFAFE', icon: '🔍' },
+    autre:           { label: 'Autre',           color: '#6B7280', bg: '#F3F4F6', icon: '◦'  },
+  };
+
+  var STATUTS_JURIDIQUES = {
+    particulier:       'Particulier',
+    micro_entrepreneur:'Micro-entrepreneur',
+    entreprise:        'Entreprise',
+    salarie_porte:     'Salarié porté',
+  };
+
+  var STATUTS_APPORTEUR = {
+    actif:    { label: 'Actif',    color: '#059669', bg: '#D1FAE5' },
+    inactif:  { label: 'Inactif',  color: '#6B7280', bg: '#F3F4F6' },
+    suspendu: { label: 'Suspendu', color: '#D97706', bg: '#FEF3C7' },
+    archive:  { label: 'Archivé',  color: '#9CA3AF', bg: '#F9FAFB' },
+  };
+
+  var APPORTEURS = [];
+  var CONTRATS = [];
+  var COMMISSIONS = [];
+
+  // ─── Helpers ─────────────────────────────────────────────
+  function esc(s) {
+    if (s == null) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+  function fmtD(d) {
+    if (!d) return '—';
+    try { return new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric' }); } catch(e) { return '—'; }
+  }
+  function fmtEur(n) {
+    n = Number(n) || 0;
+    return n.toLocaleString('fr-FR', { style:'currency', currency:'EUR', maximumFractionDigits: 0 });
+  }
+  function initials(a) {
+    return ((a.prenom||'').charAt(0) + (a.nom||'').charAt(0)).toUpperCase() || '??';
+  }
+  function avatarColor(seed) {
+    var colors = [
+      { bg:'#EEF2FF', fg:'#1A2C6B' }, { bg:'#FEF3C7', fg:'#D97706' },
+      { bg:'#D1FAE5', fg:'#059669' }, { bg:'#EDE9FE', fg:'#7C3AED' },
+      { bg:'#FEE2E2', fg:'#DC2626' }, { bg:'#CFFAFE', fg:'#0891B2' },
+    ];
+    var hash = 0;
+    for (var i = 0; i < (seed||'').length; i++) hash += seed.charCodeAt(i);
+    return colors[hash % colors.length];
+  }
+
+  function toast(msg, kind) {
+    var t = document.createElement('div');
+    t.textContent = msg;
+    var bg = kind === 'err' ? '#DC2626' : kind === 'ok' ? '#059669' : '#1A2C6B';
+    t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:'+bg+';color:#fff;padding:11px 20px;border-radius:8px;z-index:10000;font-size:13px;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,0.2);opacity:0;transition:opacity 0.2s;';
+    document.body.appendChild(t);
+    setTimeout(function(){ t.style.opacity='1'; }, 10);
+    setTimeout(function(){ t.style.opacity='0'; setTimeout(function(){ t.remove(); }, 200); }, 3000);
+  }
+
+  // ─── Navigation vers la page ─────────────────────────────
+  window.ardalosOpenReseau = function() {
+    console.log('[Sprint 1.6] ardalosOpenReseau() appelee');
+
+    // Masquer toutes les autres pages .page
+    document.querySelectorAll('.page').forEach(function(p) {
+      if (p.id !== 'page-apporteurs-reseau') {
+        p.classList.remove('active');
+        p.style.display = 'none';
+      }
+    });
+
+    // Afficher notre page (force inline-styles pour override tout CSS existant)
+    var page = document.getElementById('page-apporteurs-reseau');
+    if (!page) {
+      console.error('[Sprint 1.6] #page-apporteurs-reseau introuvable dans le DOM');
+      toast("Erreur : page Réseau absente du DOM", 'err');
+      return;
+    }
+
+    page.style.display = 'block';
+    page.style.visibility = 'visible';
+    page.style.opacity = '1';
+    page.classList.add('active');
+
+    // Update breadcrumb
+    document.querySelectorAll('[class*="breadcrumb"] *, .bc-current, nav[aria-label*="breadcrumb"] *').forEach(function(el) {
+      if (el.children.length === 0 && el.textContent && /pipeline|dashboard|contact/i.test(el.textContent)) {
+        el.textContent = 'Réseau apporteurs';
+      }
+    });
+
+    // Highlight nav-item dans sidebar
+    document.querySelectorAll('.nav-item').forEach(function(n) {
+      n.classList.toggle('active', n.dataset.page === 'pipeline');
+    });
+
+    // Ferme le menu mobile si ouvert
+    document.querySelectorAll('.menu-mobile-open').forEach(function(m) { m.classList.remove('menu-mobile-open'); });
+
+    // Charger les donnees (avec delay pour laisser le DOM se settle)
+    setTimeout(function() { loadReseau(); }, 50);
+
+    console.log('[Sprint 1.6] Page affichee · display =', page.style.display);
+  };
+
+  // ─── Fetch + render ──────────────────────────────────────
+  async function loadReseau() {
+    var grid = document.getElementById('reseau-grid');
+    var subtitle = document.getElementById('reseau-subtitle');
+    var countEl = document.getElementById('reseau-count');
+    if (!grid) return;
+
+    grid.innerHTML = '<div style="grid-column:1/-1;padding:40px;text-align:center;color:#9ca3af;font-style:italic">Chargement…</div>';
+
+    try {
+      // 1. Apporteurs
+      var aR = await sb.from('apporteurs').select('*').order('nom');
+      if (aR.error) throw aR.error;
+      APPORTEURS = aR.data || [];
+
+      // 2. Contrats actifs
+      var cR = await sb.from('apporteur_contrats').select('*').eq('statut', 'actif');
+      CONTRATS = (cR.data || []);
+
+      // 3. Commissions (pour KPIs sur cards)
+      var mR = await sb.from('apporteur_commissions').select('apporteur_id, statut, montant_commission_eur, montant_base_eur');
+      COMMISSIONS = (mR.data || []);
+
+      if (subtitle) {
+        subtitle.textContent = APPORTEURS.length + ' apporteur' + (APPORTEURS.length>1?'s':'') +
+          ' · ' + CONTRATS.length + ' contrat' + (CONTRATS.length>1?'s':'') + ' actif' + (CONTRATS.length>1?'s':'');
+      }
+
+      renderCards();
+
+      // Hook filters
+      document.getElementById('reseau-search').oninput = renderCards;
+      document.getElementById('reseau-filter-statut').onchange = renderCards;
+      document.getElementById('reseau-filter-canal').onchange = renderCards;
+
+      console.log('[Sprint 1.6] ✅ ' + APPORTEURS.length + ' apporteurs charges');
+    } catch(e) {
+      console.error('[Sprint 1.6]', e);
+      grid.innerHTML = '<div style="grid-column:1/-1;padding:40px;text-align:center;color:#DC2626">Erreur : ' + esc(e.message||'inconnue') + '</div>';
+    }
+  }
+
+  function renderCards() {
+    var grid = document.getElementById('reseau-grid');
+    var countEl = document.getElementById('reseau-count');
+    if (!grid) return;
+
+    var search = (document.getElementById('reseau-search').value || '').toLowerCase().trim();
+    var statut = document.getElementById('reseau-filter-statut').value;
+    var canal = document.getElementById('reseau-filter-canal').value;
+
+    var filtered = APPORTEURS.filter(function(a) {
+      if (statut !== 'all' && a.statut !== statut) return false;
+      if (canal !== 'all' && !(a.canaux_prospection||[]).includes(canal)) return false;
+      if (search) {
+        var blob = ((a.prenom||'')+' '+(a.nom||'')+' '+(a.email||'')+' '+(a.contact_referent||'')).toLowerCase();
+        if (blob.indexOf(search) === -1) return false;
+      }
+      return true;
+    });
+
+    if (countEl) {
+      countEl.innerHTML = '<strong>' + filtered.length + '</strong> / ' + APPORTEURS.length + ' visibles';
+    }
+
+    if (filtered.length === 0) {
+      grid.innerHTML = '<div style="grid-column:1/-1;padding:40px;text-align:center;color:#9ca3af"><div style="font-size:40px;margin-bottom:10px">🤷</div>Aucun apporteur ne correspond aux critères.<br><button class="btn-p" style="margin-top:14px" onclick="window.ardalosNewApporteur()">+ Créer un apporteur</button></div>';
+      return;
+    }
+
+    grid.innerHTML = filtered.map(function(a) {
+      var col = avatarColor(a.id || (a.prenom+a.nom));
+      var st = STATUTS_APPORTEUR[a.statut] || STATUTS_APPORTEUR.actif;
+      var canauxHtml = (a.canaux_prospection||[]).slice(0, 4).map(function(c) {
+        var cfg = CANAUX[c] || CANAUX.autre;
+        return '<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:10px;font-size:10px;background:'+cfg.bg+';color:'+cfg.color+';font-weight:600" title="'+cfg.label+'">'+cfg.icon+' '+cfg.label+'</span>';
+      }).join(' ');
+
+      // KPIs (commissions)
+      var myCommissions = COMMISSIONS.filter(function(c) { return c.apporteur_id === a.id; });
+      var nbConv = myCommissions.length;
+      var totalCom = myCommissions.filter(function(c){ return c.statut==='validee'||c.statut==='payee'; })
+                                   .reduce(function(s,c){ return s + Number(c.montant_commission_eur||0); }, 0);
+      var totalCA = myCommissions.reduce(function(s,c){ return s + Number(c.montant_base_eur||0); }, 0);
+
+      return '<div class="card" style="cursor:pointer;transition:all 0.15s;border:1px solid #E5E7EB;padding:16px" ' +
+        'onmouseover="this.style.borderColor=\'#C9A84C\';this.style.transform=\'translateY(-2px)\';this.style.boxShadow=\'0 6px 20px rgba(0,0,0,0.08)\'" ' +
+        'onmouseout="this.style.borderColor=\'#E5E7EB\';this.style.transform=\'\';this.style.boxShadow=\'\'" ' +
+        'onclick="window.ardalosOpenApporteur360(\''+a.id+'\')">' +
+        '<div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:12px">' +
+          '<div style="width:48px;height:48px;border-radius:50%;background:'+col.bg+';color:'+col.fg+';display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0">'+initials(a)+'</div>' +
+          '<div style="flex:1;min-width:0">' +
+            '<div style="font-weight:700;color:#1F2937;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(a.prenom+' '+a.nom)+'</div>' +
+            '<div style="font-size:11px;color:#6B7280;margin-top:2px">'+esc(STATUTS_JURIDIQUES[a.statut_juridique]||'—')+'</div>' +
+            '<div style="margin-top:4px"><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;background:'+st.bg+';color:'+st.color+'">'+st.label+'</span></div>' +
+          '</div>' +
+        '</div>' +
+        '<div style="font-size:11px;color:#6B7280;margin-bottom:8px">'+esc(a.email||'—')+(a.telephone?' · '+esc(a.telephone):'')+'</div>' +
+        (canauxHtml ? '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px">'+canauxHtml+'</div>' : '') +
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding-top:10px;border-top:1px solid #F3F4F6">' +
+          '<div style="text-align:center"><div style="font-weight:700;color:#1A2C6B;font-size:16px">'+nbConv+'</div><div style="font-size:10px;color:#6B7280">Conversions</div></div>' +
+          '<div style="text-align:center"><div style="font-weight:700;color:#C9A84C;font-size:16px">'+fmtEur(totalCA)+'</div><div style="font-size:10px;color:#6B7280">CA apporté</div></div>' +
+          '<div style="text-align:center"><div style="font-weight:700;color:#059669;font-size:16px">'+fmtEur(totalCom)+'</div><div style="font-size:10px;color:#6B7280">Commissions</div></div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  // ─── Fiche 360 ───────────────────────────────────────────
+  window.ardalosOpenApporteur360 = async function(apporteurId) {
+    var titleEl = document.getElementById('detail-modal-title');
+    var bodyEl = document.getElementById('detail-modal-body');
+    if (!titleEl || !bodyEl) { alert('Modale indisponible'); return; }
+
+    var modal = document.getElementById('modal-detail');
+    if (modal) {
+      var inner = modal.querySelector('.modal');
+      if (inner) inner.style.maxWidth = '820px';
+    }
+
+    titleEl.textContent = 'Chargement…';
+    bodyEl.innerHTML = '<div style="padding:40px;text-align:center;color:#9ca3af">Chargement de la fiche…</div>';
+    openModal('detail');
+
+    try {
+      var a = APPORTEURS.find(function(x) { return x.id === apporteurId; });
+      if (!a) throw new Error('Apporteur introuvable');
+
+      var contrat = CONTRATS.find(function(c) { return c.apporteur_id === apporteurId && c.statut === 'actif'; });
+
+      // Leads apportes
+      var ldR = await sb.from('pipeline_deals').select('id, nom, statut, montant_ht, date_apport, created_at').eq('apporteur_id', apporteurId).order('created_at', { ascending: false });
+      var leads = ldR.data || [];
+
+      // Commissions
+      var myCom = COMMISSIONS.filter(function(c){ return c.apporteur_id === apporteurId; });
+
+      titleEl.textContent = '👤 ' + a.prenom + ' ' + a.nom;
+
+      var col = avatarColor(a.id);
+      var st = STATUTS_APPORTEUR[a.statut] || STATUTS_APPORTEUR.actif;
+
+      // Contrat
+      var contratHtml = contrat
+        ? '<div style="padding:12px;background:#EEF2FF;border-left:3px solid #1A2C6B;border-radius:6px;margin-bottom:10px">' +
+            '<div style="font-weight:700;color:#1A2C6B;font-size:13px">' + esc(contrat.reference) + '</div>' +
+            '<div style="font-size:12px;color:#374151;margin-top:4px">' +
+              'Commission : <strong>' + (contrat.type_commission === 'pourcentage_simple' ? (contrat.pourcentage_base+' % HT') : contrat.type_commission) + '</strong>' +
+              ' · Signé le ' + fmtD(contrat.date_signature) +
+              ' · Début ' + fmtD(contrat.date_debut) +
+              (contrat.date_fin ? ' · Fin ' + fmtD(contrat.date_fin) : '') +
+            '</div>' +
+            (contrat.conditions_particulieres ? '<div style="font-size:11px;color:#6B7280;margin-top:6px;font-style:italic">' + esc(contrat.conditions_particulieres) + '</div>' : '') +
+          '</div>'
+        : '<div style="padding:12px;background:#FEF3C7;border-left:3px solid #D97706;border-radius:6px;color:#92400E;font-size:12px;margin-bottom:10px">⚠️ Aucun contrat actif — <a href="javascript:void(0)" onclick="alert(\'Création de contrat : disponible au Sprint 1.7\')" style="color:#1A2C6B;text-decoration:underline">créer maintenant →</a></div>';
+
+      // Leads html
+      var leadsHtml = leads.length === 0
+        ? '<div style="padding:14px;text-align:center;color:#9ca3af;font-style:italic;font-size:12px;border:1px dashed #E5E7EB;border-radius:8px">Aucun lead apporté pour l\'instant</div>'
+        : '<div style="max-height:200px;overflow-y:auto;border:1px solid #E5E7EB;border-radius:8px">' +
+          leads.slice(0, 20).map(function(l) {
+            return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid #F3F4F6;font-size:12px">' +
+              '<div><strong>'+esc(l.nom||'Sans nom')+'</strong><div style="font-size:10px;color:#6B7280">'+fmtD(l.date_apport||l.created_at)+'</div></div>' +
+              '<div style="text-align:right"><div>'+fmtEur(l.montant_ht||0)+'</div><span style="font-size:10px;color:#6B7280">'+esc(l.statut||'—')+'</span></div>' +
+            '</div>';
+          }).join('') + '</div>';
+
+      // Commissions html
+      var totalCom = myCom.filter(function(c){ return c.statut==='validee'||c.statut==='payee'; })
+                          .reduce(function(s,c){ return s + Number(c.montant_commission_eur||0); }, 0);
+      var commissionsHtml = myCom.length === 0
+        ? '<div style="padding:14px;text-align:center;color:#9ca3af;font-style:italic;font-size:12px;border:1px dashed #E5E7EB;border-radius:8px">Aucune commission. Dès qu\'un lead apporté se convertit en inscrit, une commission est générée automatiquement.</div>'
+        : '<div style="padding:14px;background:#F9FAFB;border-radius:8px;font-size:13px">' +
+          '<div style="margin-bottom:6px"><strong>' + myCom.length + '</strong> commission(s) · Total validé/payé : <strong style="color:#059669">'+fmtEur(totalCom)+'</strong></div>' +
+          '<div style="font-size:11px;color:#6B7280">Détail visible au Sprint 1.7 (Écran Commissions)</div>' +
+          '</div>';
+
+      var canauxHtml = (a.canaux_prospection||[]).map(function(c) {
+        var cfg = CANAUX[c] || CANAUX.autre;
+        return '<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:10px;font-size:10px;background:'+cfg.bg+';color:'+cfg.color+';font-weight:600">'+cfg.icon+' '+cfg.label+'</span>';
+      }).join(' ');
+
+      bodyEl.innerHTML =
+        // Header
+        '<div style="display:flex;gap:14px;align-items:center;padding-bottom:14px;border-bottom:1px solid #E5E7EB;margin-bottom:14px">' +
+          '<div style="width:64px;height:64px;border-radius:50%;background:'+col.bg+';color:'+col.fg+';display:flex;align-items:center;justify-content:center;font-weight:700;font-size:22px">'+initials(a)+'</div>' +
+          '<div style="flex:1">' +
+            '<div style="font-weight:700;color:#1F2937;font-size:18px">'+esc(a.prenom+' '+a.nom)+'</div>' +
+            '<div style="font-size:12px;color:#6B7280;margin-top:2px">'+esc(STATUTS_JURIDIQUES[a.statut_juridique]||'—')+(a.siret ? ' · SIRET '+esc(a.siret) : '')+'</div>' +
+            '<div style="margin-top:6px"><span style="display:inline-block;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:600;background:'+st.bg+';color:'+st.color+'">'+st.label+'</span></div>' +
+          '</div>' +
+          '<div style="display:flex;gap:6px;flex-direction:column">' +
+            (a.email ? '<a class="btn-s" style="font-size:11px;padding:4px 10px;text-decoration:none;text-align:center" href="mailto:'+esc(a.email)+'">📧 Email</a>' : '') +
+            (a.telephone ? '<a class="btn-s" style="font-size:11px;padding:4px 10px;text-decoration:none;text-align:center" href="tel:'+esc(a.telephone.replace(/\s/g,''))+'">📞 Appeler</a>' : '') +
+            '<button class="btn-s" style="font-size:11px;padding:4px 10px" onclick="window.ardalosEditApporteur(\''+a.id+'\')">✏️ Modifier</button>' +
+          '</div>' +
+        '</div>' +
+
+        // Identité
+        '<div style="margin-bottom:14px">' +
+          '<div style="font-weight:700;color:#1A2C6B;font-size:12px;text-transform:uppercase;letter-spacing:0.3px;margin-bottom:8px">📋 Identité & coordonnées</div>' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px">' +
+            '<div class="si"><span class="si-l">Email</span><span class="si-r">'+esc(a.email||'—')+'</span></div>' +
+            '<div class="si"><span class="si-l">Téléphone</span><span class="si-r">'+esc(a.telephone||'—')+'</span></div>' +
+            '<div class="si"><span class="si-l">Statut juridique</span><span class="si-r">'+esc(STATUTS_JURIDIQUES[a.statut_juridique]||'—')+'</span></div>' +
+            '<div class="si"><span class="si-l">SIRET</span><span class="si-r">'+esc(a.siret||'—')+'</span></div>' +
+            '<div class="si"><span class="si-l">TVA applicable</span><span class="si-r">'+(a.tva_applicable?'✓ Oui':'✕ Non')+'</span></div>' +
+            '<div class="si"><span class="si-l">Référent Ardalos</span><span class="si-r">'+esc(a.contact_referent||'—')+'</span></div>' +
+            '<div class="si"><span class="si-l">Entrée réseau</span><span class="si-r">'+fmtD(a.date_entree_reseau)+'</span></div>' +
+            '<div class="si"><span class="si-l">Créé le</span><span class="si-r">'+fmtD(a.created_at)+'</span></div>' +
+          '</div>' +
+          (canauxHtml ? '<div style="margin-top:10px"><span style="font-size:11px;color:#6B7280;margin-right:6px">Canaux :</span>'+canauxHtml+'</div>' : '') +
+          (a.notes ? '<div style="margin-top:10px;padding:10px;background:#F9FAFB;border-radius:6px;font-size:12px;color:#374151">'+esc(a.notes).replace(/\n/g,'<br>')+'</div>' : '') +
+        '</div>' +
+
+        // Contrat
+        '<div style="margin-bottom:14px">' +
+          '<div style="font-weight:700;color:#1A2C6B;font-size:12px;text-transform:uppercase;letter-spacing:0.3px;margin-bottom:8px">📄 Contrat actif</div>' +
+          contratHtml +
+        '</div>' +
+
+        // Leads apportés
+        '<div style="margin-bottom:14px">' +
+          '<div style="font-weight:700;color:#1A2C6B;font-size:12px;text-transform:uppercase;letter-spacing:0.3px;margin-bottom:8px">🎯 Leads apportés ('+leads.length+')</div>' +
+          leadsHtml +
+        '</div>' +
+
+        // Commissions
+        '<div style="margin-bottom:14px">' +
+          '<div style="font-weight:700;color:#1A2C6B;font-size:12px;text-transform:uppercase;letter-spacing:0.3px;margin-bottom:8px">💶 Commissions ('+myCom.length+')</div>' +
+          commissionsHtml +
+        '</div>' +
+
+        // Footer
+        '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;padding-top:14px;border-top:1px solid #E5E7EB">' +
+          '<button class="btn-s" onclick="closeModal(\'detail\')">Fermer</button>' +
+          '<button class="btn-danger" style="background:#FEE2E2;color:#DC2626;border:1px solid #FECACA" onclick="window.ardalosArchiveApporteur(\''+a.id+'\', \''+esc(a.prenom+' '+a.nom)+'\')">🗄 Archiver</button>' +
+        '</div>';
+    } catch(e) {
+      bodyEl.innerHTML = '<div style="padding:40px;text-align:center;color:#DC2626">Erreur : '+esc(e.message||'inconnue')+'</div>';
+    }
+  };
+
+  // ─── Création / Édition ──────────────────────────────────
+  function apporteurFormHtml(a) {
+    a = a || {};
+    function val(k, d) { return esc(a[k] != null ? a[k] : (d||'')); }
+    var canaux = a.canaux_prospection || [];
+    function checked(c) { return canaux.indexOf(c) !== -1 ? ' checked' : ''; }
+
+    return (
+      '<div class="frow">' +
+        '<div class="fg"><label class="flabel">Prénom <span class="req">*</span></label>' +
+          '<input class="finput" type="text" id="ap-prenom" value="'+val('prenom')+'" autofocus></div>' +
+        '<div class="fg"><label class="flabel">Nom <span class="req">*</span></label>' +
+          '<input class="finput" type="text" id="ap-nom" value="'+val('nom')+'"></div>' +
+      '</div>' +
+      '<div class="frow">' +
+        '<div class="fg"><label class="flabel">Email <span class="req">*</span></label>' +
+          '<input class="finput" type="email" id="ap-email" value="'+val('email')+'"></div>' +
+        '<div class="fg"><label class="flabel">Téléphone</label>' +
+          '<input class="finput" type="tel" id="ap-tel" value="'+val('telephone')+'"></div>' +
+      '</div>' +
+      '<div class="frow">' +
+        '<div class="fg"><label class="flabel">Statut juridique</label>' +
+          '<select class="fselect" id="ap-sj">' +
+            ['particulier','micro_entrepreneur','entreprise','salarie_porte'].map(function(k){
+              return '<option value="'+k+'"'+(a.statut_juridique===k?' selected':'')+'>'+STATUTS_JURIDIQUES[k]+'</option>';
+            }).join('') +
+          '</select></div>' +
+        '<div class="fg"><label class="flabel">SIRET</label>' +
+          '<input class="finput" type="text" id="ap-siret" value="'+val('siret')+'" placeholder="14 chiffres"></div>' +
+      '</div>' +
+      '<div class="fg"><label class="flabel">Canaux de prospection</label>' +
+        '<div style="display:flex;gap:12px;flex-wrap:wrap;padding:8px;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:6px">' +
+          Object.keys(CANAUX).filter(function(k){ return k!=='autre'; }).map(function(k) {
+            var cfg = CANAUX[k];
+            return '<label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px;padding:3px 6px;border-radius:4px">' +
+              '<input type="checkbox" class="ap-canal" value="'+k+'"'+checked(k)+'> ' +
+              cfg.icon+' '+cfg.label +
+            '</label>';
+          }).join('') +
+        '</div>' +
+      '</div>' +
+      '<div class="frow">' +
+        '<div class="fg"><label class="flabel">Référent Ardalos</label>' +
+          '<select class="fselect" id="ap-ref">' +
+            '<option value="">— Non assigné —</option>' +
+            ['Sylvain','David','Shaun','Jérôme','Julien'].map(function(n){
+              return '<option value="'+n+'"'+(a.contact_referent===n?' selected':'')+'>'+n+'</option>';
+            }).join('') +
+          '</select></div>' +
+        '<div class="fg"><label class="flabel">Date entrée réseau</label>' +
+          '<input class="finput" type="date" id="ap-entree" value="'+(a.date_entree_reseau||'')+'"></div>' +
+      '</div>' +
+      '<div class="fg"><label class="flabel">Notes / commentaires</label>' +
+        '<textarea class="finput" id="ap-notes" rows="3" placeholder="Spécialités, relations, observations...">'+val('notes')+'</textarea></div>' +
+      '<div class="fg"><label style="display:flex;align-items:center;gap:6px;font-size:12px"><input type="checkbox" id="ap-tva"'+(a.tva_applicable?' checked':'')+'> Assujetti à la TVA (facturation avec TVA)</label></div>'
+    );
+  }
+
+  function collectApporteurForm() {
+    var prenom = (document.getElementById('ap-prenom').value||'').trim();
+    var nom = (document.getElementById('ap-nom').value||'').trim();
+    var email = (document.getElementById('ap-email').value||'').trim();
+    if (!prenom || !nom || !email) throw new Error('Prénom, nom et email sont obligatoires');
+
+    var canaux = Array.from(document.querySelectorAll('.ap-canal:checked')).map(function(x){ return x.value; });
+
+    return {
+      prenom: prenom,
+      nom: nom,
+      email: email,
+      telephone: (document.getElementById('ap-tel').value||'').trim() || null,
+      statut_juridique: document.getElementById('ap-sj').value,
+      siret: (document.getElementById('ap-siret').value||'').trim() || null,
+      tva_applicable: document.getElementById('ap-tva').checked,
+      canaux_prospection: canaux,
+      contact_referent: document.getElementById('ap-ref').value || null,
+      date_entree_reseau: document.getElementById('ap-entree').value || null,
+      notes: (document.getElementById('ap-notes').value||'').trim() || null,
+      statut: 'actif',
+    };
+  }
+
+  window.ardalosNewApporteur = function() {
+    var titleEl = document.getElementById('detail-modal-title');
+    var bodyEl = document.getElementById('detail-modal-body');
+    if (!titleEl || !bodyEl) { alert('Modale indisponible'); return; }
+
+    var modal = document.getElementById('modal-detail');
+    if (modal) {
+      var inner = modal.querySelector('.modal');
+      if (inner) inner.style.maxWidth = '640px';
+    }
+
+    titleEl.textContent = '+ Nouvel apporteur d\'affaires';
+    bodyEl.innerHTML = apporteurFormHtml({}) +
+      '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid #E5E7EB">' +
+        '<button class="btn-s" onclick="closeModal(\'detail\')">Annuler</button>' +
+        '<button class="btn-p" id="ap-save-btn">Créer l\'apporteur</button>' +
+      '</div>' +
+      '<div id="ap-save-err" style="margin-top:10px;color:#DC2626;font-size:12px;display:none"></div>';
+
+    document.getElementById('ap-save-btn').onclick = async function() {
+      var btn = this;
+      var err = document.getElementById('ap-save-err');
+      err.style.display = 'none';
+      btn.disabled = true;
+      btn.textContent = 'Création…';
+      try {
+        var data = collectApporteurForm();
+        var r = await sb.from('apporteurs').insert(data).select().single();
+        if (r.error) throw r.error;
+        closeModal('detail');
+        toast('✅ Apporteur créé : ' + data.prenom + ' ' + data.nom, 'ok');
+        loadReseau();
+      } catch(e) {
+        err.textContent = 'Erreur : ' + (e.message || 'inconnue');
+        err.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Créer l\'apporteur';
+      }
+    };
+
+    openModal('detail');
+  };
+
+  window.ardalosEditApporteur = function(id) {
+    var a = APPORTEURS.find(function(x){ return x.id === id; });
+    if (!a) { toast('Apporteur introuvable', 'err'); return; }
+
+    var titleEl = document.getElementById('detail-modal-title');
+    var bodyEl = document.getElementById('detail-modal-body');
+    var modal = document.getElementById('modal-detail');
+    if (modal) {
+      var inner = modal.querySelector('.modal');
+      if (inner) inner.style.maxWidth = '640px';
+    }
+
+    titleEl.textContent = '✏️ Modifier : ' + a.prenom + ' ' + a.nom;
+    bodyEl.innerHTML = apporteurFormHtml(a) +
+      '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid #E5E7EB">' +
+        '<button class="btn-s" onclick="window.ardalosOpenApporteur360(\''+id+'\')">← Retour</button>' +
+        '<button class="btn-p" id="ap-upd-btn">Enregistrer</button>' +
+      '</div>' +
+      '<div id="ap-upd-err" style="margin-top:10px;color:#DC2626;font-size:12px;display:none"></div>';
+
+    document.getElementById('ap-upd-btn').onclick = async function() {
+      var btn = this;
+      var err = document.getElementById('ap-upd-err');
+      err.style.display = 'none';
+      btn.disabled = true;
+      btn.textContent = 'Enregistrement…';
+      try {
+        var data = collectApporteurForm();
+        data.updated_at = new Date().toISOString();
+        var r = await sb.from('apporteurs').update(data).eq('id', id);
+        if (r.error) throw r.error;
+        toast('✅ Apporteur modifié', 'ok');
+        loadReseau();
+        // Re-ouvrir la fiche
+        setTimeout(function(){ window.ardalosOpenApporteur360(id); }, 300);
+      } catch(e) {
+        err.textContent = 'Erreur : ' + (e.message || 'inconnue');
+        err.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Enregistrer';
+      }
+    };
+  };
+
+  window.ardalosArchiveApporteur = async function(id, nom) {
+    if (!confirm('Archiver l\'apporteur "' + nom + '" ?\n\nIl ne sera plus visible par défaut mais toutes ses données (leads, commissions) sont conservées.')) return;
+    try {
+      var r = await sb.from('apporteurs').update({ statut: 'archive', updated_at: new Date().toISOString() }).eq('id', id);
+      if (r.error) throw r.error;
+      closeModal('detail');
+      toast('🗄 Apporteur archivé', 'ok');
+      loadReseau();
+    } catch(e) {
+      toast('Erreur : ' + (e.message||'inconnue'), 'err');
+    }
+  };
+
+  // Helpers modales (compatibilite)
+  if (typeof window.openModal !== 'function') {
+    window.openModal = function(n) { var el=document.getElementById('modal-'+n); if (el) el.classList.add('open'); };
+  }
+  if (typeof window.closeModal !== 'function') {
+    window.closeModal = function(n) { var el=document.getElementById('modal-'+n); if (el) el.classList.remove('open'); };
+  }
+
+  console.log('[Sprint 1.6] Module Reseau apporteurs init OK');
+})();
+</script>
+
+<!-- ARDALOS_COMMISSIONS_SCRIPT_V2 -->
+<script>
+(function() {
+  'use strict';
+  if (window.__ARDALOS_COMMISSIONS_V2) return;
+  window.__ARDALOS_COMMISSIONS_V2 = true;
+
+  var state = {
+    commissions: [], apporteurs: [], contrats: [], deals: [],
+    filters: { apporteur: 'all', periode: 'all', statut: 'all', search: '' },
+    loaded: false
+  };
+
+  // [ARDALOS_COMMISSIONS_V3] Client Supabase autonome
+  var __sbCache = null;
+  function getSb() {
+    if (__sbCache) return __sbCache;
+    if (window.sb) { __sbCache = window.sb; return __sbCache; }
+    // Si supabase (librairie globale) est dispo, on cree notre propre client
+    if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+      try {
+        __sbCache = window.supabase.createClient(
+          'https://cvxzdiutxonnsnwoicqt.supabase.co',
+          'sb_publishable_J8ta-7L05zgK9rBy2OS9Bg_CjXHwZVK'
+        );
+        // Expose aussi en global pour que d'autres modules puissent partager
+        if (!window.sb) window.sb = __sbCache;
+        console.log('[Commissions v3] Client Supabase cree');
+        return __sbCache;
+      } catch(e) {
+        console.warn('[Commissions v3] createClient failed', e);
+        return null;
+      }
+    }
+    return null;
+  }
+
+  function money(v) {
+    var n = Number(v || 0);
+    try { return n.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }); }
+    catch(e) { return n.toFixed(0) + ' €'; }
+  }
+  function fmtDate(v) {
+    if (!v) return '—';
+    try { return new Date(v).toLocaleDateString('fr-FR'); } catch(e) { return String(v); }
+  }
+  function pct(v) {
+    if (v == null) return '—';
+    return (Number(v)).toLocaleString('fr-FR', { maximumFractionDigits: 2 }) + '%';
+  }
+  function apName(a) {
+    if (!a) return '—';
+    return ((a.prenom || '') + ' ' + (a.nom || '')).trim() || '—';
+  }
+  function escHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  }
+
+  async function loadAll() {
+    var sb = getSb();
+    if (!sb) { console.warn('[Commissions] window.sb introuvable'); return; }
+    try {
+      var results = await Promise.all([
+        sb.from('apporteur_commissions').select('*').order('date_apport', { ascending: false }),
+        sb.from('apporteurs').select('id, nom, prenom, email, siret, statut').eq('statut', 'actif'),
+        sb.from('apporteur_contrats').select('id, apporteur_id, type_commission, pourcentage_base, pourcentage_simple, montant_forfait_eur, statut').eq('statut', 'actif'),
+        sb.from('pipeline_deals').select('id, nom, statut, montant_ht, apporteur_id, date_apport').in('statut', ['gagne', 'closing', 'signe', 'gagné', 'signé'])
+      ]);
+      state.commissions = (results[0] && results[0].data) || [];
+      state.apporteurs  = (results[1] && results[1].data) || [];
+      state.contrats    = (results[2] && results[2].data) || [];
+      state.deals       = (results[3] && results[3].data) || [];
+      state.loaded = true;
+      populateApporteurFilter();
+      render();
+    } catch(e) { console.warn('[Commissions] erreur chargement', e); }
+  }
+
+  async function reconcileCommissions() {
+    var sb = getSb();
+    if (!sb) return 0;
+    var existing = {};
+    state.commissions.forEach(function(c) { if (c.pipeline_deal_id) existing[c.pipeline_deal_id] = true; });
+    var toCreate = [];
+    for (var i = 0; i < state.deals.length; i++) {
+      var d = state.deals[i];
+      if (!d.apporteur_id) continue;
+      if (existing[d.id]) continue;
+      var contrat = null;
+      for (var j = 0; j < state.contrats.length; j++) {
+        if (state.contrats[j].apporteur_id === d.apporteur_id) { contrat = state.contrats[j]; break; }
+      }
+      if (!contrat) continue;
+      var baseHT = Number(d.montant_ht || 0);
+      if (baseHT <= 0) continue;
+      var taux = null;
+      var commission = 0;
+      var tc = (contrat.type_commission || '').toLowerCase();
+      if (tc === 'forfait') {
+        commission = Number(contrat.montant_forfait_eur || 0);
+      } else {
+        taux = Number(contrat.pourcentage_base || contrat.pourcentage_simple || 0);
+        commission = baseHT * taux / 100;
+      }
+      if (commission <= 0) continue;
+      toCreate.push({
+        apporteur_id: d.apporteur_id,
+        contrat_id: contrat.id,
+        pipeline_deal_id: d.id,
+        date_apport: d.date_apport || new Date().toISOString().slice(0, 10),
+        date_signature: new Date().toISOString().slice(0, 10),
+        montant_base_eur: baseHT,
+        taux_applique_pct: taux,
+        montant_commission_eur: Math.round(commission * 100) / 100,
+        statut: 'calculee',
+        justificatifs: []
+      });
+    }
+    if (toCreate.length === 0) return 0;
+    try {
+      var r = await sb.from('apporteur_commissions').insert(toCreate);
+      if (r && r.error) { console.warn('[Commissions] insert error', r.error); return 0; }
+      return toCreate.length;
+    } catch(e) { console.warn('[Commissions] insert exception', e); return 0; }
+  }
+
+  function applyFilters() {
+    var now = new Date();
+    var curY = now.getFullYear();
+    var curM = now.getMonth();
+    var curQ = Math.floor(curM / 3);
+    return state.commissions.filter(function(c) {
+      if (state.filters.apporteur !== 'all' && c.apporteur_id !== state.filters.apporteur) return false;
+      if (state.filters.statut !== 'all' && c.statut !== state.filters.statut) return false;
+      if (state.filters.periode !== 'all' && c.date_apport) {
+        var d = new Date(c.date_apport);
+        if (d.getFullYear() !== curY) return false;
+        if (state.filters.periode === 'm' && d.getMonth() !== curM) return false;
+        if (state.filters.periode === 'q' && Math.floor(d.getMonth() / 3) !== curQ) return false;
+      }
+      if (state.filters.search) {
+        var q = state.filters.search.toLowerCase();
+        var ap = null;
+        for (var k = 0; k < state.apporteurs.length; k++) if (state.apporteurs[k].id === c.apporteur_id) { ap = state.apporteurs[k]; break; }
+        var nm = ap ? apName(ap).toLowerCase() : '';
+        var deal = null;
+        for (var l = 0; l < state.deals.length; l++) if (state.deals[l].id === c.pipeline_deal_id) { deal = state.deals[l]; break; }
+        var dn = deal ? (deal.nom || '').toLowerCase() : '';
+        if (nm.indexOf(q) === -1 && dn.indexOf(q) === -1) return false;
+      }
+      return true;
+    });
+  }
+
+  function render() {
+    var filtered = applyFilters();
+    var apayer = 0, ytd = 0, attente = 0;
+    var curY = new Date().getFullYear();
+    filtered.forEach(function(c) {
+      if (c.statut === 'calculee' || c.statut === 'validee') {
+        apayer += Number(c.montant_commission_eur || 0);
+        attente++;
+      }
+    });
+    state.commissions.forEach(function(c) {
+      if (c.statut === 'payee' && c.date_paiement) {
+        var dy = new Date(c.date_paiement).getFullYear();
+        if (dy === curY) ytd += Number(c.montant_commission_eur || 0);
+      }
+    });
+    var byApp = {};
+    state.commissions.forEach(function(c) {
+      byApp[c.apporteur_id] = (byApp[c.apporteur_id] || 0) + Number(c.montant_commission_eur || 0);
+    });
+    var topId = null, topVal = 0;
+    Object.keys(byApp).forEach(function(k) { if (byApp[k] > topVal) { topVal = byApp[k]; topId = k; } });
+    var topAp = null;
+    for (var i = 0; i < state.apporteurs.length; i++) if (state.apporteurs[i].id === topId) { topAp = state.apporteurs[i]; break; }
+
+    var set = function(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; };
+    set('com-kpi-apayer', money(apayer));
+    set('com-kpi-payeytd', money(ytd));
+    set('com-kpi-attente', attente + ' deal' + (attente > 1 ? 's' : ''));
+    set('com-kpi-top', topAp ? apName(topAp) : '—');
+    set('commissions-subtitle', filtered.length + ' commission' + (filtered.length > 1 ? 's' : '') + ' · ' + money(apayer) + ' à payer');
+
+    var tbody = document.getElementById('com-tbody');
+    if (!tbody) return;
+    if (filtered.length === 0) {
+      var msg = state.loaded
+        ? (state.commissions.length === 0
+          ? 'Aucune commission. Clique "🔄 Recalculer" pour générer depuis les deals gagnés.'
+          : 'Aucune commission ne correspond aux filtres.')
+        : 'Chargement…';
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:#9CA3AF">' + msg + '</td></tr>';
+      return;
+    }
+    var badges = {
+      calculee: '<span style="background:#FEF3C7;color:#B45309;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600">🟡 À payer</span>',
+      validee:  '<span style="background:#DBEAFE;color:#1E40AF;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600">🔵 Validée</span>',
+      payee:    '<span style="background:#D1FAE5;color:#047857;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600">🟢 Payée</span>',
+      contestee:'<span style="background:#FEE2E2;color:#B91C1C;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600">🔴 Contestée</span>'
+    };
+    tbody.innerHTML = filtered.map(function(c) {
+      var ap = null;
+      for (var i = 0; i < state.apporteurs.length; i++) if (state.apporteurs[i].id === c.apporteur_id) { ap = state.apporteurs[i]; break; }
+      var deal = null;
+      for (var j = 0; j < state.deals.length; j++) if (state.deals[j].id === c.pipeline_deal_id) { deal = state.deals[j]; break; }
+      var dealLbl = deal ? escHtml(deal.nom) : (c.inscription_id ? 'Inscription Formation' : '—');
+      var action = '';
+      if (c.statut === 'calculee' || c.statut === 'validee') {
+        action = '<button class="btn-s" style="font-size:11px;padding:4px 10px" onclick="window.ardalosMarkCommissionPaid(\''+escHtml(c.id)+'\')">Marquer payée</button>';
+      } else if (c.statut === 'payee') {
+        action = '<span style="color:#9CA3AF;font-size:11px">'+fmtDate(c.date_paiement)+'</span>';
+      }
+      return '<tr style="border-top:1px solid #E5E7EB">'
+        + '<td style="padding:10px">'+fmtDate(c.date_apport)+'</td>'
+        + '<td style="padding:10px;font-weight:500">'+escHtml(apName(ap))+'</td>'
+        + '<td style="padding:10px;color:#6B7280">'+dealLbl+'</td>'
+        + '<td style="padding:10px;text-align:right">'+money(c.montant_base_eur)+'</td>'
+        + '<td style="padding:10px;text-align:right;color:#6B7280">'+(c.taux_applique_pct != null ? pct(c.taux_applique_pct) : 'forfait')+'</td>'
+        + '<td style="padding:10px;text-align:right;font-weight:700;color:#1A2C6B">'+money(c.montant_commission_eur)+'</td>'
+        + '<td style="padding:10px;text-align:center">'+(badges[c.statut] || escHtml(c.statut))+'</td>'
+        + '<td style="padding:10px;text-align:center">'+action+'</td>'
+        + '</tr>';
+    }).join('');
+  }
+
+  function populateApporteurFilter() {
+    var sel = document.getElementById('com-filter-apporteur');
+    if (!sel) return;
+    var prev = sel.value;
+    sel.innerHTML = '<option value="all">Tous apporteurs</option>' +
+      state.apporteurs.map(function(a) {
+        return '<option value="'+escHtml(a.id)+'">'+escHtml(apName(a))+'</option>';
+      }).join('');
+    if (prev) sel.value = prev;
+  }
+
+  window.ardalosMarkCommissionPaid = async function(id) {
+    var sb = getSb();
+    if (!sb) return;
+    if (!confirm('Marquer cette commission comme payée ?')) return;
+    var today = new Date().toISOString().slice(0, 10);
+    try {
+      var r = await sb.from('apporteur_commissions').update({
+        statut: 'payee', date_paiement: today
+      }).eq('id', id);
+      if (r && r.error) { alert('Erreur : ' + r.error.message); return; }
+      await loadAll();
+    } catch(e) { alert('Erreur : ' + (e.message || e)); }
+  };
+
+  function exportCSV() {
+    var filtered = applyFilters();
+    if (filtered.length === 0) { alert('Aucune commission à exporter'); return; }
+    var rows = [['Date','Apporteur','SIRET','Deal','Base HT','Taux %','Commission HT','TVA 20%','TTC','Statut']];
+    var labels = { calculee:'À payer', validee:'Validée', payee:'Payée', contestee:'Contestée' };
+    filtered.forEach(function(c) {
+      var ap = null;
+      for (var i = 0; i < state.apporteurs.length; i++) if (state.apporteurs[i].id === c.apporteur_id) { ap = state.apporteurs[i]; break; }
+      var deal = null;
+      for (var j = 0; j < state.deals.length; j++) if (state.deals[j].id === c.pipeline_deal_id) { deal = state.deals[j]; break; }
+      var base = Number(c.montant_base_eur || 0);
+      var com  = Number(c.montant_commission_eur || 0);
+      var tva  = com * 0.2;
+      var ttc  = com + tva;
+      rows.push([
+        fmtDate(c.date_apport),
+        ap ? apName(ap) : '',
+        ap ? (ap.siret || '') : '',
+        deal ? (deal.nom || '') : '',
+        base.toFixed(2).replace('.', ','),
+        c.taux_applique_pct != null ? Number(c.taux_applique_pct).toFixed(2).replace('.', ',') : '',
+        com.toFixed(2).replace('.', ','),
+        tva.toFixed(2).replace('.', ','),
+        ttc.toFixed(2).replace('.', ','),
+        labels[c.statut] || c.statut
+      ]);
+    });
+    var csv = rows.map(function(r) {
+      return r.map(function(v) {
+        var s = String(v == null ? '' : v);
+        if (s.indexOf(';') !== -1 || s.indexOf('"') !== -1 || s.indexOf('\n') !== -1) {
+          return '"' + s.replace(/"/g, '""') + '"';
+        }
+        return s;
+      }).join(';');
+    }).join('\r\n');
+    var blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'commissions_ardalos_' + new Date().toISOString().slice(0, 10) + '.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+  }
+
+  window.ardalosOpenCommissions = async function() {
+    if (typeof navigate === 'function') {
+      navigate('apporteurs-commissions');
+    } else {
+      var pages = document.querySelectorAll('.page');
+      for (var i = 0; i < pages.length; i++) pages[i].classList.remove('active');
+      var el = document.getElementById('page-apporteurs-commissions');
+      if (el) el.classList.add('active');
+    }
+    var bc = document.getElementById('bc-page');
+    if (bc) bc.textContent = 'Commissions apporteurs';
+    try { window.scrollTo(0, 0); } catch(e) {}
+    await loadAll();
+    try {
+      var created = await reconcileCommissions();
+      if (created > 0) {
+        console.log('[Commissions] ' + created + ' nouvelle(s) commission(s) calculee(s)');
+        await loadAll();
+      }
+    } catch(e) { console.warn(e); }
+  };
+
+  function wireUI() {
+    var pairs = [
+      ['commissions-export-btn', 'click',  exportCSV],
+      ['commissions-recalc-btn', 'click',  async function() {
+        await loadAll();
+        var n = await reconcileCommissions();
+        if (n > 0) { await loadAll(); alert(n + ' commission(s) creee(s)'); }
+        else alert('Aucune nouvelle commission (deja a jour).');
+      }],
+      ['com-filter-apporteur',   'change', function(e) { state.filters.apporteur = e.target.value; render(); }],
+      ['com-filter-periode',     'change', function(e) { state.filters.periode = e.target.value; render(); }],
+      ['com-filter-statut',      'change', function(e) { state.filters.statut = e.target.value; render(); }],
+      ['com-search',             'input',  function(e) { state.filters.search = e.target.value; render(); }]
+    ];
+    pairs.forEach(function(p) {
+      var el = document.getElementById(p[0]);
+      if (el && !el.__comWired) { el.__comWired = true; el.addEventListener(p[1], p[2]); }
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() { setTimeout(wireUI, 200); });
+  } else {
+    setTimeout(wireUI, 200);
+  }
+
+  console.log('[Sprint 1.7 v2 Commissions] init OK');
+})();
+</script>
+
 </body>
 </html>
