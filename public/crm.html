@@ -11207,14 +11207,21 @@ window.ARDALOS_APPORTEURS_SEED = [
     // Timeline
     var tl = document.getElementById('sp-fiche-timeline');
     if (tl) {
+      // [ARDALOS_TIMELINE_CLIQUABLE_V1] Timeline cliquable
       tl.innerHTML = STAGES.map(function(stg, i) {
         var isDone = i < si.idx;
         var isCurrent = i === si.idx;
         var bg = isDone ? '#047857' : isCurrent ? '#F59E0B' : '#E5E7EB';
         var color = (isDone || isCurrent) ? '#fff' : '#9CA3AF';
+        var hoverShadow = isCurrent ? '' : 'this.style.boxShadow=\'0 2px 6px rgba(0,0,0,0.15)\';this.style.transform=\'scale(1.08)\'';
+        var leaveShadow = isCurrent ? '' : 'this.style.boxShadow=\'\';this.style.transform=\'scale(1)\'';
         return '<div style="display:flex;align-items:center;gap:12px;padding:6px 0">' +
-          '<div style="width:26px;height:26px;border-radius:50%;background:' + bg + ';color:' + color + ';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0">' + (isDone ? '✓' : (i+1)) + '</div>' +
-          '<div style="font-size:12px;color:' + (isCurrent ? '#1A2C6B' : isDone ? '#6B7280' : '#9CA3AF') + ';font-weight:' + (isCurrent ? '600' : '400') + '">' + esc(stg.label) + '</div>' +
+          '<div onclick="window.ardalosSuiviProdJumpStage(' + i + ')" ' +
+               'onmouseover="' + hoverShadow + '" ' +
+               'onmouseout="' + leaveShadow + '" ' +
+               'title="' + (isCurrent ? 'Étape actuelle' : (isDone ? 'Reculer à cette étape' : 'Avancer à cette étape')) + '" ' +
+               'style="width:26px;height:26px;border-radius:50%;background:' + bg + ';color:' + color + ';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;cursor:pointer;transition:all 0.15s ease">' + (isDone ? '✓' : (i+1)) + '</div>' +
+          '<div onclick="window.ardalosSuiviProdJumpStage(' + i + ')" style="font-size:12px;color:' + (isCurrent ? '#1A2C6B' : isDone ? '#6B7280' : '#9CA3AF') + ';font-weight:' + (isCurrent ? '600' : '400') + ';cursor:pointer">' + esc(stg.label) + '</div>' +
         '</div>';
       }).join('');
     }
@@ -11287,6 +11294,35 @@ window.ARDALOS_APPORTEURS_SEED = [
   // ─── Actions sur la fiche (8 boutons) ───
 
   // 1. Passer à l'étape suivante
+  
+  // [ARDALOS_TIMELINE_CLIQUABLE_V1] Saut direct a une etape via clic timeline
+  window.ardalosSuiviProdJumpStage = async function(targetIdx) {
+    var s = state.currentFiche; if (!s) return;
+    var si = stageInfo(s.current_stage);
+    if (targetIdx === si.idx) {
+      toast('ℹ️ Étape actuelle', 'ok');
+      return;
+    }
+    var target = STAGES[targetIdx];
+    if (!target) return;
+    var direction = targetIdx > si.idx ? 'AVANCER' : 'RECULER';
+    var msg = direction + ' à : ' + target.label + ' ?\n\n(Étape actuelle : ' + si.info.label + ')';
+    if (!confirm(msg)) return;
+    var sb = getSb();
+    var r = await sb.from('stagiaires_suivi').update({
+      current_stage: target.key,
+      completion_percentage: target.pct
+    }).eq('id', s.id).select().single();
+    if (r.error) { toast('Erreur: ' + r.error.message, 'err'); return; }
+    await logActivity(s.id, 'stage_jump', 'Saut timeline → ' + target.label, s.current_stage, target.key);
+    state.currentFiche = r.data;
+    var r2 = await sb.from('stagiaires_suivi_activity').select('*').eq('stagiaire_id', s.id).order('created_at', { ascending: false });
+    state.currentActivity = r2.data || [];
+    renderFiche();
+    for (var i=0; i<state.list.length; i++) if (state.list[i].id === s.id) state.list[i] = r.data;
+    toast('✓ ' + (direction === 'AVANCER' ? 'Avancé' : 'Reculé') + ' à : ' + target.label, 'ok');
+  };
+
   window.ardalosSuiviProdNextStage = async function() {
     var s = state.currentFiche; if (!s) return;
     var si = stageInfo(s.current_stage);
