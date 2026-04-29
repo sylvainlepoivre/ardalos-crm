@@ -1485,6 +1485,12 @@ const _supabase = supabase.createClient("https://cvxzdiutxonnsnwoicqt.supabase.c
         <option value="contestee">Contestée</option>
       </select>
       <input type="search" id="com-search" class="finput" placeholder="Rechercher apporteur, deal..." style="flex:1;min-width:200px">
+      <!-- ARDALOS_FILTERS_ADV_C_V1 -->
+      <input type="number" id="com-filter-montant-min" class="finput" placeholder="Montant min €" style="max-width:120px;font-size:12px" min="0">
+      <input type="number" id="com-filter-montant-max" class="finput" placeholder="Montant max €" style="max-width:120px;font-size:12px" min="0">
+      <input type="date" id="com-filter-date-from" class="finput" title="Date début" style="max-width:140px;font-size:12px">
+      <input type="date" id="com-filter-date-to" class="finput" title="Date fin" style="max-width:140px;font-size:12px">
+      <button class="btn-s" onclick="window.ardalosResetCommissionFilters && window.ardalosResetCommissionFilters()" style="font-size:12px">↺ Reset</button>
     </div>
 
     <div style="background:#fff;border-radius:8px;overflow:auto;box-shadow:0 1px 3px rgba(0,0,0,.06)">
@@ -10712,11 +10718,35 @@ window.ARDALOS_APPORTEURS_SEED = [
     } catch(e) { console.warn('[Commissions] insert exception', e); return 0; }
   }
 
+
+  // [ARDALOS_FILTERS_ADV_C_V1] Reset des filtres avances
+  window.ardalosResetCommissionFilters = function() {
+    var ids = ['com-filter-montant-min', 'com-filter-montant-max', 'com-filter-date-from', 'com-filter-date-to', 'com-search'];
+    ids.forEach(function(id) { var el = document.getElementById(id); if (el) el.value = ''; });
+    state.filters.montantMin = '';
+    state.filters.montantMax = '';
+    state.filters.dateFrom = '';
+    state.filters.dateTo = '';
+    state.filters.search = '';
+    var ap = document.getElementById('com-filter-apporteur'); if (ap) ap.value = 'all';
+    var pe = document.getElementById('com-filter-periode'); if (pe) pe.value = 'all';
+    var st = document.getElementById('com-filter-statut'); if (st) st.value = 'all';
+    state.filters.apporteur = 'all';
+    state.filters.periode = 'all';
+    state.filters.statut = 'all';
+    if (typeof render === 'function') render();
+  };
+
   function applyFilters() {
     var now = new Date();
     var curY = now.getFullYear();
     var curM = now.getMonth();
     var curQ = Math.floor(curM / 3);
+    // [ARDALOS_FILTERS_ADV_C_V1] Filtres avances : montant + dates custom
+    var fMin = parseFloat(state.filters.montantMin); if (isNaN(fMin)) fMin = null;
+    var fMax = parseFloat(state.filters.montantMax); if (isNaN(fMax)) fMax = null;
+    var fFrom = state.filters.dateFrom || null;
+    var fTo = state.filters.dateTo || null;
     return state.commissions.filter(function(c) {
       if (state.filters.apporteur !== 'all' && c.apporteur_id !== state.filters.apporteur) return false;
       if (state.filters.statut !== 'all' && c.statut !== state.filters.statut) return false;
@@ -10726,6 +10756,12 @@ window.ARDALOS_APPORTEURS_SEED = [
         if (state.filters.periode === 'm' && d.getMonth() !== curM) return false;
         if (state.filters.periode === 'q' && Math.floor(d.getMonth() / 3) !== curQ) return false;
       }
+      // Filtres avances [ARDALOS_FILTERS_ADV_C_V1]
+      var montant = Number(c.montant_commission_eur || 0);
+      if (fMin !== null && montant < fMin) return false;
+      if (fMax !== null && montant > fMax) return false;
+      if (fFrom && c.date_apport && c.date_apport < fFrom) return false;
+      if (fTo && c.date_apport && c.date_apport > fTo) return false;
       if (state.filters.search) {
         var q = state.filters.search.toLowerCase();
         var ap = null;
@@ -11010,7 +11046,12 @@ window.ARDALOS_APPORTEURS_SEED = [
       ['com-filter-apporteur',   'change', function(e) { state.filters.apporteur = e.target.value; render(); }],
       ['com-filter-periode',     'change', function(e) { state.filters.periode = e.target.value; render(); }],
       ['com-filter-statut',      'change', function(e) { state.filters.statut = e.target.value; render(); }],
-      ['com-search',             'input',  function(e) { state.filters.search = e.target.value; render(); }]
+      ['com-search',             'input',  function(e) { state.filters.search = e.target.value; render(); }],
+      // [ARDALOS_FILTERS_ADV_C_V1] Listeners filtres avances
+      ['com-filter-montant-min', 'input',  function(e) { state.filters.montantMin = e.target.value; render(); }],
+      ['com-filter-montant-max', 'input',  function(e) { state.filters.montantMax = e.target.value; render(); }],
+      ['com-filter-date-from',   'change', function(e) { state.filters.dateFrom = e.target.value; render(); }],
+      ['com-filter-date-to',     'change', function(e) { state.filters.dateTo = e.target.value; render(); }]
     ];
     pairs.forEach(function(p) {
       var el = document.getElementById(p[0]);
